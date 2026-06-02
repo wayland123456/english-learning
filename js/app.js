@@ -38,6 +38,7 @@ const App = {
 
         // 关闭移动端导航
         this.closeMobileNav();
+        this.closeMobileMoreMenu();
 
         // 更新底部导航高亮
         this._updateBottomNav(page);
@@ -69,6 +70,26 @@ const App = {
         const navLinks = document.getElementById('navLinks');
         if (navLinks) {
             navLinks.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+    },
+
+    toggleMobileMoreMenu() {
+        const overlay = document.getElementById('mobileMoreOverlay');
+        const menu = document.getElementById('mobileMoreMenu');
+        if (overlay && menu) {
+            overlay.classList.remove('hidden');
+            menu.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    },
+
+    closeMobileMoreMenu() {
+        const overlay = document.getElementById('mobileMoreOverlay');
+        const menu = document.getElementById('mobileMoreMenu');
+        if (overlay && menu) {
+            overlay.classList.add('hidden');
+            menu.classList.add('hidden');
             document.body.style.overflow = '';
         }
     },
