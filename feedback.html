@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>学习反馈问卷 - Travelling Around the World</title>
+    <!-- PWA -->
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/english-learning/img/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/english-learning/img/icons/favicon.png">
+    <link rel="manifest" href="/english-learning/manifest.json">
+    <link rel="stylesheet" href="css/style.css?v=4">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .feedback-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 6rem;
+        }
+        .feedback-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-top: 1rem;
+        }
+        .feedback-header h1 {
+            font-size: 1.6rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .feedback-header p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+        .feedback-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.2rem;
+            box-shadow: var(--shadow);
+        }
+        .feedback-card h3 {
+            font-size: 1.05rem;
+            color: var(--text);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .feedback-card h3 i {
+            color: var(--primary);
+        }
+        .feedback-card .question {
+            margin-bottom: 1.2rem;
+        }
+        .feedback-card .question:last-child {
+            margin-bottom: 0;
+        }
+        .feedback-card .question label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .feedback-card .question .required {
+            color: var(--danger);
+            margin-left: 2px;
+        }
+        .star-rating {
+            display: flex;
+            gap: 0.5rem;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        .star-rating input {
+            display: none;
+        }
+        .star-rating label {
+            font-size: 1.6rem;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: color 0.2s;
+            margin-bottom: 0 !important;
+        }
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input:checked ~ label {
+            color: #fbbf24;
+        }
+        .likert-row {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+        .likert-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            padding: 0.4rem 0.3rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex: 1;
+            min-width: 60px;
+        }
+        .likert-option:hover {
+            background: #f1f5f9;
+        }
+        .likert-option input {
+            accent-color: var(--primary);
+            width: 1.1rem;
+            height: 1.1rem;
+            cursor: pointer;
+        }
+        .likert-option span {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            text-align: center;
+            line-height: 1.2;
+        }
+        .likert-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-top: 0.3rem;
+            padding: 0 0.2rem;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99,102,241,0.3);
+        }
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .success-msg {
+            text-align: center;
+            padding: 3rem 1.5rem;
+        }
+        .success-msg i {
+            font-size: 4rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        .success-msg h2 {
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        .success-msg p {
+            color: var(--text-light);
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--primary);
+            text-decoration: none;
+            margin-top: 1.5rem;
+            font-weight: 500;
+        }
+        .login-tip {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-light);
+        }
+        .login-tip a {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .module-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 480px) {
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+            .star-rating label {
+                font-size: 1.4rem;
+            }
+            .likert-option span {
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand" onclick="window.location.href='index.html'">
+            <i class="fas fa-globe-americas"></i>
+            <span>Travelling Around the World</span>
+        </div>
+    </nav>
+
+    <div style="height:64px"></div>
+
+    <div class="feedback-container" id="feedbackContainer">
+        <!-- 未登录提示 -->
+        <div class="login-tip" id="loginTip" style="display:none;">
+            <i class="fas fa-lock" style="font-size:3rem;color:var(--primary-light);margin-bottom:1rem;display:block;"></i>
+            <p>请先<a href="index.html">登录学习平台</a>后再填写反馈问卷</p>
+        </div>
+
+        <!-- 问卷表单 -->
+        <div id="feedbackForm" style="display:none;">
+            <div class="feedback-header">
+                <h1><i class="fas fa-clipboard-list"></i> 学习反馈问卷</h1>
+                <p>亲爱的同学，感谢你在过去一段时间使用本平台进行英语学习。你的真实反馈将帮助我们不断改进平台，让学习体验更好！</p>
+            </div>
+
+            <form id="surveyForm" onsubmit="submitFeedback(event)">
+                <!-- 基本信息 -->
+                <div class="feedback-card">
+                    <h3><i class="fas fa-user"></i> 基本信息</h3>
+                    <div class="question">
+                        <label>你的姓名 <span class="required">*</span></label>
+                        <input type="text" id="studentName" readonly style="width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:10px;font-size:0.95rem;background:#f8fafc;">
+                    </div>
+                </div>
+
+                <!-- 整体满意度 -->
+                <div class="feedback-card">
+                    <h3><i class="fas fa-smile"></i> 一、整体满意度</h3>
+                    <div class="question">
+                        <label>1. 你对本英语学习平台的整体满意度如何？ <span class="required">*</span></label>
+                        <div class="star-rating" id="overallRating">
+                            <input type="radio" name="overall" id="o5" value="5" required><label for="o5"><i class="fas fa-star"></i></label>
+                            <input type="radio" name="overall" id="o4" value="4"><label for="o4"><i class="fas fa-star"></i></label>
+                            <input type="radio" name="overall" id="o3" value="3"><label for="o3"><i class="fas fa-star"></i></label>
+                            <input type="radio" name="overall" id="o2" value="2"><label for="o2"><i class="fas fa-star"></i></label>
+                            <input type="radio" name="overall" id="o1" value="1"><label for="o1"><i class="fas fa-star"></i></label>
+                        </div>
+                        <div class="likert-labels">
+                            <span>非常不满意</span>
+                            <span>非常满意</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 各模块评价 -->
+                <div class="feedback-card">
+                    <h3><i class="fas fa-puzzle-piece"></i> 二、各学习模块评价</h3>
+                    <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:1rem;">请对以下各模块的内容质量和学习体验进行评分（1-5星）</p>
+                    <div class="module-grid">
+                        <div class="question">
+                            <label>自主学习资源</label>
+                            <div class="star-rating">
+                                <input type="radio" name="resource" id="r5" value="5"><label for="r5"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="resource" id="r4" value="4"><label for="r4"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="resource" id="r3" value="3"><label for="r3"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="resource" id="r2" value="2"><label for="r2"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="resource" id="r1" value="1"><label for="r1"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
+                        <div class="question">
+                            <label>口语练习</label>
+                            <div class="star-rating">
+                                <input type="radio" name="speaking" id="s5" value="5"><label for="s5"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="speaking" id="s4" value="4"><label for="s4"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="speaking" id="s3" value="3"><label for="s3"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="speaking" id="s2" value="2"><label for="s2"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="speaking" id="s1" value="1"><label for="s1"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
+                        <div class="question">
+                            <label>听力练习</label>
+                            <div class="star-rating">
+                                <input type="radio" name="listening" id="l5" value="5"><label for="l5"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="listening" id="l4" value="4"><label for="l4"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="listening" id="l3" value="3"><label for="l3"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="listening" id="l2" value="2"><label for="l2"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="listening" id="l1" value="1"><label for="l1"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
+                        <div class="question">
+                            <label>词汇闪卡</label>
+                            <div class="star-rating">
+                                <input type="radio" name="vocabulary" id="v5" value="5"><label for="v5"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="vocabulary" id="v4" value="4"><label for="v4"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="vocabulary" id="v3" value="3"><label for="v3"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="vocabulary" id="v2" value="2"><label for="v2"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="vocabulary" id="v1" value="1"><label for="v1"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
+                        <div class="question">
+                            <label>语法练习</label>
+                            <div class="star-rating">
+                                <input type="radio" name="grammar" id="g5" value="5"><label for="g5"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="grammar" id="g4" value="4"><label for="g4"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="grammar" id="g3" value="3"><label for="g3"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="grammar" id="g2" value="2"><label for="g2"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="grammar" id="g1" value="1"><label for="g1"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
+                        <div class="question">
+                            <label>句式练习</label>
+                            <div class="star-rating">
+                                <input type="radio" name="sentence" id="se5" value="5"><label for="se5"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="sentence" id="se4" value="4"><label for="se4"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="sentence" id="se3" value="3"><label for="se3"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="sentence" id="se2" value="2"><label for="se2"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="sentence" id="se1" value="1"><label for="se1"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
+                        <div class="question" style="grid-column: 1 / -1;">
+                            <label>作文练习</label>
+                            <div class="star-rating">
+                                <input type="radio" name="writing" id="w5" value="5"><label for="w5"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="writing" id="w4" value="4"><label for="w4"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="writing" id="w3" value="3"><label for="w3"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="writing" id="w2" value="2"><label for="w2"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="writing" id="w1" value="1"><label for="w1"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 功能评价 -->
+                <div class="feedback-card">
+                    <h3><i class="fas fa-cogs"></i> 三、平台功能体验</h3>
+                    <div class="question">
+                        <label>2. 界面设计美观、清晰 <span class="required">*</span></label>
+                        <div class="likert-row">
+                            <label class="likert-option"><input type="radio" name="ui_design" value="1" required><span>非常<br>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="ui_design" value="2"><span>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="ui_design" value="3"><span>一般</span></label>
+                            <label class="likert-option"><input type="radio" name="ui_design" value="4"><span>同意</span></label>
+                            <label class="likert-option"><input type="radio" name="ui_design" value="5"><span>非常<br>同意</span></label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <label>3. 操作简单、容易上手 <span class="required">*</span></label>
+                        <div class="likert-row">
+                            <label class="likert-option"><input type="radio" name="ease_use" value="1" required><span>非常<br>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="ease_use" value="2"><span>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="ease_use" value="3"><span>一般</span></label>
+                            <label class="likert-option"><input type="radio" name="ease_use" value="4"><span>同意</span></label>
+                            <label class="likert-option"><input type="radio" name="ease_use" value="5"><span>非常<br>同意</span></label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <label>4. 在手机上的使用体验良好 <span class="required">*</span></label>
+                        <div class="likert-row">
+                            <label class="likert-option"><input type="radio" name="mobile_exp" value="1" required><span>非常<br>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="mobile_exp" value="2"><span>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="mobile_exp" value="3"><span>一般</span></label>
+                            <label class="likert-option"><input type="radio" name="mobile_exp" value="4"><span>同意</span></label>
+                            <label class="likert-option"><input type="radio" name="mobile_exp" value="5"><span>非常<br>同意</span></label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <label>5. 遇到过无法正常使用的情况（如卡顿、闪退等） <span class="required">*</span></label>
+                        <div class="likert-row">
+                            <label class="likert-option"><input type="radio" name="issue_freq" value="1" required><span>从未</span></label>
+                            <label class="likert-option"><input type="radio" name="issue_freq" value="2"><span>偶尔</span></label>
+                            <label class="likert-option"><input type="radio" name="issue_freq" value="3"><span>有时</span></label>
+                            <label class="likert-option"><input type="radio" name="issue_freq" value="4"><span>经常</span></label>
+                            <label class="likert-option"><input type="radio" name="issue_freq" value="5"><span>总是</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 学习效果 -->
+                <div class="feedback-card">
+                    <h3><i class="fas fa-chart-line"></i> 四、学习效果自评</h3>
+                    <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:1rem;">使用本平台后，你是否同意以下说法？</p>
+                    <div class="question">
+                        <label>6. 我的英语词汇量有所提升 <span class="required">*</span></label>
+                        <div class="likert-row">
+                            <label class="likert-option"><input type="radio" name="effect_vocab" value="1" required><span>非常<br>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_vocab" value="2"><span>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_vocab" value="3"><span>一般</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_vocab" value="4"><span>同意</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_vocab" value="5"><span>非常<br>同意</span></label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <label>7. 我对英语句式的掌握更加熟练 <span class="required">*</span></label>
+                        <div class="likert-row">
+                            <label class="likert-option"><input type="radio" name="effect_sentence" value="1" required><span>非常<br>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_sentence" value="2"><span>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_sentence" value="3"><span>一般</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_sentence" value="4"><span>同意</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_sentence" value="5"><span>非常<br>同意</span></label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <label>8. 我的英语听力理解能力有所提高 <span class="required">*</span></label>
+                        <div class="likert-row">
+                            <label class="likert-option"><input type="radio" name="effect_listening" value="1" required><span>非常<br>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_listening" value="2"><span>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_listening" value="3"><span>一般</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_listening" value="4"><span>同意</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_listening" value="5"><span>非常<br>同意</span></label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <label>9. 我的英语口语表达能力有所提高 <span class="required">*</span></label>
+                        <div class="likert-row">
+                            <label class="likert-option"><input type="radio" name="effect_speaking" value="1" required><span>非常<br>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_speaking" value="2"><span>不同意</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_speaking" value="3"><span>一般</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_speaking" value="4"><span>同意</span></label>
+                            <label class="likert-option"><input type="radio" name="effect_speaking" value="5"><span>非常<br>同意</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 开放题 -->
+                <div class="feedback-card">
+                    <h3><i class="fas fa-comment-dots"></i> 五、开放建议</h3>
+                    <div class="question">
+                        <label>10. 你最喜欢哪个学习模块？为什么？</label>
+                        <textarea id="favModule" placeholder="例如：我最喜欢词汇闪卡模块，因为翻转卡片的方式很有趣，而且可以随时标记已掌握的单词..."></textarea>
+                    </div>
+                    <div class="question">
+                        <label>11. 你认为平台最需要改进的地方是什么？</label>
+                        <textarea id="improvement" placeholder="例如：希望增加更多的景点视频、口语练习能增加发音评分功能..."></textarea>
+                    </div>
+                    <div class="question">
+                        <label>12. 你是否愿意继续使用本平台进行英语学习？ <span class="required">*</span></label>
+                        <div class="likert-row" style="justify-content: flex-start; gap: 1rem;">
+                            <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+                                <input type="radio" name="continue_use" value="yes" required> 愿意
+                            </label>
+                            <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+                                <input type="radio" name="continue_use" value="maybe"> 看情况
+                            </label>
+                            <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+                                <input type="radio" name="continue_use" value="no"> 不愿意
+                            </label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <label>13. 其他意见或建议</label>
+                        <textarea id="otherComments" placeholder="欢迎提出任何其他想法或建议..."></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <i class="fas fa-paper-plane"></i> 提交反馈
+                </button>
+            </form>
+        </div>
+
+        <!-- 提交成功 -->
+        <div class="success-msg" id="successMsg" style="display:none;">
+            <i class="fas fa-check-circle"></i>
+            <h2>反馈提交成功！</h2>
+            <p>感谢你抽出宝贵时间填写问卷，你的意见对我们非常重要。</p>
+            <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回学习平台</a>
+        </div>
+    </div>
+
+    <script src="js/supabase-config.js?v=5"></script>
+    <script>
+        let currentUser = null;
+
+        async function init() {
+            // 检查登录状态（使用与登录系统一致的 key）
+            const authStr = localStorage.getItem('travelEdu_currentUser');
+            if (!authStr) {
+                document.getElementById('loginTip').style.display = 'block';
+                return;
+            }
+            try {
+                const auth = JSON.parse(authStr);
+                if (!auth.username) {
+                    document.getElementById('loginTip').style.display = 'block';
+                    return;
+                }
+                // 验证用户存在
+                const { data, error } = await db
+                    .from('students')
+                    .select('username, display_name')
+                    .eq('username', auth.username)
+                    .single();
+                if (error || !data) {
+                    document.getElementById('loginTip').style.display = 'block';
+                    return;
+                }
+                currentUser = data;
+                document.getElementById('studentName').value = data.display_name || data.username;
+                document.getElementById('feedbackForm').style.display = 'block';
+            } catch (e) {
+                document.getElementById('loginTip').style.display = 'block';
+            }
+        }
+
+        async function submitFeedback(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
+
+            const form = e.target;
+            const formData = new FormData(form);
+
+            const payload = {
+                student_username: currentUser.username,
+                student_name: currentUser.display_name || currentUser.username,
+                overall_rating: parseInt(formData.get('overall')),
+                resource_rating: formData.get('resource') ? parseInt(formData.get('resource')) : null,
+                speaking_rating: formData.get('speaking') ? parseInt(formData.get('speaking')) : null,
+                listening_rating: formData.get('listening') ? parseInt(formData.get('listening')) : null,
+                vocabulary_rating: formData.get('vocabulary') ? parseInt(formData.get('vocabulary')) : null,
+                grammar_rating: formData.get('grammar') ? parseInt(formData.get('grammar')) : null,
+                sentence_rating: formData.get('sentence') ? parseInt(formData.get('sentence')) : null,
+                writing_rating: formData.get('writing') ? parseInt(formData.get('writing')) : null,
+                ui_design: parseInt(formData.get('ui_design')),
+                ease_use: parseInt(formData.get('ease_use')),
+                mobile_exp: parseInt(formData.get('mobile_exp')),
+                issue_freq: parseInt(formData.get('issue_freq')),
+                effect_vocab: parseInt(formData.get('effect_vocab')),
+                effect_sentence: parseInt(formData.get('effect_sentence')),
+                effect_listening: parseInt(formData.get('effect_listening')),
+                effect_speaking: parseInt(formData.get('effect_speaking')),
+                fav_module: document.getElementById('favModule').value.trim() || null,
+                improvement: document.getElementById('improvement').value.trim() || null,
+                continue_use: formData.get('continue_use'),
+                other_comments: document.getElementById('otherComments').value.trim() || null,
+            };
+
+            try {
+                const { error } = await db.from('feedback').insert([payload]);
+                if (error) {
+                    console.error(error);
+                    alert('提交失败：' + error.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> 提交反馈';
+                    return;
+                }
+                document.getElementById('feedbackForm').style.display = 'none';
+                document.getElementById('successMsg').style.display = 'block';
+            } catch (err) {
+                alert('网络错误，请稍后重试');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> 提交反馈';
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Travelling Around the World - 高中英语自主学习平台</title>
+    <!-- PWA -->
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="英语学习">
+    <link rel="apple-touch-icon" href="/english-learning/img/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/english-learning/img/icons/favicon.png">
+    <link rel="manifest" href="/english-learning/manifest.json">
+    <link rel="stylesheet" href="css/style.css?v=4">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://beacon.cdn.qq.com/sdk/4.5.9/beacon_web.min.js"></script>
+<script>
+(function(){
+  try{
+    var beacon=new BeaconAction({
+      appkey:'0WEB06U85YBSLJNL',
+      versionCode:'1.0.0',
+      channelID:'share',
+      delay:1000,
+      sessionDuration:30*60*1000,
+      isOversea:false,
+      needReportRqdEvent:false
+    });
+    beacon.onDirectUserAction('preview_page_view',{
+      'url':location.href,
+      'referrer':document.referrer,
+      'title':document.title,
+      'sandbox_id':'50439782748741bda02ada50387ec021'
+    });
+  }catch(e){}
+})();
+</script></head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand" onclick="App.showPage('home')">
+            <i class="fas fa-globe-americas"></i>
+            <span>Travelling Around the World</span>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <a href="#" onclick="App.showPage('home');return false" class="nav-link active" data-page="home">
+                <i class="fas fa-home"></i> 首页
+            </a>
+            <a href="#" onclick="App.showPage('resources');return false" class="nav-link" data-page="resources">
+                <i class="fas fa-book-open"></i> 自主学习
+            </a>
+            <a href="#" onclick="App.showPage('speaking');return false" class="nav-link" data-page="speaking">
+                <i class="fas fa-microphone"></i> 口语练习
+            </a>
+            <a href="#" onclick="App.showPage('listening');return false" class="nav-link" data-page="listening">
+                <i class="fas fa-headphones"></i> 听力练习
+            </a>
+            <a href="#" onclick="App.showPage('vocabulary');return false" class="nav-link" data-page="vocabulary">
+                <i class="fas fa-layer-group"></i> 词汇闪卡
+            </a>
+            <a href="#" onclick="App.showPage('grammar');return false" class="nav-link" data-page="grammar">
+                <i class="fas fa-puzzle-piece"></i> 语法练习
+            </a>
+            <a href="#" onclick="App.showPage('sentences');return false" class="nav-link" data-page="sentences">
+                <i class="fas fa-pen-fancy"></i> 句式练习
+            </a>
+            <a href="#" onclick="App.showPage('writing');return false" class="nav-link" data-page="writing">
+                <i class="fas fa-file-alt"></i> 作文练习
+            </a>
+            <a href="feedback.html" class="nav-link" style="color:var(--secondary);">
+                <i class="fas fa-clipboard-list"></i> 反馈问卷
+            </a>
+        </div>
+        <div class="nav-user" id="navUser">
+            <span id="navUsername"></span>
+            <button class="btn-changepwd" onclick="SupabaseAuth.showChangePassword()">
+                <i class="fas fa-key"></i>
+            </button>
+            <button class="btn-logout" id="btnLogout" onclick="SupabaseAuth.logout()">
+                <i class="fas fa-sign-out-alt"></i> 退出
+            </button>
+        </div>
+        <button class="nav-toggle" id="navToggle" onclick="App.toggleMobileNav()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </nav>
+
+    <!-- 登录/注册页面 -->
+    <div class="page" id="page-auth">
+        <div class="auth-container">
+            <div class="auth-bg-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+            </div>
+            <div class="auth-card">
+                <div class="auth-header">
+                    <i class="fas fa-globe-americas auth-logo"></i>
+                    <h1>Travelling Around the World</h1>
+                    <p>高中英语自主学习平台</p>
+                </div>
+                <div class="auth-tabs">
+                    <button class="auth-tab active" onclick="SupabaseAuth.switchTab('login')">登录</button>
+                    <button class="auth-tab" onclick="SupabaseAuth.switchTab('register')">注册</button>
+                </div>
+                <form id="loginForm" class="auth-form" onsubmit="SupabaseAuth.handleLogin(event)">
+                    <div class="form-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="loginUsername" placeholder="用户名" required>
+                    </div>
+                    <div class="form-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="loginPassword" placeholder="密码" required>
+                    </div>
+                    <button type="submit" class="btn-primary btn-auth">登 录</button>
+                </form>
+                <form id="registerForm" class="auth-form hidden" onsubmit="SupabaseAuth.handleRegister(event)">
+                    <div class="form-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="regUsername" placeholder="用户名（字母/数字/下划线）" required minlength="2" maxlength="20">
+                    </div>
+                    <div class="form-group">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="regDisplayName" placeholder="真实姓名" required>
+                    </div>
+                    <div class="form-group">
+                        <i class="fas fa-school"></i>
+                        <select id="regClass" required>
+                            <option value="">选择班级</option>
+                            <option value="1班">1班</option>
+                            <option value="2班">2班</option>
+                            <option value="3班">3班</option>
+                            <option value="4班">4班</option>
+                            <option value="5班">5班</option>
+                            <option value="6班">6班</option>
+                            <option value="7班">7班</option>
+                            <option value="8班">8班</option>
+                            <option value="9班">9班</option>
+                            <option value="10班">10班</option>
+                            <option value="11班">11班</option>
+                            <option value="12班">12班</option>
+                            <option value="13班">13班</option>
+                            <option value="14班">14班</option>
+                            <option value="15班">15班</option>
+                            <option value="16班">16班</option>
+                            <option value="17班">17班</option>
+                            <option value="18班">18班</option>
+                            <option value="19班">19班</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="regPassword" placeholder="密码（至少4位）" required minlength="4">
+                    </div>
+                    <div class="form-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="regPassword2" placeholder="确认密码" required>
+                    </div>
+                    <button type="submit" class="btn-primary btn-auth">注 册</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主页 -->
+    <div class="page hidden" id="page-home">
+        <div class="hero">
+            <div class="hero-particles" id="heroParticles"></div>
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="title-line">Travelling Around</span>
+                    <span class="title-line">the World</span>
+                </h1>
+                <p class="hero-subtitle">探索世界，提升英语 —— 高中英语自主学习平台</p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-video"></i>
+                        <span id="statVideos">20</span>
+                        <label>学习视频</label>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-microphone"></i>
+                        <span id="statSpeaking">30</span>
+                        <label>口语句子</label>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-pen"></i>
+                        <span id="statSentences">30</span>
+                        <label>句式练习</label>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-file-alt"></i>
+                        <span id="statWriting">1</span>
+                        <label>作文训练</label>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-scroll-hint">
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </div>
+
+        <div class="features-section">
+            <h2 class="section-title">选择学习模块</h2>
+            <div class="features-grid">
+                <div class="feature-card" onclick="App.showPage('resources')">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3>自主学习资源</h3>
+                    <p>探索英语国家的标志性景点，观看纯英文视频，掌握核心词汇与表达</p>
+                    <div class="feature-tags">
+                        <span>地标景点</span>
+                        <span>英文视频</span>
+                        <span>关键词汇</span>
+                    </div>
+                </div>
+                <div class="feature-card" onclick="App.showPage('speaking')">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <h3>口语练习</h3>
+                    <p>跟读旅游相关句子，AI智能评分，完成短对话填空挑战</p>
+                    <div class="feature-tags">
+                        <span>跟读模仿</span>
+                        <span>智能评分</span>
+                        <span>对话填空</span>
+                    </div>
+                </div>
+                <div class="feature-card" onclick="App.showPage('listening')">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #f59e0b, #d946ef);">
+                        <i class="fas fa-headphones"></i>
+                    </div>
+                    <h3>听力练习</h3>
+                    <p>旅游场景对话听力理解，支持播放/暂停，可查看原文</p>
+                    <div class="feature-tags">
+                        <span>场景对话</span>
+                        <span>语音播放</span>
+                        <span>原文对照</span>
+                    </div>
+                </div>
+                <div class="feature-card" onclick="App.showPage('vocabulary')">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #a855f7, #6366f1);">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h3>词汇闪卡</h3>
+                    <p>旅游主题核心词汇，翻转卡片记忆，标记已掌握词汇</p>
+                    <div class="feature-tags">
+                        <span>翻转记忆</span>
+                        <span>例句学习</span>
+                        <span>进度跟踪</span>
+                    </div>
+                </div>
+                <div class="feature-card" onclick="App.showPage('grammar')">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #f59e0b, #ea580c);">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </div>
+                    <h3>语法练习</h3>
+                    <p>选择题形式攻克旅游英语语法难点，即时反馈解析</p>
+                    <div class="feature-tags">
+                        <span>语法冲刺</span>
+                        <span>即时解析</span>
+                        <span>得分统计</span>
+                    </div>
+                </div>
+                <div class="feature-card" onclick="App.showPage('sentences')">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-pen-fancy"></i>
+                    </div>
+                    <h3>句式练习</h3>
+                    <p>句子挖空翻译训练，对照翻译精准填写，全对赢取奖励</p>
+                    <div class="feature-tags">
+                        <span>挖空填词</span>
+                        <span>对照翻译</span>
+                        <span>奖励机制</span>
+                    </div>
+                </div>
+                <div class="feature-card" onclick="App.showPage('writing')">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>作文练习</h3>
+                    <p>高考模式旅游话题应用文，拍照上传智能评分，获取修改建议</p>
+                    <div class="feature-tags">
+                        <span>高考模式</span>
+                        <span>拍照上传</span>
+                        <span>智能评分</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            <!-- 个人学习进度 -->
+        <div class="progress-section" id="progressSection">
+            <h2 class="section-title">我的学习进度</h2>
+            <div class="progress-grid">
+                <div class="progress-card">
+                    <div class="progress-header">
+                        <i class="fas fa-book-open"></i>
+                        <span>自主学习</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressResources" style="width:0%"></div>
+                    </div>
+                    <span class="progress-text" id="progressResourcesText">0/6 已学习</span>
+                </div>
+                <div class="progress-card">
+                    <div class="progress-header">
+                        <i class="fas fa-microphone"></i>
+                        <span>口语练习</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressSpeaking" style="width:0%"></div>
+                    </div>
+                    <span class="progress-text" id="progressSpeakingText">0/30 已完成</span>
+                </div>
+                <div class="progress-card">
+                    <div class="progress-header">
+                        <i class="fas fa-headphones"></i>
+                        <span>听力练习</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressListening" style="width:0%"></div>
+                    </div>
+                    <span class="progress-text" id="progressListeningText">0/30 已完成</span>
+                </div>
+                <div class="progress-card">
+                    <div class="progress-header">
+                        <i class="fas fa-layer-group"></i>
+                        <span>词汇闪卡</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressVocabulary" style="width:0%"></div>
+                    </div>
+                    <span class="progress-text" id="progressVocabularyText">0/30 已掌握</span>
+                </div>
+                <div class="progress-card">
+                    <div class="progress-header">
+                        <i class="fas fa-puzzle-piece"></i>
+                        <span>语法练习</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressGrammar" style="width:0%"></div>
+                    </div>
+                    <span class="progress-text" id="progressGrammarText">0/30 已完成</span>
+                </div>
+                <div class="progress-card">
+                    <div class="progress-header">
+                        <i class="fas fa-pen-fancy"></i>
+                        <span>句式练习</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressSentences" style="width:0%"></div>
+                    </div>
+                    <span class="progress-text" id="progressSentencesText">0/30 已完成</span>
+                </div>
+                <div class="progress-card">
+                    <div class="progress-header">
+                        <i class="fas fa-file-alt"></i>
+                        <span>作文练习</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressWriting" style="width:0%"></div>
+                    </div>
+                    <span class="progress-text" id="progressWritingText">未完成</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自主学习资源页面 -->
+    <div class="page hidden" id="page-resources">
+        <div class="page-header resources-header">
+            <div class="page-header-overlay"></div>
+            <div class="page-header-content">
+                <h1><i class="fas fa-book-open"></i> 自主学习资源</h1>
+                <p>探索英语国家的标志性景点，提升英语能力</p>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="country-tabs" id="countryTabs">
+                <!-- JS动态生成 -->
+            </div>
+            <div class="resource-content" id="resourceContent">
+                <!-- JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 口语练习页面 -->
+    <div class="page hidden" id="page-speaking">
+        <div class="page-header speaking-header">
+            <div class="page-header-overlay"></div>
+            <div class="page-header-content">
+                <h1><i class="fas fa-microphone"></i> 口语练习</h1>
+                <p>跟读模仿，提升口语表达能力</p>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="speaking-container" id="speakingContainer">
+                <!-- JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 句式练习页面 -->
+    <div class="page hidden" id="page-sentences">
+        <div class="page-header sentences-header">
+            <div class="page-header-overlay"></div>
+            <div class="page-header-content">
+                <h1><i class="fas fa-pen-fancy"></i> 句式练习</h1>
+                <p>对照翻译，精准掌握句式结构</p>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="sentences-container" id="sentencesContainer">
+                <!-- JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 作文练习页面 -->
+    <div class="page hidden" id="page-writing">
+        <div class="page-header writing-header">
+            <div class="page-header-overlay"></div>
+            <div class="page-header-content">
+                <h1><i class="fas fa-file-alt"></i> 作文练习</h1>
+                <p>高考模式应用文写作训练</p>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="writing-container" id="writingContainer">
+                <!-- JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 词汇闪卡页面 -->
+    <div class="page hidden" id="page-vocabulary">
+        <div class="page-header vocabulary-header">
+            <div class="page-header-overlay"></div>
+            <div class="page-header-content">
+                <h1><i class="fas fa-layer-group"></i> 词汇闪卡</h1>
+                <p>记忆主题词汇，掌握旅游英语核心单词</p>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="flashcard-container" id="flashcardContainer">
+                <!-- JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 语法练习页面 -->
+    <div class="page hidden" id="page-grammar">
+        <div class="page-header grammar-header">
+            <div class="page-header-overlay"></div>
+            <div class="page-header-content">
+                <h1><i class="fas fa-puzzle-piece"></i> 语法练习</h1>
+                <p>选择题形式，巩固旅游英语语法点</p>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="grammar-container" id="grammarContainer">
+                <!-- JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 听力练习页面 -->
+    <div class="page hidden" id="page-listening">
+        <div class="page-header listening-header">
+            <div class="page-header-overlay"></div>
+            <div class="page-header-content">
+                <h1><i class="fas fa-headphones"></i> 听力练习</h1>
+                <p>听旅游场景对话，选择正确答案</p>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="listening-container" id="listeningContainer">
+                <!-- JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改密码弹窗 -->
+    <div class="modal-overlay hidden" id="changePwdOverlay" onclick="SupabaseAuth.closeChangePassword()">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3><i class="fas fa-key"></i> 修改密码</h3>
+                <button class="modal-close" onclick="SupabaseAuth.closeChangePassword()">&times;</button>
+            </div>
+            <form id="changePwdForm" onsubmit="SupabaseAuth.handleChangePassword(event)">
+                <div class="form-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="oldPassword" placeholder="当前密码" required>
+                </div>
+                <div class="form-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="newPassword" placeholder="新密码" required minlength="4">
+                </div>
+                <div class="form-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="newPassword2" placeholder="确认新密码" required>
+                </div>
+                <button type="submit" class="btn-primary btn-auth">确认修改</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 移动端底部导航栏 -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <button class="mbn-item active" data-page="home" onclick="App.showPage('home')">
+            <i class="fas fa-home"></i>
+            <span>首页</span>
+        </button>
+        <button class="mbn-item" data-page="resources" onclick="App.showPage('resources')">
+            <i class="fas fa-book-open"></i>
+            <span>学习</span>
+        </button>
+        <button class="mbn-item" data-page="speaking" onclick="App.showPage('speaking')">
+            <i class="fas fa-microphone"></i>
+            <span>口语</span>
+        </button>
+        <button class="mbn-item" data-page="writing" onclick="App.showPage('writing')">
+            <i class="fas fa-pen-fancy"></i>
+            <span>作文</span>
+        </button>
+        <button class="mbn-item mbn-more" onclick="App.toggleMobileNav()">
+            <i class="fas fa-bars"></i>
+            <span>更多</span>
+        </button>
+    </nav>
+
+    <!-- Toast 通知 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 奖励弹窗 -->
+    <div class="reward-overlay hidden" id="rewardOverlay" onclick="App.closeReward()">
+        <div class="reward-modal" onclick="event.stopPropagation()">
+            <div class="reward-emoji">🎉</div>
+            <h2>恭喜你！全部答对！</h2>
+            <p id="rewardText">太棒了，继续加油！</p>
+            <div class="reward-stars" id="rewardStars">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+            </div>
+            <button class="btn-primary" onclick="App.closeReward()">继续学习</button>
+        </div>
+    </div>
+
+    <script src="js/data.js?v=7"></script>
+    <script src="js/supabase-config.js?v=5"></script>
+    <script src="js/supabase-auth.js?v=5"></script>
+    <script src="js/resources.js?v=7"></script>
+    <script src="js/speaking.js?v=5"></script>
+    <script src="js/sentences.js?v=5"></script>
+    <script src="js/vocabulary.js?v=5"></script>
+    <script src="js/grammar.js?v=5"></script>
+    <script src="js/listening.js?v=5"></script>
+    <script src="js/writing.js?v=7"></script>
+    <script src="js/app.js?v=5"></script>
+    <!-- PWA Service Worker -->
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/english-learning/sw.js')
+            .then(function(reg) { console.log('SW registered:', reg.scope); })
+            .catch(function(err) { console.log('SW failed:', err); });
+    }
+    </script>
+</body>
+</html>
