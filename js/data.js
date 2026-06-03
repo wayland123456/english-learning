@@ -592,7 +592,7 @@ const DATA = {
             hint: "suggest _______ing"
         },
         {
-            english: "The hotel {0} we stayed at was very comfortable and affordable.",
+            english: "The hotel {0} we stayed was very comfortable and affordable.",
             chinese: "我们住的酒店既舒适又实惠。",
             blanks: [{ index: 0, answer: "where" }],
             hint: "定语从句 — the hotel ___"
