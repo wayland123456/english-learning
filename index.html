@@ -599,20 +599,19 @@
     <!-- PWA Service Worker -->
     <script>
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/english-learning/sw.js', { updateViaCache: 'none' })
+        navigator.serviceWorker.register('/english-learning/sw.js?v=3', { updateViaCache: 'none' })
             .then(function(reg) {
                 console.log('SW registered:', reg.scope);
-                // 强制检查 Service Worker 更新
                 reg.update();
             })
             .catch(function(err) { console.log('SW failed:', err); });
     }
-    // 检测新版代码加载，如未加载则强制刷新一次
+    // 强制刷新旧缓存
     (function() {
         function checkVersion() {
-            if (typeof App === 'undefined' || !App.toggleMobileMoreMenu) {
-                if (!sessionStorage.getItem('refreshed_v6')) {
-                    sessionStorage.setItem('refreshed_v6', '1');
+            if (typeof SoundFx === 'undefined' || !App.toggleMobileMoreMenu) {
+                if (!sessionStorage.getItem('refreshed_v8')) {
+                    sessionStorage.setItem('refreshed_v8', '1');
                     window.location.reload(true);
                 }
             }
