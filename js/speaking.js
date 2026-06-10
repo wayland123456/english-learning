@@ -11,11 +11,55 @@ const Speaking = {
     currentDialogue: 1,
     userSpeechResult: '',
 
+    _storageKey: 'el_speaking_progress',
+
+    _saveProgress() {
+        try {
+            localStorage.setItem(this._storageKey, JSON.stringify({
+                currentIndex: this.currentIndex,
+                dialogueCompleted: this.dialogueCompleted,
+                currentDialogue: this.currentDialogue
+            }));
+        } catch(e) {}
+    },
+
+    _loadProgress() {
+        try {
+            const raw = localStorage.getItem(this._storageKey);
+            if (raw) return JSON.parse(raw);
+        } catch(e) {}
+        return null;
+    },
+
+    _clearProgress() {
+        try { localStorage.removeItem(this._storageKey); } catch(e) {}
+    },
+
     init() {
-        this.currentIndex = 0;
-        this.dialogueCompleted = 0;
-        this.currentDialogue = 1;
+        const saved = this._loadProgress();
+        if (saved && (saved.currentIndex > 0 || saved.dialogueCompleted > 0)) {
+            this.currentIndex = saved.currentIndex || 0;
+            this.dialogueCompleted = saved.dialogueCompleted || 0;
+            this.currentDialogue = saved.currentDialogue || 1;
+        } else {
+            this.currentIndex = 0;
+            this.dialogueCompleted = 0;
+            this.currentDialogue = 1;
+            this._clearProgress();
+        }
         this.renderSentence();
+        if (this.currentIndex > 0) {
+            setTimeout(() => {
+                const container = document.getElementById('speakingContainer');
+                if (container) {
+                    const notice = document.createElement('div');
+                    notice.style.cssText = 'text-align:center;padding:8px 16px;margin-bottom:1rem;background:rgba(99,102,241,0.08);border-radius:8px;color:#6366f1;font-size:0.85rem;';
+                    notice.innerHTML = `<i class="fas fa-history"></i> 已恢复到第 ${this.currentIndex + 1} 句 <a href="javascript:Speaking._clearProgress();Speaking.init();" style="margin-left:12px;color:#6366f1;text-decoration:underline;">重新开始</a>`;
+                    container.insertBefore(notice, container.firstChild);
+                    setTimeout(() => { if (notice.parentNode) notice.remove(); }, 5000);
+                }
+            }, 100);
+        }
     },
 
     renderSentence() {
@@ -289,6 +333,7 @@ const Speaking = {
 
     nextSentence() {
         this.currentIndex++;
+        this._saveProgress();
         if (this.currentIndex >= DATA.speakingSentences.length) {
             this.renderDialogue();
         } else {
@@ -379,6 +424,7 @@ const Speaking = {
                     </div>
                 `;
                 this.dialogueCompleted = this.currentDialogue;
+                this._saveProgress();
                 if (this.dialogueCompleted >= 2) {
                     App.showReward('你完成了所有口语练习和对话填空！');
                     const progress = SupabaseAuth.getProgress();
@@ -404,6 +450,7 @@ const Speaking = {
     },
 
     renderComplete() {
+        this._clearProgress();
         const container = document.getElementById('speakingContainer');
         container.innerHTML = `
             <div class="speaking-card" style="padding:3rem;">

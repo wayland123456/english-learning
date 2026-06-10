@@ -2209,6 +2209,23 @@ body {
 }
 .listening-ai-notice i { margin-right: 6px; }
 
+/* 断点续做提示 */
+.listening-resume-notice,
+.grammar-resume-notice {
+    text-align: center;
+    padding: 8px 20px;
+    margin-bottom: 0.8rem;
+    background: rgba(99,102,241,0.08);
+    border-radius: 8px;
+    color: #6366f1;
+    font-size: 0.85rem;
+}
+.listening-resume-notice a,
+.grammar-resume-notice a {
+    color: #6366f1;
+    font-weight: 600;
+}
+
 .listening-q-num {
     display: inline-block;
     width: 28px;

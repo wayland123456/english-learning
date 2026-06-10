@@ -9,12 +9,60 @@ const Listening = {
     answered: [],
     audioPlaying: false,
 
+    _storageKey: 'el_listening_progress',
+
+    _saveProgress() {
+        try {
+            localStorage.setItem(this._storageKey, JSON.stringify({
+                currentIndex: this.currentIndex,
+                score: this.score,
+                answered: this.answered
+            }));
+        } catch(e) {}
+    },
+
+    _loadProgress() {
+        try {
+            const raw = localStorage.getItem(this._storageKey);
+            if (raw) return JSON.parse(raw);
+        } catch(e) {}
+        return null;
+    },
+
+    _clearProgress() {
+        try { localStorage.removeItem(this._storageKey); } catch(e) {}
+    },
+
     init() {
         this.exercises = DATA.listeningExercises || [];
-        this.currentIndex = 0;
-        this.score = 0;
-        this.answered = new Array(this.exercises.length).fill(null);
+        const saved = this._loadProgress();
+        if (saved && saved.currentIndex > 0 && saved.answered && saved.answered.length === this.exercises.length) {
+            this.currentIndex = saved.currentIndex;
+            this.score = saved.score || 0;
+            this.answered = saved.answered;
+            if (this.currentIndex >= this.exercises.length) this.currentIndex = 0;
+        } else {
+            this.currentIndex = 0;
+            this.score = 0;
+            this.answered = new Array(this.exercises.length).fill(null);
+            this._clearProgress();
+        }
         this.render();
+        // 断点续做提示
+        if (this.currentIndex > 0) {
+            setTimeout(() => {
+                const el = document.querySelector('.listening-resume-notice');
+                if (el) el.remove();
+                const container = document.getElementById('listeningContainer');
+                if (container) {
+                    const notice = document.createElement('div');
+                    notice.className = 'listening-resume-notice';
+                    notice.innerHTML = `<i class="fas fa-history"></i> 已恢复到第 ${this.currentIndex + 1} 题 <a href="javascript:Listening.retry()" style="margin-left:12px;color:#6366f1;text-decoration:underline;">重新开始</a>`;
+                    container.insertBefore(notice, container.firstChild);
+                    setTimeout(() => { if (notice.parentNode) notice.remove(); }, 5000);
+                }
+            }, 100);
+        }
     },
 
     render() {
@@ -150,11 +198,14 @@ const Listening = {
         progress.listening.total = this.exercises.length;
         SupabaseAuth.saveProgress(progress);
 
+        this._saveProgress();
         this.render();
     },
 
     next() {
         this.currentIndex++;
+        if (this.currentIndex >= this.exercises.length) this._clearProgress();
+        else this._saveProgress();
         this.render();
     },
 
@@ -184,6 +235,7 @@ const Listening = {
         this.currentIndex = 0;
         this.score = 0;
         this.answered = new Array(this.exercises.length).fill(null);
+        this._clearProgress();
         this.render();
     },
 
