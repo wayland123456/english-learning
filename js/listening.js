@@ -48,6 +48,9 @@ const Listening = {
         }).join('');
 
         container.innerHTML = `
+            <div class="listening-ai-notice">
+                <i class="fas fa-robot"></i> 对话内容由AI生成，仅供学习参考
+            </div>
             <div class="listening-progress">
                 <span>第 ${this.currentIndex + 1} / ${this.exercises.length} 题</span>
                 <div class="listening-progress-bar">

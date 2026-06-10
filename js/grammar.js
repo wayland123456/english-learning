@@ -84,6 +84,20 @@ const Grammar = {
         this.answered[this.currentIndex] = isCorrect;
         if (isCorrect) this.score++;
 
+        // 音效 + toast 反馈
+        if (isCorrect) {
+            SoundFx.correct();
+            this.showAnswerToast('✓ 回答正确！', 'correct');
+        } else {
+            SoundFx.wrong();
+            this.showAnswerToast('✗ 答错了，正确答案已标出', 'wrong');
+            // 让错误选项抖动
+            setTimeout(() => {
+                const wrongEl = document.querySelector('.grammar-opt.wrong');
+                if (wrongEl) wrongEl.classList.add('answer-shake');
+            }, 50);
+        }
+
         const progress = SupabaseAuth.getProgress();
         if (!progress.grammar) progress.grammar = {};
         progress.grammar[`q_${this.currentIndex}`] = index;
@@ -132,5 +146,15 @@ const Grammar = {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    },
+
+    showAnswerToast(msg, type) {
+        const old = document.querySelector('.answer-toast');
+        if (old) old.remove();
+        const toast = document.createElement('div');
+        toast.className = 'answer-toast ' + type;
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 1600);
     }
 };

@@ -39,10 +39,10 @@ const Speaking = {
         container.innerHTML = `
             <div class="speaking-step-indicator">
                 ${DATA.speakingSentences.map((_, i) => {
-                    let cls = '';
-                    if (progress.speaking.includes(i)) cls = 'completed';
-                    else if (i === this.currentIndex) cls = 'active';
-                    return `<div class="step-dot ${cls}"></div>`;
+                    let cls = 'step-num';
+                    if (progress.speaking.includes(i)) cls += ' completed';
+                    if (i === this.currentIndex) cls += ' active';
+                    return `<div class="${cls}">${i + 1}</div>`;
                 }).join('')}
             </div>
             <div class="speaking-card">
@@ -258,6 +258,10 @@ const Speaking = {
         else if (score >= 60) { scoreClass = 'score-fair'; scoreLabel = '还不错，再练练！'; }
         else { scoreClass = 'score-poor'; scoreLabel = '加油，多听几遍再试试！'; }
 
+        // 音效反馈
+        if (score >= 75) SoundFx.correct();
+        else SoundFx.wrong();
+
         const resultDiv = document.getElementById('speakingResult');
         if (resultDiv) {
             resultDiv.innerHTML = `
@@ -363,6 +367,7 @@ const Speaking = {
         if (resultDiv) {
             const percentage = Math.round(correct / total * 100);
             if (percentage === 100) {
+                SoundFx.correct();
                 resultDiv.innerHTML = `
                     <div style="margin-top:1rem;padding:1.5rem;background:rgba(16,185,129,0.1);border-radius:12px;text-align:center;">
                         <div style="font-size:2rem;margin-bottom:0.5rem;">🎉</div>
@@ -383,6 +388,7 @@ const Speaking = {
                     }
                 }
             } else {
+                SoundFx.wrong();
                 resultDiv.innerHTML = `
                     <div style="margin-top:1rem;padding:1.5rem;background:rgba(245,158,11,0.08);border-radius:12px;text-align:center;">
                         <p>答对了 <strong>${correct}</strong>/${total} 题，修改错误的答案后再试一次吧！</p>

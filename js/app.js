@@ -232,3 +232,34 @@ document.addEventListener('DOMContentLoaded', () => {
 if ('speechSynthesis' in window) {
     speechSynthesis.onvoiceschanged = () => {};
 }
+
+// ============================================
+// 答题音效工具（Web Audio API，无需外部文件）
+// ============================================
+const SoundFx = {
+    _ctx: null,
+    _getCtx() {
+        if (!this._ctx) {
+            this._ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return this._ctx;
+    },
+    _play(freq, duration, type) {
+        try {
+            const ctx = this._getCtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = type || 'sine';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + duration);
+        } catch(e) { /* 静默忽略 */ }
+    },
+    correct() { this._play(880, 0.15); setTimeout(() => this._play(1100, 0.2), 120); },
+    wrong()  { this._play(200, 0.3, 'square'); },
+    click()  { this._play(600, 0.08); }
+};
