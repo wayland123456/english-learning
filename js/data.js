@@ -948,207 +948,207 @@ const DATA = {
     // ---- 听力练习（30 题，每题一段对话 + 问题） ----
     listeningExercises: [
         {
-            audio_text: "W: Excuse me, could you tell me how to get to the nerest underground station?\nM: Sure! Go straight ahead and turn left at the second corner. It's just across from the post office.",
+            audio_text: "Excuse me, could you tell me how to get to the nerest underground station?\nSure! Go straight ahead and turn left at the second corner. It's just across from the post office.",
             question: 'Where is the underground station?',
             options: ['Next to the post office', 'Opposite the post office', 'Behind the post office', 'Inside the post office'],
             answer: 1,
-            script: 'W: 打扰一下，你能告诉我最近的地铁站怎么走吗？\nM: 当然！直走然后在第二个路口左转。就在邮局对面。'
+            script: '打扰一下，你能告诉我最近的地铁站怎么走吗？\n当然！直走然后在第二个路口左转。就在邮局对面。'
         },
         {
-            audio_text: "M: Have you booked the hotel yet?\nW: Yes, I booked a double room at the Dragon Hotel for three nights, check-in is on Monday.",
+            audio_text: "Have you booked the hotel yet?\nYes, I booked a double room at the Dragon Hotel for three nights, check-in is on Monday.",
             question: 'How many nights will the woman stay at the hotel?',
             options: ['One night', 'Two nights', 'Three nights', 'Four nights'],
             answer: 2,
-            script: 'M: 你订酒店了吗？\nW: 订了，我在龙酒店订了一个双人间，住三晚，周一入住。'
+            script: '你订酒店了吗？\n订了，我在龙酒店订了一个双人间，住三晚，周一入住。'
         },
         {
-            audio_text: "W: Would you like to go to the art exhibition with me tomorow?\nM: I\'d love to, but I have to see my cousin off at the airport. He\'s flying to Sydney.",
+            audio_text: "Would you like to go to the art exhibition with me tomorow?\nI\'d love to, but I have to see my cousin off at the airport. He\'s flying to Sydney.",
             question: 'What will the man do tomorrow?',
             options: ['Go to the art exhibition', 'Meet his cousin at the airport', 'See his cousin off at the airport', 'Pick up his cousin'],
             answer: 2,
-            script: 'W: 你明天想和我一起去艺术展吗？\nM: 我很想去，但我得去机场送我表弟。他坐飞机去悉尼。'
+            script: '你明天想和我一起去艺术展吗？\n我很想去，但我得去机场送我表弟。他坐飞机去悉尼。'
         },
         {
-            audio_text: "M: How was your trip to Scotland?\nW: It was amazing! The scenery was breathtaking, especially on the way to the Highlands. The only problem was the weather — it rained every day!",
+            audio_text: "How was your trip to Scotland?\nIt was amazing! The scenery was breathtaking, especially on the way to the Highlands. The only problem was the weather — it rained every day!",
             question: 'What was the weather like in Scotland?',
             options: ['Sunny every day', 'It rained every day', 'It was windy', 'It snowed'],
             answer: 1,
-            script: 'M: 你的苏格兰之旅怎么样？\nW: 太棒了！风景令人惊叹，尤其是去 Highland 的路上。唯一的问题是天气——每天都下雨！'
+            script: '你的苏格兰之旅怎么样？\n太棒了！风景令人惊叹，尤其是去 Highland 的路上。唯一的问题是天气——每天都下雨！'
         },
         {
-            audio_text: "W: Do I need a visa to visit New Zealand?\nM: It depends on your passport. If you hold a Chinese passport, you need to apply for a visa in advance.",
+            audio_text: "Do I need a visa to visit New Zealand?\nIt depends on your passport. If you hold a Chinese passport, you need to apply for a visa in advance.",
             question: 'What does the man say about the visa?',
             options: ['No visa is needed', 'Visa can be obtained on arrival', 'It depends on the passport', 'New Zealand never requires a visa'],
             answer: 2,
-            script: 'W: 我去新西兰需要签证吗？\nM: 看你的护照。如果你持中国护照，需要提前申请签证。'
+            script: '我去新西兰需要签证吗？\n看你的护照。如果你持中国护照，需要提前申请签证。'
         },
         {
-            audio_text: "M: Which seat would you prefer, window or aisle?\nW: Window, please. I love watching the clouds during the flight.",
+            audio_text: "Which seat would you prefer, window or aisle?\nWindow, please. I love watching the clouds during the flight.",
             question: 'What seat does the woman prefer?',
             options: ['Aisle seat', 'Window seat', 'Middle seat', 'Exit row seat'],
             answer: 1,
-            script: 'M: 您想要哪种座位，靠窗还是靠过道？\nW: 靠窗，谢谢。我喜欢在飞行中看云。'
+            script: '您想要哪种座位，靠窗还是靠过道？\n靠窗，谢谢。我喜欢在飞行中看云。'
         },
         {
-            audio_text: "W: How much does a return ticket to Tokyo cost?\nM: Economy class is £580. Business class is £1,850. When would you like to depart?\nW: I\'ll take the economy one, departing on Friday.",
+            audio_text: "How much does a return ticket to Tokyo cost?\nEconomy class is £580. Business class is £1,850. When would you like to depart?\nI\'ll take the economy one, departing on Friday.",
             question: 'How much did the woman pay for the ticket?',
             options: ['£580', '£1,850', '£580 return', '£1,850 return'],
             answer: 2,
-            script: 'W: 去东京的往返票多少钱？\nM: 经济舱 580 英镑，商务舱 1850 英镑。您想什么时候出发？\nW: 我要经济舱，周五出发。（return ticket = 往返）'
+            script: '去东京的往返票多少钱？\n经济舱 580 英镑，商务舱 1850 英镑。您想什么时候出发？\n我要经济舱，周五出发。（return ticket = 往返）'
         },
         {
-            audio_text: "M: I heard you went to Ireand last month.\nW: Yes, we drove around the whole country! The Cliffs of Moher were the most impressive. The photos don\'t do it justice.",
+            audio_text: "I heard you went to Ireand last month.\nYes, we drove around the whole country! The Cliffs of Moher were the most impressive. The photos don\'t do it justice.",
             question: 'What does the woman say about the Cliffs of Moher?',
             options: ['They are not as good as the photos', 'The photos describe them perfectly', 'They are even better than the photos', 'She didn\'t take any photos'],
             answer: 2,
-            script: 'M: 我听说你上个月去了爱尔兰。\nW: 是的，我们开车环游了全国！莫赫悬崖最令人印象深刻。照片根本拍不出它的美。（do justice = 公正地呈现）'
+            script: '我听说你上个月去了爱尔兰。\n是的，我们开车环游了全国！莫赫悬崖最令人印象深刻。照片根本拍不出它的美。（do justice = 公正地呈现）'
         },
         {
-            audio_text: "W: Is there a direct flight to San Francisco?\nM: No, I\'m afraid you\'ll have to transfer in Shanghai. The total journey takes about 16 hours.",
+            audio_text: "Is there a direct flight to San Francisco?\nNo, I\'m afraid you\'ll have to transfer in Shanghai. The total journey takes about 16 hours.",
             question: 'How can the woman get to San Francisco?',
             options: ['Direct flight', 'Transfer in Beijing', 'Transfer in Shanghai', 'By train'],
             answer: 2,
-            script: 'W: 有直飞旧金山的航班吗？\nM: 没有，您需要在上海转机。全程大约 16 小时。'
+            script: '有直飞旧金山的航班吗？\n没有，您需要在上海转机。全程大约 16 小时。'
         },
         {
-            audio_text: "M: How did you find the food in Thailand?\nW: It was delicious but quite spicy! My mouth was on fire after the first bite. I\'m not used to spicy food.",
+            audio_text: "How did you find the food in Thailand?\nIt was delicious but quite spicy! My mouth was on fire after the first bite. I\'m not used to spicy food.",
             question: 'What did the woman think of the food in Thailand?',
             options: ['Too sweet', 'Too spicy', 'Too expensive', 'Not delicious'],
             answer: 1,
-            script: 'M: 你觉得泰国食物怎么样？\nW: 很美味但是非常辣！第一口下去我嘴里就像着火了一样。我不习惯辣食。'
+            script: '你觉得泰国食物怎么样？\n很美味但是非常辣！第一口下去我嘴里就像着火了一样。我不习惯辣食。'
         },
         {
-            audio_text: "W: What time does the museum open on Saturdays?\nM: It opens at 9:30 AM, but the last admission is at 4:00 PM.",
+            audio_text: "What time does the museum open on Saturdays?\nIt opens at 9:30 AM, but the last admission is at 4:00 PM.",
             question: 'What time is the last admission to the museum?',
             options: ['9:30 AM', '4:00 PM', '5:00 PM', '8:00 PM'],
             answer: 1,
-            script: 'W: 博物馆周六几点开门？\nM: 早上9点半开门，但是最后入场是下午4点。'
+            script: '博物馆周六几点开门？\n早上9点半开门，但是最后入场是下午4点。'
         },
         {
-            audio_text: "M: I'd like to exchange some dollars for euros, please.\nW: Certainly. Today's exchange rate is 1 dollar to 0.92 euros. How much would you like to exchange?",
+            audio_text: "I'd like to exchange some dollars for euros, please.\nCertainly. Today's exchange rate is 1 dollar to 0.92 euros. How much would you like to exchange?",
             question: 'What is today\'s exchange rate for dollars to euros?',
             options: ['1 dollar to 0.92 euros', '1 euro to 0.92 dollars', '1 dollar to 0.85 euros', '1 euro to 1 dollar'],
             answer: 0,
-            script: 'M: 我想把美元换成欧元。\nW: 没问题。今天的汇率是1美元兑0.92欧元。您想换多少？'
+            script: '我想把美元换成欧元。\n没问题。今天的汇率是1美元兑0.92欧元。您想换多少？'
         },
         {
-            audio_text: "W: Can I help you with anything?\nM: Yes, I've lost my suitcase. It's a large black one with a red ribbon on the handle.",
+            audio_text: "Can I help you with anything?\nYes, I've lost my suitcase. It's a large black one with a red ribbon on the handle.",
             question: 'What has the man lost?',
             options: ['His passport', 'His wallet', 'His suitcase', 'His phone'],
             answer: 2,
-            script: 'W: 需要帮忙吗？\nM: 是的，我的行李箱丢了。是一个大的黑色的，把手上有条红丝带。'
+            script: '需要帮忙吗？\n是的，我的行李箱丢了。是一个大的黑色的，把手上有条红丝带。'
         },
         {
-            audio_text: "M: Is the train station within walking distance?\nW: It's about 20 minutes on foot, but you can take the Number 7 bus and get off at the third stop.",
+            audio_text: "Is the train station within walking distance?\nIt's about 20 minutes on foot, but you can take the Number 7 bus and get off at the third stop.",
             question: 'How can the man get to the train station?',
             options: ['Walk for 10 minutes', 'Take the Number 7 bus', 'Take the Number 3 bus', 'Take a taxi'],
             answer: 1,
-            script: 'M: 火车站能走过去吗？\nW: 步行大约20分钟，不过你可以坐7路公交车在第三站下车。'
+            script: '火车站能走过去吗？\n步行大约20分钟，不过你可以坐7路公交车在第三站下车。'
         },
         {
-            audio_text: "W: How was your trip to New Zealand?\nM: Incredible! We went bungee jumping in Queenstown and visited the Hobbiton movie set. The landscapes were even more beautiful than in the movies.",
+            audio_text: "How was your trip to New Zealand?\nIncredible! We went bungee jumping in Queenstown and visited the Hobbiton movie set. The landscapes were even more beautiful than in the movies.",
             question: 'What did the man do in New Zealand?',
             options: ['Went skiing', 'Went bungee jumping', 'Went surfing', 'Went mountain climbing'],
             answer: 1,
-            script: 'W: 你的新西兰之旅怎么样？\nM: 太棒了！我们在皇后镇蹦极了，还参观了霍比屯电影布景。风景比电影里还要美。'
+            script: '你的新西兰之旅怎么样？\n太棒了！我们在皇后镇蹦极了，还参观了霍比屯电影布景。风景比电影里还要美。'
         },
         {
-            audio_text: "M: I'd like to book a double room with a sea view for the weekend.\nW: I'm sorry, all sea-view rooms are fully booked. We only have a standard room available.",
+            audio_text: "I'd like to book a double room with a sea view for the weekend.\nI'm sorry, all sea-view rooms are fully booked. We only have a standard room available.",
             question: 'Why can\'t the man get a sea-view room?',
             options: ['It\'s too expensive', 'They are closed', 'They are fully booked', 'He doesn\'t need one'],
             answer: 2,
-            script: 'M: 我想预订一间周末的海景双人房。\nW: 不好意思，所有海景房都订满了。我们只剩一间标准房。'
+            script: '我想预订一间周末的海景双人房。\n不好意思，所有海景房都订满了。我们只剩一间标准房。'
         },
         {
-            audio_text: "W: What's the weather forecast for tomorrow?\nM: It's going to be sunny in the morning but cloudy in the afternoon. The temperature will be around 22 degrees Celsius.",
+            audio_text: "What's the weather forecast for tomorrow?\nIt's going to be sunny in the morning but cloudy in the afternoon. The temperature will be around 22 degrees Celsius.",
             question: 'What will the weather be like tomorrow morning?',
             options: ['Rainy', 'Cloudy', 'Sunny', 'Windy'],
             answer: 2,
-            script: 'W: 明天天气预报怎么样？\nM: 上午晴天，下午转阴。气温大约22摄氏度。'
+            script: '明天天气预报怎么样？\n上午晴天，下午转阴。气温大约22摄氏度。'
         },
         {
-            audio_text: "M: Excuse me, where can I collect my boarding pass?\nW: You can use the self-check-in machines over there, or go to Counter 5 for manual check-in. You'll need your passport and booking reference.",
+            audio_text: "Excuse me, where can I collect my boarding pass?\nYou can use the self-check-in machines over there, or go to Counter 5 for manual check-in. You'll need your passport and booking reference.",
             question: 'What does the woman say the man needs?',
             options: ['Only a passport', 'Passport and booking reference', 'Credit card', 'Driving license'],
             answer: 1,
-            script: 'M: 请问在哪里取登机牌？\nW: 您可以用那边的自助值机，或者去5号柜台人工办理。需要护照和预订编号。'
+            script: '请问在哪里取登机牌？\n您可以用那边的自助值机，或者去5号柜台人工办理。需要护照和预订编号。'
         },
         {
-            audio_text: "W: I heard you went to Canada. Did you see Niagara Falls?\nM: Yes! It was spectacular. The boat tour took us right up to the mist of the falls. It was an unforgettable experience.",
+            audio_text: "I heard you went to Canada. Did you see Niagara Falls?\nYes! It was spectacular. The boat tour took us right up to the mist of the falls. It was an unforgettable experience.",
             question: 'How did the man feel about Niagara Falls?',
             options: ['Disappointed', 'Bored', 'Unforgettable', 'Frightened'],
             answer: 2,
-            script: 'W: 听说你去了加拿大。看到尼亚加拉瀑布了吗？\nM: 看到了！太壮观了。游船带我们直抵瀑布的水雾中。难以忘怀的经历。'
+            script: '听说你去了加拿大。看到尼亚加拉瀑布了吗？\n看到了！太壮观了。游船带我们直抵瀑布的水雾中。难以忘怀的经历。'
         },
         {
-            audio_text: "M: I'm going to start learning English before my trip to London.\nW: That's a good idea! Even knowing some basic phrases will make a big difference.",
+            audio_text: "I'm going to start learning English before my trip to London.\nThat's a good idea! Even knowing some basic phrases will make a big difference.",
             question: 'What is the man going to do?',
             options: ['Learn French', 'Learn English', 'Book a flight', 'Buy a guidebook'],
             answer: 1,
-            script: 'M: 我打算在去伦敦之前开始学英语。\nW: 好主意！哪怕会几句基本用语都会大有帮助。'
+            script: '我打算在去伦敦之前开始学英语。\n好主意！哪怕会几句基本用语都会大有帮助。'
         },
         {
-            audio_text: "W: How far is the nearest subway station from here?\nM: It's just a five-minute walk. Go out of the main gate and turn right. You can't miss it - there's a big red sign.",
+            audio_text: "How far is the nearest subway station from here?\nIt's just a five-minute walk. Go out of the main gate and turn right. You can't miss it - there's a big red sign.",
             question: 'How long does it take to walk to the subway station?',
             options: ['5 minutes', '15 minutes', '25 minutes', '50 minutes'],
             answer: 0,
-            script: 'W: 最近的地铁站离这里多远？\nM: 走路就五分钟。出大门右转，有个大红色标志，不会错过的。'
+            script: '最近的地铁站离这里多远？\n走路就五分钟。出大门右转，有个大红色标志，不会错过的。'
         },
         {
-            audio_text: "W: I can't decide whether to go to France or Italy for my summer holiday.\nM: Why not visit both? They're next to each other, and the high-speed train only takes about 3 hours from Paris to Milan.",
+            audio_text: "I can't decide whether to go to France or Italy for my summer holiday.\nWhy not visit both? They're next to each other, and the high-speed train only takes about 3 hours from Paris to Milan.",
             question: 'How long does the train take from Paris to Milan?',
             options: ['About 1 hour', 'About 3 hours', 'About 5 hours', 'About 8 hours'],
             answer: 1,
-            script: 'W: 我决定不了暑假去法国还是意大利。\nM: 为什么不两个都去？他们挨着，从巴黎到米兰的高铁只要大约3小时。'
+            script: '我决定不了暑假去法国还是意大利。\n为什么不两个都去？他们挨着，从巴黎到米兰的高铁只要大约3小时。'
         },
         {
-            audio_text: "M: The Grand Palace is very crowded today.\nW: That's because it's a public holiday in Thailand. Let's come back tomorrow morning when it's less busy.",
+            audio_text: "The Grand Palace is very crowded today.\nThat's because it's a public holiday in Thailand. Let's come back tomorrow morning when it's less busy.",
             question: 'Why is the Grand Palace so crowded?',
             options: ['It\'s the weekend', 'It\'s a public holiday', 'There\'s a festival', 'It\'s free entry day'],
             answer: 1,
-            script: 'M: 大皇宫今天人好多。\nW: 因为今天是泰国的公共假期。我们明天早上再来吧，那时候人会少些。'
+            script: '大皇宫今天人好多。\n因为今天是泰国的公共假期。我们明天早上再来吧，那时候人会少些。'
         },
         {
-            audio_text: "W: Do you have any recommendations for local dishes?\nM: You must try the fish and chips at the harbour restaurant. It's the most popular dish among locals and tourists alike.",
+            audio_text: "Do you have any recommendations for local dishes?\nYou must try the fish and chips at the harbour restaurant. It's the most popular dish among locals and tourists alike.",
             question: 'What dish does the man recommend?',
             options: ['Pizza', 'Fish and chips', 'Steak', 'Seafood salad'],
             answer: 1,
-            script: 'W: 你有什么当地菜推荐吗？\nM: 你一定要尝尝码头餐厅的炸鱼薯条。那是当地人和游客最喜欢的一道菜。'
+            script: '你有什么当地菜推荐吗？\n你一定要尝尝码头餐厅的炸鱼薯条。那是当地人和游客最喜欢的一道菜。'
         },
         {
-            audio_text: "M: What time should we check out tomorrow?\nW: Check-out is by 11:00 AM. If you need a later check-out, please let the front desk know in advance.",
+            audio_text: "What time should we check out tomorrow?\nCheck-out is by 11:00 AM. If you need a later check-out, please let the front desk know in advance.",
             question: 'When should they check out?',
             options: ['By 10:00 AM', 'By 11:00 AM', 'By 12:00 PM', 'By 1:00 PM'],
             answer: 1,
-            script: 'M: 明天什么时候退房？\nW: 上午11点之前。如果需要延迟退房，请提前告知前台。'
+            script: '明天什么时候退房？\n上午11点之前。如果需要延迟退房，请提前告知前台。'
         },
         {
-            audio_text: "W: Did you enjoy the walking tour in Rome?\nM: Absolutely! The guide was very knowledgeable. He told us stories about every ancient building we passed. I learned so much more than if I'd wandered around on my own.",
+            audio_text: "Did you enjoy the walking tour in Rome?\nAbsolutely! The guide was very knowledgeable. He told us stories about every ancient building we passed. I learned so much more than if I'd wandered around on my own.",
             question: 'Why did the man enjoy the walking tour?',
             options: ['It was cheap', 'The weather was nice', 'The guide was knowledgeable', 'The group was small'],
             answer: 2,
-            script: 'W: 罗马的徒步游你喜欢吗？\nM: 非常喜欢！导游知识很渊博。经过的每一座古建筑他都能讲故事。比我一个人乱逛学到的东西多多了。'
+            script: '罗马的徒步游你喜欢吗？\n非常喜欢！导游知识很渊博。经过的每一座古建筑他都能讲故事。比我一个人乱逛学到的东西多多了。'
         },
         {
-            audio_text: "M: I think I've left my camera in the taxi.\nW: Don't worry! Do you remember the taxi number or the colour of the car? We can call the taxi company.",
+            audio_text: "I think I've left my camera in the taxi.\nDon't worry! Do you remember the taxi number or the colour of the car? We can call the taxi company.",
             question: 'What did the man leave in the taxi?',
             options: ['His wallet', 'His phone', 'His camera', 'His bag'],
             answer: 2,
-            script: 'M: 我好像把相机落在出租车上了。\nW: 别担心！你记得车牌号或者车身颜色吗？我们可以给出租车公司打电话。'
+            script: '我好像把相机落在出租车上了。\n别担心！你记得车牌号或者车身颜色吗？我们可以给出租车公司打电话。'
         },
         {
-            audio_text: "W: The flight to Sydney is delayed by three hours due to bad weather.\nM: That's frustrating. Is there anything we can do in the meantime? Maybe we could grab something to eat.",
+            audio_text: "The flight to Sydney is delayed by three hours due to bad weather.\nThat's frustrating. Is there anything we can do in the meantime? Maybe we could grab something to eat.",
             question: 'Why is the flight delayed?',
             options: ['Mechanical problem', 'Staff shortage', 'Bad weather', 'Airport traffic'],
             answer: 2,
-            script: 'W: 飞悉尼的航班因恶劣天气延误了三小时。\nM: 真烦人。这段时间我们能做什么？也许可以去吃点东西。'
+            script: '飞悉尼的航班因恶劣天气延误了三小时。\n真烦人。这段时间我们能做什么？也许可以去吃点东西。'
         },
         {
-            audio_text: "M: How much is an entrance ticket for the Tower of London?\nW: It's £29.90 for adults, £14.90 for children under 16, and children under 5 get in free.",
+            audio_text: "How much is an entrance ticket for the Tower of London?\nIt's £29.90 for adults, £14.90 for children under 16, and children under 5 get in free.",
             question: 'How much is the ticket for children under 5?',
             options: ['£14.90', '£29.90', '£10.00', 'Free'],
             answer: 3,
-            script: 'M: 伦敦塔的门票多少钱？\nW: 成人29.90英镑，16岁以下儿童14.90英镑，5岁以下免费。'
+            script: '伦敦塔的门票多少钱？\n成人29.90英镑，16岁以下儿童14.90英镑，5岁以下免费。'
         }
     ],
 

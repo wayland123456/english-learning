@@ -2261,10 +2261,18 @@ body {
     font-size: 0.9rem;
     line-height: 1.7;
     color: var(--text-light);
-    white-space: pre-wrap;
 }
 
 .listening-script h4 { color: var(--primary); margin-bottom: 8px; font-size: 0.9rem; }
+
+.script-dialogue p {
+    margin: 0 0 8px 0;
+    padding: 6px 12px;
+    background: rgba(99,102,241,0.04);
+    border-radius: 6px;
+    border-left: 3px solid var(--primary);
+}
+.script-dialogue p:last-child { margin-bottom: 0; }
 
 .btn-show-script {
     display: inline-block;

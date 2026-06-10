@@ -64,7 +64,7 @@ const Listening = {
                     </button>
                     <div class="listening-script" id="listeningScript" style="display:none;">
                         <h4><i class="fas fa-file-alt"></i> 听力原文</h4>
-                        <pre>${this.escapeHtml(ex.script)}</pre>
+                        <div class="script-dialogue">${ex.script.split('\n').map(line => `<p>${this.escapeHtml(line.trim())}</p>`).join('')}</div>
                     </div>
                     <button class="btn-show-script" onclick="Listening.toggleScript()">
                         <i class="fas fa-eye"></i> 查看原文
