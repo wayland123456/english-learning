@@ -13,7 +13,7 @@ const Listening = {
         this.exercises = DATA.listeningExercises || [];
         this.currentIndex = 0;
         this.score = 0;
-        this.answered = new Array(this.exercises.length).fill(false);
+        this.answered = new Array(this.exercises.length).fill(null);
         this.render();
     },
 
@@ -32,8 +32,9 @@ const Listening = {
         }
 
         const ex = this.exercises[this.currentIndex];
-        const isAnswered = this.answered[this.currentIndex];
-        const correctCount = this.answered.filter(Boolean).length;
+        const userAnswer = this.answered[this.currentIndex];
+        const isAnswered = userAnswer !== null;
+        const correctCount = this.answered.filter((ans, i) => ans !== null && ans === this.exercises[i].answer).length;
 
         let optionsHtml = ex.options.map((opt, i) => {
             let cls = 'listening-opt';
@@ -75,7 +76,7 @@ const Listening = {
                 </div>
 
                 <div class="listening-question">
-                    <h3><i class="fas fa-question-circle"></i> ${this.escapeHtml(ex.question)}</h3>
+                    <h3><span class="listening-q-num">${this.currentIndex + 1}.</span> ${this.escapeHtml(ex.question)}</h3>
                 </div>
 
                 <div class="listening-options">${optionsHtml}</div>
@@ -127,13 +128,20 @@ const Listening = {
     },
 
     selectOption(index) {
-        if (this.answered[this.currentIndex]) return;
+        if (this.answered[this.currentIndex] !== null) return;
 
         const ex = this.exercises[this.currentIndex];
         const isCorrect = index === ex.answer;
-        this.answered[this.currentIndex] = isCorrect;
+        this.answered[this.currentIndex] = index;
         ex.selected = index;
         if (isCorrect) this.score++;
+
+        // 音效 + toast 反馈
+        if (isCorrect) {
+            SoundFx.correct();
+        } else {
+            SoundFx.wrong();
+        }
 
         const progress = SupabaseAuth.getProgress();
         if (!progress.listening) progress.listening = {};
@@ -175,7 +183,7 @@ const Listening = {
     retry() {
         this.currentIndex = 0;
         this.score = 0;
-        this.answered = new Array(this.exercises.length).fill(false);
+        this.answered = new Array(this.exercises.length).fill(null);
         this.render();
     },
 

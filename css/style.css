@@ -2209,6 +2209,21 @@ body {
 }
 .listening-ai-notice i { margin-right: 6px; }
 
+.listening-q-num {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
 .listening-container {
     max-width: 700px;
     margin: 0 auto;
@@ -2673,6 +2688,18 @@ body {
     color: #ef4444;
 }
 .grammar-opt.correct {
+    background: rgba(16,185,129,0.1) !important;
+    border-color: #10b981 !important;
+    color: #10b981;
+}
+
+/* 听力选错样式 */
+.listening-opt.wrong {
+    background: rgba(239,68,68,0.1) !important;
+    border-color: #ef4444 !important;
+    color: #ef4444;
+}
+.listening-opt.correct {
     background: rgba(16,185,129,0.1) !important;
     border-color: #10b981 !important;
     color: #10b981;

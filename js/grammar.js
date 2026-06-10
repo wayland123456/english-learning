@@ -12,7 +12,7 @@ const Grammar = {
         this.exercises = DATA.grammarExercises || [];
         this.currentIndex = 0;
         this.score = 0;
-        this.answered = new Array(this.exercises.length).fill(false);
+        this.answered = new Array(this.exercises.length).fill(null);
         this.render();
     },
 
@@ -37,11 +37,10 @@ const Grammar = {
 
         let optionsHtml = ex.options.map((opt, i) => {
             let cls = 'grammar-opt';
-            if (this.answered[this.currentIndex]) {
+            const userAnswer = this.answered[this.currentIndex];
+            if (userAnswer !== null) {
                 if (i === ex.answer) cls += ' correct';
-                else if (i === savedAnswer && i !== ex.answer) cls += ' wrong';
-            } else if (savedAnswer === i) {
-                cls += ' selected';
+                else if (i === userAnswer) cls += ' wrong';
             }
             return `<div class="${cls}" onclick="Grammar.selectOption(${i})">
                         <span class="grammar-opt-letter">${String.fromCharCode(65+i)}</span>
@@ -49,8 +48,8 @@ const Grammar = {
                     </div>`;
         }).join('');
 
-        const isAnswered = this.answered[this.currentIndex];
-        const correctCount = this.answered.filter(Boolean).length;
+        const isAnswered = this.answered[this.currentIndex] !== null;
+        const correctCount = this.answered.filter((ans, i) => ans !== null && ans === this.exercises[i].answer).length;
 
         container.innerHTML = `
             <div class="grammar-progress">
@@ -77,11 +76,11 @@ const Grammar = {
     },
 
     selectOption(index) {
-        if (this.answered[this.currentIndex]) return;
+        if (this.answered[this.currentIndex] !== null) return;
 
         const ex = this.exercises[this.currentIndex];
         const isCorrect = index === ex.answer;
-        this.answered[this.currentIndex] = isCorrect;
+        this.answered[this.currentIndex] = index;
         if (isCorrect) this.score++;
 
         // 音效 + toast 反馈
@@ -138,7 +137,7 @@ const Grammar = {
     retry() {
         this.currentIndex = 0;
         this.score = 0;
-        this.answered = new Array(this.exercises.length).fill(false);
+        this.answered = new Array(this.exercises.length).fill(null);
         this.render();
     },
 
