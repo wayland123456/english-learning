@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师监测后台 - Travelling Around the World</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f0f4ff;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* 登录页 */
+        .login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+        }
+        .login-card {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            width: 400px;
+            max-width: 90vw;
+            text-align: center;
+        }
+        .login-card h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        .login-card p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+        .login-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .login-input:focus {
+            border-color: var(--primary);
+        }
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .login-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+        .login-error {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-top: 0.8rem;
+            min-height: 1.4em;
+        }
+
+        /* 仪表盘页 */
+        .dashboard { display: none; }
+
+        .header {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+        }
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 { font-size: 1.5rem; font-weight: 700; }
+        .header p { opacity: 0.85; font-size: 0.9rem; margin-top: 0.3rem; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+            flex-shrink: 0;
+        }
+        .stat-icon.blue { background: linear-gradient(135deg, #6366f1, #818cf8); }
+        .stat-icon.green { background: linear-gradient(135deg, #10b981, #34d399); }
+        .stat-icon.orange { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+        .stat-icon.red { background: linear-gradient(135deg, #ef4444, #f87171); }
+        .stat-value { font-size: 1.8rem; font-weight: 800; line-height: 1.2; }
+        .stat-label { font-size: 0.8rem; color: var(--text-light); }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .search-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { opacity: 0.9; }
+
+        .table-wrapper {
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+        .table-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+        thead { background: #f8fafc; }
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+        }
+        td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+        tr:hover { background: #f8fafc; }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+
+        .progress-bar {
+            width: 80px;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+
+        .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-light); }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
+
+        .last-update { font-size: 0.8rem; color: var(--text-light); }
+
+        .auto-refresh-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+        .auto-refresh-label input { accent-color: var(--primary); }
+
+        .btn-export { background: #10b981; color: white; }
+        .btn-export:hover { background: #059669; transform: translateY(-1px); }
+
+        @media (max-width: 768px) {
+            .header { padding: 1rem; }
+            .header h1 { font-size: 1.2rem; }
+            .container { padding: 1rem 0.8rem; }
+            .stats-row { grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+            .stat-card { padding: 1rem; }
+            .stat-value { font-size: 1.4rem; }
+            .toolbar { gap: 0.5rem; }
+            .btn { padding: 8px 14px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 教师登录页 -->
+    <div class="login-page" id="loginPage">
+        <div class="login-card">
+            <i class="fas fa-globe-americas" style="font-size:3rem;color:var(--primary);margin-bottom:1rem;"></i>
+            <h1>教师监测后台</h1>
+            <p>Travelling Around the World - 学生学习进度监测</p>
+            <input type="text" class="login-input" id="teacherUsername" placeholder="教师账号" value="teacher">
+            <input type="password" class="login-input" id="teacherPassword" placeholder="密码">
+            <button class="login-btn" onclick="teacherLogin()">
+                <i class="fas fa-sign-in-alt"></i> 登 录
+            </button>
+            <div class="login-error" id="loginError"></div>
+        </div>
+    </div>
+
+    <!-- 仪表盘 -->
+    <div class="dashboard" id="dashboard">
+        <div class="header">
+            <div class="header-inner">
+                <div>
+                    <h1><i class="fas fa-chart-line"></i> 教师监测后台</h1>
+                    <p>Travelling Around the World - 学生学习进度监测</p>
+                </div>
+                <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                    <div style="display:flex;background:rgba(255,255,255,0.2);border-radius:10px;overflow:hidden;">
+                        <button class="tab-btn active" id="tabProgress" onclick="switchTab('progress')" style="padding:6px 14px;font-size:0.85rem;background:rgba(255,255,255,0.3);color:white;border:none;cursor:pointer;">
+                            <i class="fas fa-chart-line"></i> 学习进度
+                        </button>
+                        <button class="tab-btn" id="tabFeedback" onclick="switchTab('feedback')" style="padding:6px 14px;font-size:0.85rem;background:transparent;color:rgba(255,255,255,0.8);border:none;cursor:pointer;">
+                            <i class="fas fa-clipboard-list"></i> 问卷反馈
+                        </button>
+                    </div>
+                    <span class="last-update" id="lastUpdate">等待数据加载...</span>
+                    <button class="btn btn-danger" onclick="teacherLogout()" style="padding:6px 14px;font-size:0.85rem;background:rgba(239,68,68,0.85);">
+                        <i class="fas fa-sign-out-alt"></i> 退出
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                    <div>
+                        <div class="stat-value" id="statTotal">0</div>
+                        <div class="stat-label">已上报学生</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <div class="stat-value" id="statCompleted">0</div>
+                        <div class="stat-label">完成率 ≥80%</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i class="fas fa-spinner"></i></div>
+                    <div>
+                        <div class="stat-value" id="statInProgress">0</div>
+                        <div class="stat-label">进行中 (30-79%)</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div>
+                        <div class="stat-value" id="statNotStarted">0</div>
+                        <div class="stat-label">未开始 (&lt;30%)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <input type="text" class="search-box" id="searchInput" placeholder="搜索学生姓名..." oninput="renderTable()">
+                <button class="btn btn-primary" onclick="loadData()"><i class="fas fa-sync-alt"></i> 刷新数据</button>
+                <button class="btn btn-export" onclick="downloadCSV()"><i class="fas fa-download"></i> 下载统计</button>
+                <label class="auto-refresh-label">
+                    <input type="checkbox" id="autoRefresh" checked> 自动刷新(30s)
+                </label>
+            </div>
+
+            <div class="table-wrapper" id="progressSection">
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>姓名</th>
+                                <th>账号</th>
+                                <th>自主学习<br><span style="font-weight:400;font-size:0.7rem;text-transform:none;">(20个景点)</span></th>
+                                <th>口语练习</th>
+                                <th>听力练习</th>
+                                <th>词汇闪卡</th>
+                                <th>语法练习</th>
+                                <th>句式练习</th>
+                                <th>作文练习</th>
+                                <th>总进度</th>
+                                <th>最后上报</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr><td colspan="12">
+                                <div class="empty-state">
+                                    <i class="fas fa-cloud-download-alt"></i>
+                                    <p>正在加载数据...</p>
+                                </div>
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 问卷反馈区域 -->
+            <div id="feedbackSection" style="display:none;">
+                <div class="stats-row" id="feedbackStats">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-clipboard-check"></i></div>
+                        <div>
+                            <div class="stat-value" id="fbTotal">0</div>
+                            <div class="stat-label">已提交问卷</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-star"></i></div>
+                        <div>
+                            <div class="stat-value" id="fbAvg">0.0</div>
+                            <div class="stat-label">平均满意度</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fas fa-thumbs-up"></i></div>
+                        <div>
+                            <div class="stat-value" id="fbContinue">0%</div>
+                            <div class="stat-label">愿意继续使用</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red"><i class="fas fa-mobile-alt"></i></div>
+                        <div>
+                            <div class="stat-value" id="fbMobile">0.0</div>
+                            <div class="stat-label">移动端体验均分</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="toolbar">
+                    <input type="text" class="search-box" id="fbSearchInput" placeholder="搜索学生姓名..." oninput="renderFeedback()">
+                    <button class="btn btn-primary" onclick="loadFeedback()"><i class="fas fa-sync-alt"></i> 刷新反馈</button>
+                    <button class="btn btn-export" onclick="downloadFeedbackCSV()"><i class="fas fa-download"></i> 导出反馈</button>
+                </div>
+
+                <div class="table-wrapper">
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>序号</th>
+                                    <th>姓名</th>
+                                    <th>整体<br>满意度</th>
+                                    <th>资源</th>
+                                    <th>口语</th>
+                                    <th>听力</th>
+                                    <th>词汇</th>
+                                    <th>语法</th>
+                                    <th>句式</th>
+                                    <th>作文</th>
+                                    <th>界面</th>
+                                    <th>易用</th>
+                                    <th>移动</th>
+                                    <th>问题</th>
+                                    <th>词汇<br>效果</th>
+                                    <th>句式<br>效果</th>
+                                    <th>听力<br>效果</th>
+                                    <th>口语<br>效果</th>
+                                    <th>继续<br>使用</th>
+                                    <th>提交时间</th>
+                                </tr>
+                            </thead>
+                            <tbody id="feedbackTableBody">
+                                <tr><td colspan="20">
+                                    <div class="empty-state">
+                                        <i class="fas fa-inbox"></i>
+                                        <p>暂无反馈数据</p>
+                                        <p style="font-size:0.85rem;margin-top:0.5rem;">学生填写反馈问卷后，数据会显示在这里</p>
+                                    </div>
+                                </td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 开放建议汇总 -->
+                <div class="table-wrapper" style="margin-top:1.5rem;">
+                    <h3 style="padding:1rem 1.5rem 0.5rem;font-size:1rem;color:var(--text);"><i class="fas fa-comments" style="color:var(--primary);"></i> 开放建议汇总</h3>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:80px;">姓名</th>
+                                    <th style="width:120px;">最喜欢模块</th>
+                                    <th>改进建议</th>
+                                    <th>其他意见</th>
+                                </tr>
+                            </thead>
+                            <tbody id="feedbackCommentsBody">
+                                <tr><td colspan="4">
+                                    <div class="empty-state">
+                                        <i class="fas fa-inbox"></i>
+                                        <p>暂无开放建议</p>
+                                    </div>
+                                </td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase 配置（与主站共享同一配置） -->
+    <script>
+        // ⚠️ 请替换成你自己的 Supabase 项目信息（与 js/supabase-config.js 一致）
+        const SUPABASE_URL = 'https://gqlwspxcyhjtzhikcexj.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_PqN5m9yOrWZzBazFjO7Y_w_pfIMO1PI';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    </script>
+
+    <script>
+        let studentsData = [];
+        let refreshTimer = null;
+        let isLoggedIn = false;
+
+        /* ---------- 教师登录 ---------- */
+        async function teacherLogin() {
+            const username = document.getElementById('teacherUsername').value.trim();
+            const password = document.getElementById('teacherPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = '';
+
+            if (!username || !password) {
+                errorDiv.textContent = '请输入账号和密码';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('students')
+                    .select('username, display_name, role, password_hash')
+                    .eq('username', username)
+                    .single();
+
+                if (error || !data) {
+                    errorDiv.textContent = '账号不存在';
+                    return;
+                }
+                if (data.password_hash !== password) {
+                    errorDiv.textContent = '密码错误';
+                    return;
+                }
+                if (data.role !== 'teacher') {
+                    errorDiv.textContent = '该账号不是教师账号';
+                    return;
+                }
+
+                // 登录成功
+                isLoggedIn = true;
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                loadData();
+                setupAutoRefresh();
+
+            } catch (e) {
+                errorDiv.textContent = '网络错误，请检查网络连接';
+                console.error('登录错误：', e);
+            }
+        }
+
+        /* ---------- 教师退出 ---------- */
+        function teacherLogout() {
+            isLoggedIn = false;
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('teacherPassword').value = '';
+            if (refreshTimer) clearInterval(refreshTimer);
+        }
+
+        /* ---------- 加载学生数据 ---------- */
+        async function loadData() {
+            try {
+                // 从 Supabase 获取所有学生进度
+                const { data: progressData, error } = await supabaseClient
+                    .from('progress')
+                    .select('username, resources, speaking, listening, vocabulary, grammar, sentences, writing, last_update')
+                    .order('last_update', { ascending: false, nullsFirst: true });
+
+                if (error) {
+                    console.error('加载失败:', error);
+                    return;
+                }
+
+                // 获取所有学生信息
+                const { data: studentsInfo } = await supabaseClient
+                    .from('students')
+                    .select('username, display_name, role')
+                    .eq('role', 'student');
+
+                const studentMap = {};
+                (studentsInfo || []).forEach(s => {
+                    studentMap[s.username] = s.display_name || s.username;
+                });
+
+                // 计算进度
+                studentsData = (progressData || []).map(p => {
+                    const resourcesDone = (p.resources || []).length;
+                    const speakingNums = (p.speaking || []).filter(x => typeof x === 'number');
+                    const speakingDone = speakingNums.length;
+                    const dialogueDone = (p.speaking || []).includes('dialogue');
+                    const listeningData = p.listening || null;
+                    const listeningScore = listeningData ? listeningData.score || 0 : 0;
+                    const listeningTotal = listeningData ? listeningData.total || 0 : 0;
+                    const vocabularyDone = (p.vocabulary || []).length;
+                    const grammarData = p.grammar || null;
+                    const grammarScore = grammarData ? grammarData.score || 0 : 0;
+                    const grammarTotal = grammarData ? grammarData.total || 0 : 0;
+                    const sentencesDone = (p.sentences || []).length;
+                    const writingDone = !!p.writing;
+                    const writingScore = p.writing ? p.writing.score : '-';
+
+                    // 总进度：每模块等权计算（7模块）
+                    const resourcesMax = 20;
+                    const speakingFollowMax = 30;  // 跟读30句
+                    const sentencesMax = 30;       // 句式30题
+                    let moduleCount = 0;
+                    let moduleSum = 0;
+
+                    moduleSum += Math.min(resourcesDone / resourcesMax, 1); moduleCount++;
+                    // 口语 = 跟读(30句) + 对话 各占一半
+                    const followPct = Math.min(speakingDone / speakingFollowMax, 1);
+                    const dialoguePct = dialogueDone ? 1 : 0;
+                    moduleSum += (followPct + dialoguePct) / 2; moduleCount++;
+                    if (listeningTotal > 0) { moduleSum += Math.min(listeningScore / listeningTotal, 1); }
+                    moduleCount++;
+                    if (vocabularyDone > 0) { moduleSum += Math.min(vocabularyDone / Math.max(vocabularyDone, 1), 1); }
+                    else { moduleSum += 0; }
+                    moduleCount++;
+                    if (grammarTotal > 0) { moduleSum += Math.min(grammarScore / grammarTotal, 1); }
+                    moduleCount++;
+                    moduleSum += Math.min(sentencesDone / sentencesMax, 1); moduleCount++;
+                    moduleSum += (writingDone ? 1 : 0); moduleCount++;
+                    const percent = Math.round(moduleSum / moduleCount * 100);
+
+                    return {
+                        username: p.username,
+                        displayName: studentMap[p.username] || p.username,
+                        resourcesDone,
+                        resourcesMax,
+                        speakingDone,
+                        speakingMax: speakingFollowMax,
+                        dialogueDone,
+                        listeningScore,
+                        listeningTotal,
+                        vocabularyDone,
+                        grammarScore,
+                        grammarTotal,
+                        sentencesDone,
+                        sentencesMax,
+                        listeningScore,
+                        listeningTotal,
+                        vocabularyDone,
+                        grammarScore,
+                        grammarTotal,
+                        sentencesDone,
+                        writingDone,
+                        writingScore,
+                        percent,
+                        percentStr: percent + '%',
+                        lastUpdate: p.last_update ? new Date(p.last_update).toLocaleString('zh-CN') : '-'
+                    };
+                });
+
+                renderStats();
+                renderTable();
+                document.getElementById('lastUpdate').textContent = '最后更新: ' + new Date().toLocaleTimeString('zh-CN');
+
+            } catch (err) {
+                console.error('加载失败:', err);
+                document.getElementById('tableBody').innerHTML = `
+                    <tr><td colspan="12">
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>加载失败，请检查网络连接</p>
+                        </div>
+                    </td></tr>`;
+            }
+        }
+
+        /* ---------- 渲染统计 ---------- */
+        function renderStats() {
+            const completed = studentsData.filter(s => s.percent >= 80).length;
+            const inProgress = studentsData.filter(s => s.percent >= 30 && s.percent < 80).length;
+            const notStarted = studentsData.filter(s => s.percent < 30).length;
+
+            document.getElementById('statTotal').textContent = studentsData.length;
+            document.getElementById('statCompleted').textContent = completed;
+            document.getElementById('statInProgress').textContent = inProgress;
+            document.getElementById('statNotStarted').textContent = notStarted;
+        }
+
+        /* ---------- 渲染表格 ---------- */
+        function renderTable() {
+            const search = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+            let filtered = studentsData;
+            if (search) {
+                filtered = studentsData.filter(s =>
+                    (s.displayName || '').toLowerCase().includes(search) ||
+                    (s.username || '').toLowerCase().includes(search)
+                );
+            }
+
+            filtered.sort((a, b) => b.percent - a.percent);
+
+            const tbody = document.getElementById('tableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="12">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>${search ? '没有匹配的学生' : '暂无学生上报进度'}</p>
+                            <p style="font-size:0.85rem;margin-top:0.5rem;">学生登录学习后，进度会自动上报到这里</p>
+                        </div>
+                    </td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map((s, i) => {
+                const pct = s.percent;
+                const pctColor = pct >= 80 ? '#10b981' : pct >= 30 ? '#f59e0b' : '#ef4444';
+                const pctBadgeClass = pct >= 80 ? 'badge-success' : pct >= 30 ? 'badge-warning' : 'badge-danger';
+
+                // 口语：跟读 + 对话 双 badge
+                const followPct = Math.round(s.speakingDone / s.speakingMax * 100);
+                const followColor = followPct >= 70 ? '#10b981' : followPct >= 30 ? '#f59e0b' : '#94a3b8';
+                const speakingHTML = `<div style="display:flex;flex-direction:column;gap:4px;">
+                    <span class="badge" style="background:${followColor}15;color:${followColor};font-weight:700;">
+                        跟读 ${s.speakingDone}/${s.speakingMax}
+                    </span>
+                    <span class="badge" style="background:${s.dialogueDone ? '#d1fae5' : '#fee2e2'};color:${s.dialogueDone ? '#065f46' : '#991b1b'};">
+                        对话 ${s.dialogueDone ? '✅' : '❌'}
+                    </span>
+                </div>`;
+
+                // 作文显示
+                const writingHTML = s.writingDone
+                    ? `<span class="badge badge-success"><i class="fas fa-check"></i> ${s.writingScore}分</span>`
+                    : `<span class="badge badge-danger" style="background:#fee2e2;color:#991b1b;"><i class="fas fa-times"></i> 未完成</span>`;
+
+                // 听力显示
+                const listeningHTML = s.listeningTotal > 0
+                    ? `<span class="badge badge-info">${s.listeningScore}/${s.listeningTotal}</span>`
+                    : '<span style="color:var(--text-light);">-</span>';
+
+                // 词汇显示
+                const vocabHTML = s.vocabularyDone > 0
+                    ? `<span class="badge badge-info" style="background:#dbeafe;color:#1e40af;">${s.vocabularyDone}词</span>`
+                    : '<span style="color:var(--text-light);">0</span>';
+
+                // 语法显示
+                const grammarHTML = s.grammarTotal > 0
+                    ? `<span class="badge badge-info">${s.grammarScore}/${s.grammarTotal}</span>`
+                    : '<span style="color:var(--text-light);">-</span>';
+
+                return `<tr>
+                    <td style="font-weight:600;color:var(--text-light);">${i + 1}</td>
+                    <td style="font-weight:600;">${s.displayName || s.username}</td>
+                    <td style="color:var(--text-light);font-size:0.85rem;">${s.username}</td>
+                    <td><span class="badge badge-info">景点 ${s.resourcesDone}/${s.resourcesMax}</span></td>
+                    <td>${speakingHTML}</td>
+                    <td>${listeningHTML}</td>
+                    <td>${vocabHTML}</td>
+                    <td>${grammarHTML}</td>
+                    <td><span class="badge badge-info">${s.sentencesDone}/15</span></td>
+                    <td>${writingHTML}</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width:${pct}%;background:${pctColor};"></div>
+                        </div>
+                        <span class="badge ${pctBadgeClass}">${s.percentStr}</span>
+                    </td>
+                    <td style="font-size:0.8rem;color:var(--text-light);white-space:nowrap;">${s.lastUpdate || '-'}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        /* ---------- 自动刷新 ---------- */
+        function setupAutoRefresh() {
+            if (refreshTimer) clearInterval(refreshTimer);
+            if (document.getElementById('autoRefresh').checked) {
+                refreshTimer = setInterval(loadData, 30000);
+            }
+        }
+
+        document.getElementById('autoRefresh').addEventListener('change', () => {
+            setupAutoRefresh();
+        });
+
+        // 回车键登录
+        document.getElementById('teacherPassword').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') teacherLogin();
+        });
+
+        /* ---------- 下载统计 CSV ---------- */
+        function downloadCSV() {
+            if (studentsData.length === 0) {
+                alert('暂无数据可下载');
+                return;
+            }
+
+            // CSV 表头
+            const headers = ['序号', '姓名', '账号', '自主学习', '口语跟读', '对话填空', '听力练习', '词汇闪卡', '语法练习', '句式练习', '作文练习', '总进度', '最后上报'];
+
+            // 数据行
+            const rows = studentsData.map((s, i) => {
+                const followStr = s.speakingDone + '/' + s.speakingMax;
+                const dialogueStr = s.dialogueDone ? '已完成' : '未完成';
+                const listeningStr = s.listeningTotal > 0 ? s.listeningScore + '/' + s.listeningTotal : '-';
+                const vocabStr = s.vocabularyDone > 0 ? s.vocabularyDone + '词' : '0';
+                const grammarStr = s.grammarTotal > 0 ? s.grammarScore + '/' + s.grammarTotal : '-';
+                const writingStr = s.writingDone ? s.writingScore + '分' : '未完成';
+
+                return [
+                    i + 1,
+                    s.displayName || s.username,
+                    s.username,
+                    s.resourcesDone + '/20',
+                    followStr,
+                    dialogueStr,
+                    listeningStr,
+                    vocabStr,
+                    grammarStr,
+                    s.sentencesDone + '/30',
+                    writingStr,
+                    s.percentStr,
+                    s.lastUpdate || '-'
+                ];
+            });
+
+            // 生成 CSV（BOM 兼容 Excel 中文）
+            const BOM = '\uFEFF';
+            const csvContent = BOM + [headers.join(','), ...rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(','))].join('\n');
+
+            // 下载
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const now = new Date();
+            const ts = now.getFullYear() + ('0' + (now.getMonth() + 1)).slice(-2) + ('0' + now.getDate()).slice(-2) + '_' + ('0' + now.getHours()).slice(-2) + ('0' + now.getMinutes()).slice(-2);
+            a.download = '学习进度统计_' + ts + '.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        /* ---------- 标签页切换 ---------- */
+        function switchTab(tab) {
+            const tabProgress = document.getElementById('tabProgress');
+            const tabFeedback = document.getElementById('tabFeedback');
+            const progressSection = document.getElementById('progressSection');
+            const feedbackSection = document.getElementById('feedbackSection');
+            const toolbar = document.querySelector('.toolbar');
+            const statsRow = document.querySelector('.stats-row');
+
+            if (tab === 'progress') {
+                tabProgress.style.background = 'rgba(255,255,255,0.3)';
+                tabProgress.style.color = 'white';
+                tabFeedback.style.background = 'transparent';
+                tabFeedback.style.color = 'rgba(255,255,255,0.8)';
+                progressSection.style.display = 'block';
+                feedbackSection.style.display = 'none';
+                statsRow.style.display = 'grid';
+                toolbar.style.display = 'flex';
+                document.getElementById('lastUpdate').style.display = 'inline';
+            } else {
+                tabProgress.style.background = 'transparent';
+                tabProgress.style.color = 'rgba(255,255,255,0.8)';
+                tabFeedback.style.background = 'rgba(255,255,255,0.3)';
+                tabFeedback.style.color = 'white';
+                progressSection.style.display = 'none';
+                feedbackSection.style.display = 'block';
+                statsRow.style.display = 'none';
+                toolbar.style.display = 'none';
+                document.getElementById('lastUpdate').style.display = 'none';
+                loadFeedback();
+            }
+        }
+
+        /* ---------- 加载反馈数据 ---------- */
+        let feedbackData = [];
+
+        async function loadFeedback() {
+            const tbody = document.getElementById('feedbackTableBody');
+            tbody.innerHTML = `<tr><td colspan="20"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>正在加载反馈数据...</p></div></td></tr>`;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('feedback')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('加载反馈失败:', error);
+                    tbody.innerHTML = `<tr><td colspan="20"><div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>加载失败: ${error.message}</p></div></td></tr>`;
+                    return;
+                }
+
+                feedbackData = data || [];
+                renderFeedback();
+                renderFeedbackStats();
+                renderFeedbackComments();
+
+            } catch (err) {
+                console.error('加载反馈失败:', err);
+                tbody.innerHTML = `<tr><td colspan="20"><div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>加载失败，请检查网络连接</p></div></td></tr>`;
+            }
+        }
+
+        function renderFeedbackStats() {
+            if (feedbackData.length === 0) {
+                document.getElementById('fbTotal').textContent = '0';
+                document.getElementById('fbAvg').textContent = '0.0';
+                document.getElementById('fbContinue').textContent = '0%';
+                document.getElementById('fbMobile').textContent = '0.0';
+                return;
+            }
+
+            const total = feedbackData.length;
+            const avgOverall = (feedbackData.reduce((s, f) => s + f.overall_rating, 0) / total).toFixed(1);
+            const continueYes = feedbackData.filter(f => f.continue_use === 'yes').length;
+            const continuePct = Math.round(continueYes / total * 100);
+            const avgMobile = (feedbackData.reduce((s, f) => s + f.mobile_exp, 0) / total).toFixed(1);
+
+            document.getElementById('fbTotal').textContent = total;
+            document.getElementById('fbAvg').textContent = avgOverall;
+            document.getElementById('fbContinue').textContent = continuePct + '%';
+            document.getElementById('fbMobile').textContent = avgMobile;
+        }
+
+        function renderFeedback() {
+            const search = (document.getElementById('fbSearchInput').value || '').trim().toLowerCase();
+            let filtered = feedbackData;
+            if (search) {
+                filtered = feedbackData.filter(f =>
+                    (f.student_name || '').toLowerCase().includes(search) ||
+                    (f.student_username || '').toLowerCase().includes(search)
+                );
+            }
+
+            const tbody = document.getElementById('feedbackTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="20"><div class="empty-state"><i class="fas fa-inbox"></i><p>${search ? '没有匹配的反馈' : '暂无反馈数据'}</p></div></td></tr>`;
+                return;
+            }
+
+            const starColor = (val) => {
+                if (!val) return '<span style="color:var(--text-light);">-</span>';
+                const color = val >= 4 ? '#10b981' : val >= 3 ? '#f59e0b' : '#ef4444';
+                return `<span style="color:${color};font-weight:700;">${val}</span>`;
+            };
+
+            const likertLabel = (val) => {
+                const labels = ['', '非常不同意', '不同意', '一般', '同意', '非常同意'];
+                if (!val) return '<span style="color:var(--text-light);">-</span>';
+                const color = val >= 4 ? '#10b981' : val >= 3 ? '#f59e0b' : '#ef4444';
+                return `<span style="color:${color};font-weight:700;font-size:0.8rem;">${val}</span>`;
+            };
+
+            const continueLabel = (val) => {
+                const map = { yes: ['愿意', '#10b981'], maybe: ['看情况', '#f59e0b'], no: ['不愿意', '#ef4444'] };
+                const [label, color] = map[val] || ['-', '#94a3b8'];
+                return `<span class="badge" style="background:${color}15;color:${color};">${label}</span>`;
+            };
+
+            tbody.innerHTML = filtered.map((f, i) => {
+                const time = f.created_at ? new Date(f.created_at).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+                return `<tr>
+                    <td style="font-weight:600;color:var(--text-light);">${i + 1}</td>
+                    <td style="font-weight:600;">${f.student_name || f.student_username}</td>
+                    <td>${starColor(f.overall_rating)}</td>
+                    <td>${starColor(f.resource_rating)}</td>
+                    <td>${starColor(f.speaking_rating)}</td>
+                    <td>${starColor(f.listening_rating)}</td>
+                    <td>${starColor(f.vocabulary_rating)}</td>
+                    <td>${starColor(f.grammar_rating)}</td>
+                    <td>${starColor(f.sentence_rating)}</td>
+                    <td>${starColor(f.writing_rating)}</td>
+                    <td>${likertLabel(f.ui_design)}</td>
+                    <td>${likertLabel(f.ease_use)}</td>
+                    <td>${likertLabel(f.mobile_exp)}</td>
+                    <td>${likertLabel(f.issue_freq)}</td>
+                    <td>${likertLabel(f.effect_vocab)}</td>
+                    <td>${likertLabel(f.effect_sentence)}</td>
+                    <td>${likertLabel(f.effect_listening)}</td>
+                    <td>${likertLabel(f.effect_speaking)}</td>
+                    <td>${continueLabel(f.continue_use)}</td>
+                    <td style="font-size:0.8rem;color:var(--text-light);white-space:nowrap;">${time}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderFeedbackComments() {
+            const tbody = document.getElementById('feedbackCommentsBody');
+            const withComments = feedbackData.filter(f => f.fav_module || f.improvement || f.other_comments);
+
+            if (withComments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><i class="fas fa-inbox"></i><p>暂无开放建议</p></div></td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = withComments.map(f => {
+                return `<tr>
+                    <td style="font-weight:600;font-size:0.85rem;">${f.student_name || f.student_username}</td>
+                    <td style="font-size:0.85rem;color:var(--text-light);">${f.fav_module || '-'}</td>
+                    <td style="font-size:0.85rem;max-width:300px;white-space:normal;">${f.improvement || '-'}</td>
+                    <td style="font-size:0.85rem;max-width:300px;white-space:normal;">${f.other_comments || '-'}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        /* ---------- 导出反馈CSV ---------- */
+        function downloadFeedbackCSV() {
+            if (feedbackData.length === 0) {
+                alert('暂无反馈数据可下载');
+                return;
+            }
+            const headers = ['姓名', '账号', '整体满意度', '资源评分', '口语评分', '听力评分', '词汇评分', '语法评分', '句式评分', '作文评分',
+                '界面设计', '操作易用', '移动体验', '问题频率', '词汇效果', '句式效果', '听力效果', '口语效果',
+                '最喜欢模块', '改进建议', '继续使用', '其他意见', '提交时间'];
+            const rows = feedbackData.map(f => [
+                f.student_name, f.student_username, f.overall_rating, f.resource_rating || '', f.speaking_rating || '',
+                f.listening_rating || '', f.vocabulary_rating || '', f.grammar_rating || '', f.sentence_rating || '', f.writing_rating || '',
+                f.ui_design, f.ease_use, f.mobile_exp, f.issue_freq, f.effect_vocab, f.effect_sentence, f.effect_listening, f.effect_speaking,
+                f.fav_module || '', f.improvement || '', f.continue_use, f.other_comments || '',
+                f.created_at ? new Date(f.created_at).toLocaleString('zh-CN') : ''
+            ]);
+            const BOM = '\uFEFF';
+            const csvContent = BOM + [headers.join(','), ...rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(','))].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const now = new Date();
+            const ts = now.getFullYear() + ('0' + (now.getMonth() + 1)).slice(-2) + ('0' + now.getDate()).slice(-2) + '_' + ('0' + now.getHours()).slice(-2) + ('0' + now.getMinutes()).slice(-2);
+            a.download = '问卷反馈_' + ts + '.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
