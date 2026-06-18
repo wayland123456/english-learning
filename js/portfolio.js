@@ -363,6 +363,14 @@ const Portfolio = {
             var diaryEntries = Portfolio._loadLocal('travel_entries') || [];
             container.innerHTML = Portfolio.diary._renderScrapbook(diaryEntries);
             Portfolio.diary._animateStamps();
+            // 绑定按钮事件（替代 inline onclick，更可靠）
+            var createBtn = container.querySelector('.sb-create-btn');
+            if (createBtn) {
+                createBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    Portfolio.diary.create();
+                });
+            }
         },
 
         _renderScrapbook(entries) {
@@ -444,7 +452,7 @@ const Portfolio = {
                 });
                 html += '</div>';
             } else {
-                // ====== 全新空状态 — 冒险主题场景 ======
+                // ====== 全新空状态 — 冒险主题场景 + 操作指引 ======
                 html += '<div class="sb-empty"><div class="sb-empty-adventure">';
                 // 场景插画
                 html += '<div class="sb-empty-scene">';
@@ -457,7 +465,14 @@ const Portfolio = {
                 html += '</div>';
                 // 文字
                 html += '<h3>你的冒险之旅即将开始 🚀</h3>';
-                html += '<p>还没有旅行记录？点击下方按钮，写下你的第一篇旅行日记，收集第一枚印章吧！</p>';
+                html += '<p>还没有旅行记录？点击下方绿色按钮，只需 4 步就能生成你的第一篇英文旅行日记！</p>';
+                // 操作步骤
+                html += '<div class="sb-steps-guide">';
+                html += '<div class="sb-step-item"><span class="sb-step-num">1</span><span class="sb-step-text">选择一个你想去的国家 🌏</span></div>';
+                html += '<div class="sb-step-item"><span class="sb-step-num">2</span><span class="sb-step-text">勾选你做了哪些有趣的事 ✅</span></div>';
+                html += '<div class="sb-step-item"><span class="sb-step-num">3</span><span class="sb-step-text">选天气和心情 ☀️😊</span></div>';
+                html += '<div class="sb-step-item"><span class="sb-step-num">4</span><span class="sb-step-text">点击生成，自动写好英文日记 ✨</span></div>';
+                html += '</div>';
                 // 标签
                 html += '<div class="sb-empty-hint-tags">';
                 html += '<span class="sb-empty-tag">✨ 零写作</span>';
