@@ -81,21 +81,42 @@ const Portfolio = {
         },
 
         _renderList(guides) {
-            var html = '<div class="page-header portfolio-header" style="background:linear-gradient(135deg,#667eea,#764ba2)"><div class="page-header-overlay"></div><div class="page-header-content"><h1><i class="fas fa-map-marked-alt"></i> 我的旅行攻略</h1><p>勾选你喜欢的选项，一键生成属于你自己的英文旅行攻略！</p></div></div>';
+            var html = '<div class="page-header portfolio-header" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%)"><div class="page-header-overlay"></div><div class="page-header-content"><h1><span style="font-size:1.3rem;margin-right:0.3rem;">🗺️</span> 我的旅行攻略</h1><p style="margin-top:0.4rem;font-size:0.92rem;opacity:0.9;">勾选你喜欢的选项，一键生成专属英文旅行攻略！</p></div></div>';
             html += '<div class="page-body"><div class="portfolio-section">';
 
             if (guides.length > 0) {
-                html += '<h3 class="portfolio-subtitle">已创建的攻略</h3><div class="portfolio-card-list">';
+                html += '<h3 class="portfolio-subtitle">📋 已创建的攻略 <span style="font-size:0.78rem;color:var(--text-light);font-weight:400;">(' + guides.length + ' 篇)</span></h3><div class="portfolio-card-list">';
                 guides.forEach(function(g, i) {
                     var country = DATA.resources.find(function(c) { return c.id === g.country_id; });
                     var countryCN = country ? country.countryCN : g.country_id;
-                    var flag = country ? country.flag : '';
-                    html += '<div class="portfolio-card" onclick="Portfolio.guide.view(' + i + ')"><div class="portfolio-card-icon">' + flag + '</div><div class="portfolio-card-info"><div class="portfolio-card-title">' + countryCN + ' Travel Guide</div><div class="portfolio-card-meta">' + (g.attractions ? g.attractions.length : 0) + ' attractions selected \u00b7 ' + new Date(g.created_at).toLocaleDateString('zh-CN') + '</div></div><div class="portfolio-card-arrow"><i class="fas fa-chevron-right"></i></div></div>';
+                    var flag = country ? country.flag : '🌍';
+                    var attrCount = g.attractions ? g.attractions.length : 0;
+                    var dateStr = new Date(g.created_at).toLocaleDateString('zh-CN', {month:'short',day:'numeric'});
+                    html += '<div class="portfolio-card" onclick="Portfolio.guide.view(' + i + ')">';
+                    html += '<div class="portfolio-card-icon" style="font-size:1.8rem;background:linear-gradient(135deg,rgba(102,126,234,0.08),rgba(118,75,162,0.08));padding:0.6rem;border-radius:12px;">' + flag + '</div>';
+                    html += '<div class="portfolio-card-info"><div class="portfolio-card-title">' + flag + ' ' + countryCN + ' Travel Guide</div>';
+                    html += '<div class="portfolio-card-meta">📍 ' + attrCount + ' 个景点 · 📅 ' + dateStr + '</div>';
+                    // 进度指示条
+                    var progress = Math.min(100, Math.round((attrCount / 5) * 100));
+                    html += '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;"><div style="flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;"><div style="width:' + progress + '%;height:100%;background:linear-gradient(90deg,var(--primary),#764ba2);border-radius:2px;"></div></div><span style="font-size:0.62rem;color:var(--text-light);">' + progress + '%</span></div>';
+                    html += '</div><div class="portfolio-card-arrow" style="background:rgba(99,102,241,0.06);color:var(--primary);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="fas fa-chevron-right"></i></div></div>';
                 });
                 html += '</div>';
+            } else {
+                // 空状态 — 引导创建
+                html += '<div class="sb-empty" style="padding-top:1rem;"><div class="sb-empty-adventure" style="max-width:280px;">';
+                html += '<div style="font-size:3.5rem;margin-bottom:0.8rem;">🗺️</div>';
+                html += '<h3>还没有旅行攻略</h3>';
+                html += '<p>选择目的地、景点、美食和英语短语，一键生成你的专属攻略！</p>';
+                html += '<div class="sb-empty-hint-tags" style="justify-content:center;">';
+                html += '<span class="sb-empty-tag">🎯 选景点</span>';
+                html += '<span class="sb-empty-tag">🍽️ 选美食</span>';
+                html += '<span class="sb-empty-tag">💬 选英语</span>';
+                html += '<span class="sb-empty-tag">✨ 自动生成</span>';
+                html += '</div></div></div>';
             }
 
-            html += '<button class="portfolio-create-btn" onclick="Portfolio.guide.create()"><i class="fas fa-plus-circle"></i> 创建新攻略</button>';
+            html += '<button class="portfolio-create-btn" onclick="Portfolio.guide.create()"><i class="fas fa-plus-circle"></i> ✨ 创建新攻略</button>';
             html += '</div></div>';
             return html;
         },
@@ -245,43 +266,62 @@ const Portfolio = {
         },
 
         _renderResult(guide, index) {
-            var html = '<div class="pf-header-small"><button class="pf-back-btn" onclick="Portfolio.guide.init()"><i class="fas fa-arrow-left"></i> 返回列表</button><h2>' + guide.flag + ' ' + guide.countryCN + ' Travel Guide</h2></div>';
+            var html = '<div class="pf-header-small"><button class="pf-back-btn" onclick="Portfolio.guide.init()"><i class="fas fa-arrow-left"></i> 返回列表</button><h2>' + (guide.flag || '🌍') + ' ' + (guide.countryCN || guide.country) + ' Travel Guide</h2></div>';
             html += '<div class="guide-result">';
 
-            // Title
-            html += '<div class="guide-result-hero"><h1>' + guide.flag + ' My Travel Guide to ' + guide.country + '</h1><p class="guide-date">Created on ' + new Date(guide.created_at).toLocaleDateString('zh-CN', {year:'numeric',month:'long',day:'numeric'}) + '</p></div>';
+            // Title Hero — 增强版
+            html += '<div class="guide-result-hero">';
+            html += '<span style="font-size:2.8rem;display:block;margin-bottom:0.4rem;">' + (guide.flag || '🌍') + '</span>';
+            html += '<h1>My Travel Guide to ' + (guide.country || '') + '</h1>';
+            html += '<p style="margin-top:0.5rem;font-size:0.82rem;color:var(--text-light);"><i class="far fa-calendar-alt"></i> Created on ' + new Date(guide.created_at).toLocaleDateString('zh-CN', {year:'numeric',month:'long',day:'numeric'}) + '</p>';
+            // 快速统计
+            html += '<div style="display:flex;gap:0.6rem;justify-content:center;margin-top:1rem;flex-wrap:wrap;">';
+            if (guide.attractions && guide.attractions.length > 0) {
+                html += '<span style="font-size:0.72rem;background:rgba(99,102,241,0.08);color:var(--primary);padding:3px 10px;border-radius:20px;font-weight:500;">📍 ' + guide.attractions.length + ' 景点</span>';
+            }
+            if (guide.foods && guide.foods.length > 0) {
+                html += '<span style="font-size:0.72rem;background:rgba(220,38,38,0.06);color:#dc2626;padding:3px 10px;border-radius:20px;font-weight:500;">🍽️ ' + guide.foods.length + ' 美食</span>';
+            }
+            if (guide.phrases && guide.phrases.length > 0) {
+                html += '<span style="font-size:0.72rem;background:rgba(16,185,129,0.08);color:#059669;padding:3px 10px;border-radius:20px;font-weight:500;">💬 ' + guide.phrases.length + ' 短语</span>';
+            }
+            html += '</div></div>';
 
             // Intro
-            html += '<div class="guide-section"><h3><i class="fas fa-info-circle"></i> About ' + guide.country + '</h3><p>' + guide.country + ' is a beautiful country with amazing sights, rich culture, and delicious food. Here is my personal travel guide!</p></div>';
+            html += '<div class="guide-section" style="border-left:4px solid var(--primary);"><h3><i class="fas fa-globe-americas"></i> About ' + (guide.country || '') + '</h3><p style="line-height:1.8;">' + (guide.country || 'This destination') + ' is a beautiful place with amazing sights, rich culture, and delicious food. Here is my personal travel guide — crafted just for you! ✨</p></div>';
 
-            // Attractions
-            html += '<div class="guide-section"><h3><i class="fas fa-star"></i> Must-Visit Places</h3><ul>';
-            guide.attractions.forEach(function(a) {
-                html += '<li>' + a + '</li>';
-            });
+            // Attractions — 带图标编号
+            html += '<div class="guide-section"><h3><i class="fas fa-star" style="color:#f59e0b;"></i> Must-Visit Places</h3><ul style="padding:0;margin:0;list-style:none;">';
+            if (guide.attractions && guide.attractions.length > 0) {
+                guide.attractions.forEach(function(a, idx) {
+                    html += '<li style="padding:0.55rem 0;display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;color:var(--text);border-bottom:1px solid var(--bg);"><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:0.7rem;font-weight:700;flex-shrink:0;">' + (idx+1) + '</span>' + a + '</li>';
+                });
+            } else {
+                html += '<li style="color:var(--text-light);">暂未选择景点</li>';
+            }
             html += '</ul></div>';
 
-            // Phrases
-            if (guide.phrases.length > 0) {
-                html += '<div class="guide-section"><h3><i class="fas fa-comment-dots"></i> Useful English Phrases</h3><ul>';
+            // Phrases — 卡片式
+            if (guide.phrases && guide.phrases.length > 0) {
+                html += '<div class="guide-section"><h3><i class="fas fa-comment-dots" style="color:#10b981;"></i> Useful English Phrases</h3><div style="display:flex;flex-wrap:wrap;gap:0.45rem;">';
                 guide.phrases.forEach(function(p) {
-                    html += '<li>"' + p + '"</li>';
+                    html += '<span style="background:rgba(16,185,129,0.07);color:#059669;padding:0.4rem 0.75rem;border-radius:20px;font-size:0.84rem;border:1px solid rgba(16,185,129,0.12);">"' + p + '"</span>';
                 });
-                html += '</ul></div>';
+                html += '</div></div>';
             }
 
             // Foods
-            if (guide.foods.length > 0) {
-                html += '<div class="guide-section"><h3><i class="fas fa-utensils"></i> Must-Try Food</h3><p>I want to try: ' + guide.foods.join(', ') + '.</p></div>';
+            if (guide.foods && guide.foods.length > 0) {
+                html += '<div class="guide-section"><h3><i class="fas fa-utensils" style="color:#f97316;"></i> Must-Try Food 🤤</h3><p style="line-height:1.7;">I want to try: <strong>' + guide.foods.join('</strong>, <strong>') + '</strong>.</p></div>';
             }
 
             // Gifts
-            if (guide.gifts.length > 0) {
-                html += '<div class="guide-section"><h3><i class="fas fa-gift"></i> Souvenirs for...</h3><p>I will bring souvenirs for: ' + guide.gifts.join(', ') + '.</p></div>';
+            if (guide.gifts && guide.gifts.length > 0) {
+                html += '<div class="guide-section"><h3><i class="fas fa-gift" style="color:#ec4899;"></i> Souvenirs for... 🎁</h3><p>I will bring souvenirs for: <strong>' + guide.gifts.join(', ') + '</strong>.</p></div>';
             }
 
             // Footer
-            html += '<div class="guide-result-footer"><p>This travel guide was created using Travelling Around the World learning platform.</p></div>';
+            html += '<div class="guide-result-footer"><p style="font-size:0.76rem;">This travel guide was created using <strong>Travelling Around the World</strong> learning platform 🌏✨</p></div>';
 
             // Actions
             html += '<div class="guide-actions"><button class="pf-generate-btn pf-btn-secondary" onclick="Portfolio.guide.create()"><i class="fas fa-plus-circle"></i> 再创建一篇</button><button class="pf-generate-btn pf-btn-ghost" onclick="Portfolio.guide.init()"><i class="fas fa-list"></i> 返回列表</button></div>';
@@ -343,23 +383,45 @@ const Portfolio = {
             var topActCount = 0;
             for (var k in allActs) { if (allActs[k] > topActCount) { topActCount = allActs[k]; topAct = k; } }
 
-            // 页头
-            var html = '<div class="sb-hero" style="background:linear-gradient(135deg,#1a365d 0%,#2b6cb0 50%,#38a169 100%)"><div class="sb-hero-bg"></div><h1>✈️ 我的旅行手账</h1><p>每一次勾选，都是一枚旅行印章</p><div class="sb-hero-stats"><div class="sb-stat"><div class="sb-stat-num">' + countryCount + '</div><div class="sb-stat-label">目的地</div></div><div class="sb-stat"><div class="sb-stat-num">' + totalDays + '</div><div class="sb-stat-label">旅行记忆</div></div><div class="sb-stat"><div class="sb-stat-num">' + (topActCount || 0) + '</div><div class="sb-stat-label">最爱的活动</div></div></div></div>';
+            var earnedCount = countryCount;
+            var totalCount = DATA.resources.length;
+
+            // ====== 页头 — 带动画的 Hero ======
+            var html = '<div class="sb-hero" style="background:linear-gradient(135deg,#1a365d 0%,#2b6cb0 40%,#2563eb 65%,#16a34a 100%)"><div class="sb-hero-bg"></div>';
+            html += '<h1><span class="hero-plane">✈️</span> 我的旅行手账</h1>';
+            html += '<p>每一次勾选，都是一枚独一无二的旅行印章 🌏</p>';
+
+            // 统计卡片 — 带图标
+            html += '<div class="sb-hero-stats">';
+            html += '<div class="sb-stat' + (countryCount === 0 ? ' empty-state' : '') + '"><span class="sb-stat-icon">🌍</span><div class="sb-stat-num">' + countryCount + '</div><div class="sb-stat-label">目的地</div></div>';
+            html += '<div class="sb-stat' + (totalDays === 0 ? ' empty-state' : '') + '"><span class="sb-stat-icon">📖</span><div class="sb-stat-num">' + totalDays + '</div><div class="sb-stat-label">旅行记忆</div></div>';
+            html += '<div class="sb-stat' + (topActCount === 0 ? ' empty-state' : '') + '"><span class="sb-stat-icon">' + (topAct ? (Portfolio.ACTIVITY_ICONS[topAct] || '⭐') : '⭐') + '</span><div class="sb-stat-num">' + (topActCount || 0) + '</div><div class="sb-stat-label">最爱的活动</div></div>';
+            html += '</div></div>';
 
             html += '<div class="page-body"><div class="portfolio-section">';
 
-            // 护照印章栏
-            html += '<h3 class="portfolio-subtitle">🛂 我的旅行印章</h3><div class="sb-stamp-bar">';
+            // ====== 护照印章栏 — 卡片包裹，带进度提示 ======
+            html += '<div class="sb-stamp-section">';
+            html += '<div class="sb-stamp-header"><h3>🛂 我的旅行印章</h3>';
+            if (earnedCount > 0 && totalCount > 0) {
+                html += '<span class="sb-stamp-progress">' + earnedCount + '/' + totalCount + ' 已解锁</span>';
+            }
+            html += '</div>';
+            html += '<div class="sb-stamp-bar">';
             var allCountries = DATA.resources.map(function(c) { return {id:c.id, flag:c.flag, name:c.countryCN}; });
             allCountries.forEach(function(c) {
                 var earned = !!visitedCountries[c.id];
-                html += '<div class="sb-stamp-slot' + (earned ? ' earned' : '') + '" title="' + c.name + '">' + (earned ? c.flag : '?') + '</div>';
+                if (earned) {
+                    html += '<div class="sb-stamp-slot earned" title="✅ 已解锁：' + c.name + '">' + c.flag + '<span class="stamp-tooltip">' + c.name + '</span></div>';
+                } else {
+                    html += '<div class="sb-stamp-slot" title="🔒 待解锁：' + c.name + '"><span class="stamp-lock-icon">🔒</span><span class="stamp-tooltip">' + c.name + ' · 待解锁</span></div>';
+                }
             });
-            html += '</div>';
+            html += '</div></div>'; // end sb-stamp-section
 
-            // 明信片墙
+            // ====== 明信片墙 ======
             if (entries.length > 0) {
-                html += '<h3 class="portfolio-subtitle">📬 旅行明信片</h3><div class="sb-postcard-wall">';
+                html += '<h3 class="portfolio-subtitle" style="margin-top:1.5rem;">📬 旅行明信片</h3><div class="sb-postcard-wall">';
                 entries.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
                 entries.forEach(function(e, i) {
                     var c = DATA.resources.find(function(x) { return x.id === e.destination; });
@@ -371,7 +433,7 @@ const Portfolio = {
                     var preview = e.activities.slice(0,2).map(function(a){return Portfolio.ACTIVITY_ICONS[a]||'';}).join(' ') + ' ' + (Portfolio.MOOD_EMOJI[e.mood]||'');
                     html += '<div class="sb-postcard" onclick="Portfolio.diary.viewEntry(' + i + ')" style="--accent:' + palette.accent + '">';
                     html += '<div class="sb-postcard-front" style="background:' + palette.grad + '">';
-                    html += '<span style="font-size:3rem">' + illustration + '</span>';
+                    html += '<span style="font-size:3.5rem">' + illustration + '</span>';
                     html += '<div class="sb-postcard-stamp">' + (Portfolio.MOOD_EMOJI[e.mood]||'😊') + '</div>';
                     html += '</div>';
                     html += '<div class="sb-postcard-info">';
@@ -382,10 +444,31 @@ const Portfolio = {
                 });
                 html += '</div>';
             } else {
-                html += '<div class="sb-empty"><div class="sb-empty-passport">✈️</div><h3>你的旅行护照还是空的</h3><p>去「写一篇新日记」，收集你的第一枚旅行印章吧！</p></div>';
+                // ====== 全新空状态 — 冒险主题场景 ======
+                html += '<div class="sb-empty"><div class="sb-empty-adventure">';
+                // 场景插画
+                html += '<div class="sb-empty-scene">';
+                html += '<div class="sb-empty-sun"></div>';
+                html += '<div class="sb-empty-cloud c1">☁️ Let\'s go!</div>';
+                html += '<div class="sb-empty-cloud c2">☁️ Adventure!</div>';
+                html += '<div class="sb-empty-mountains"></div>';
+                html += '<div class="sb-empty-path"></div>';
+                html += '<div class="sb-empty-plane">✈️</div>';
+                html += '</div>';
+                // 文字
+                html += '<h3>你的冒险之旅即将开始 🚀</h3>';
+                html += '<p>还没有旅行记录？点击下方按钮，写下你的第一篇旅行日记，收集第一枚印章吧！</p>';
+                // 标签
+                html += '<div class="sb-empty-hint-tags">';
+                html += '<span class="sb-empty-tag">✨ 零写作</span>';
+                html += '<span class="sb-empty-tag">🎯 只需勾选</span>';
+                html += '<span class="sb-empty-tag">🎨 自动生成</span>';
+                html += '<span class="sb-empty-tag">📬 收集明信片</span>';
+                html += '</div>';
+                html += '</div></div>';
             }
 
-            html += '<button class="sb-create-btn" onclick="Portfolio.diary.create()"><i class="fas fa-feather-alt"></i> 开始新的旅行记忆</button>';
+            html += '<button class="sb-create-btn" onclick="Portfolio.diary.create()"><i class="fas fa-feather-alt"></i> 开始新的旅行记忆 ✨</button>';
             html += '</div></div>';
             return html;
         },
