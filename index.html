@@ -975,19 +975,19 @@
     <script src="js/study-tracker.js?v=1"></script>
     <script src="js/messages.js?v=1"></script>
     <script src="js/portfolio.js?v=2"></script>
-    <script src="js/app.js?v=12"></script>
+    <script src="js/app.js?v=13"></script>
     <!-- PWA Service Worker -->
     <script>
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/english-learning/sw.js?v=3', { updateViaCache: 'none' })
+        navigator.serviceWorker.register('/english-learning/sw.js?v=4', { updateViaCache: 'none' })
             .then(function(reg) { console.log('SW registered:', reg.scope); reg.update(); })
             .catch(function(err) { console.log('SW failed:', err); });
     }
     (function() {
         function checkVersion() {
             if (typeof SoundFx === 'undefined' || !Portfolio.COUNTRY_PALETTE) {
-                if (!sessionStorage.getItem('refreshed_v12')) {
-                    sessionStorage.setItem('refreshed_v12', '1');
+                if (!sessionStorage.getItem('refreshed_v13')) {
+                    sessionStorage.setItem('refreshed_v13', '1');
                     window.location.reload(true);
                 }
             }

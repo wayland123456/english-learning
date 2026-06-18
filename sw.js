@@ -1,5 +1,5 @@
 // Service Worker for 环游世界英语学习 PWA
-const CACHE_NAME = 'travelling-english-v5';
+const CACHE_NAME = 'travelling-english-v6';
 
 const CRITICAL_ASSETS = [
   '/english-learning/',
@@ -12,6 +12,7 @@ const CRITICAL_ASSETS = [
   '/english-learning/js/supabase-auth.js',
   '/english-learning/js/speaking.js',
   '/english-learning/js/writing.js',
+  '/english-learning/js/portfolio.js',
   '/english-learning/manifest.json'
 ];
 
