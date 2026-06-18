@@ -55,6 +55,8 @@ const App = {
             case 'listening': Listening.init(); break;
             case 'exam': ExamScores.init(); break;
             case 'messages': MessagesUI.load(); break;
+            case 'guide': Portfolio.guide.init(); break;
+            case 'diary': Portfolio.diary.init(); break;
         }
 
         // 滚动到顶部
@@ -179,6 +181,22 @@ const App = {
             const lPct = progress.listening.total > 0 ? Math.round(progress.listening.score / progress.listening.total * 100) : 0;
             listenBar.style.width = lPct + '%';
             listenText.textContent = `${progress.listening.score}/${progress.listening.total} 已练习`;
+        }
+
+        // 学习成果进度
+        const portfolioBar = document.getElementById('progressPortfolio');
+        const portfolioText = document.getElementById('progressPortfolioText');
+        if (portfolioBar && portfolioText) {
+            try {
+                const guides = JSON.parse(localStorage.getItem('travelEdu_travel_guides_' + (SupabaseAuth.currentUsername || '')) || '[]');
+                const diaries = JSON.parse(localStorage.getItem('travelEdu_travel_entries_' + (SupabaseAuth.currentUsername || '')) || '[]');
+                const total = guides.length + diaries.length;
+                const pct = total > 0 ? Math.min(100, total * 20) : 0;
+                portfolioBar.style.width = pct + '%';
+                portfolioText.textContent = total > 0 ? `${guides.length}攻略 ${diaries.length}日记` : '未开始';
+            } catch(e) {
+                portfolioText.textContent = '未开始';
+            }
         }
     },
 
