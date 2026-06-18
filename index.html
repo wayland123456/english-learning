@@ -72,6 +72,9 @@
             <a href="#" onclick="App.showPage('writing');return false" class="nav-link" data-page="writing">
                 <i class="fas fa-file-alt"></i> 作文练习
             </a>
+            <a href="#" onclick="App.showPage('exam');return false" class="nav-link" data-page="exam">
+                <i class="fas fa-search"></i> 成绩查询
+            </a>
             <a href="feedback.html" class="nav-link" style="color:var(--secondary);">
                 <i class="fas fa-clipboard-list"></i> 反馈问卷
             </a>
@@ -366,6 +369,7 @@
         <button class="mbn-item" data-page="resources" onclick="App.showPage('resources')"><i class="fas fa-book-open"></i><span>学习</span></button>
         <button class="mbn-item" data-page="speaking" onclick="App.showPage('speaking')"><i class="fas fa-microphone"></i><span>口语</span></button>
         <button class="mbn-item" data-page="writing" onclick="App.showPage('writing')"><i class="fas fa-pen-fancy"></i><span>作文</span></button>
+        <button class="mbn-item" data-page="exam" onclick="App.showPage('exam')"><i class="fas fa-search"></i><span>成绩</span></button>
         <a href="feedback.html" class="mbn-item mbn-feedback"><i class="fas fa-clipboard-list"></i><span>反馈</span></a>
     </nav>
 
@@ -378,11 +382,55 @@
             <button class="mmm-item" onclick="App.showPage('vocabulary')"><i class="fas fa-layer-group"></i><span>词汇闪卡</span></button>
             <button class="mmm-item" onclick="App.showPage('grammar')"><i class="fas fa-puzzle-piece"></i><span>语法练习</span></button>
             <button class="mmm-item" onclick="App.showPage('sentences')"><i class="fas fa-pen-fancy"></i><span>句式练习</span></button>
+            <button class="mmm-item" onclick="App.showPage('exam')"><i class="fas fa-search"></i><span>成绩查询</span></button>
             <a href="feedback.html" class="mmm-item mmm-item-feedback"><i class="fas fa-clipboard-list"></i><span>反馈问卷</span></a>
         </div>
     </div>
 
-    <!-- Toast -->
+    <!-- 考试成绩查询 -->
+    <div class="page hidden" id="page-exam">
+        <div class="exam-container">
+            <div class="exam-header">
+                <h1><i class="fas fa-file-alt"></i> 考试成绩查询</h1>
+                <p>2026年普通高等学校招生全国统一考试 · 英语试卷（全国一卷）</p>
+            </div>
+            <div class="exam-empty hidden" id="examEmpty">
+                <i class="fas fa-inbox"></i>
+                <h3>暂无您的试卷</h3>
+                <p>可能的原因：您的姓名未在系统中匹配到试卷，或试卷尚未上传。</p>
+                <p class="exam-empty-hint">如需帮助，请联系英语老师。</p>
+            </div>
+            <div class="exam-content hidden" id="examContent">
+                <div class="exam-info-card">
+                    <div class="exam-info-left">
+                        <div class="exam-avatar"><i class="fas fa-user-graduate"></i></div>
+                        <div>
+                            <div class="exam-student-name" id="examStudentName">--</div>
+                            <div class="exam-student-meta">
+                                <span id="examStudentClass">--</span><span>·</span><span id="examStudentId">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="exam-score-display">
+                        <div class="exam-score-number" id="examScore">--</div>
+                        <div class="exam-score-label">总分 / <span id="examTotalScore">150</span></div>
+                    </div>
+                </div>
+                <div class="exam-papers" id="examPapers"></div>
+                <div class="exam-actions">
+                    <button class="btn btn-primary" onclick="ExamScores.toggleAllPapers()"><i class="fas fa-expand"></i><span id="examExpandBtn">展开全部图片</span></button>
+                    <button class="btn btn-secondary" onclick="window.print()"><i class="fas fa-print"></i> 打印试卷</button>
+                </div>
+            </div>
+            <div class="exam-ranking hidden" id="examRanking">
+                <h3><i class="fas fa-chart-bar"></i> 班级成绩概览</h3>
+                <div class="exam-stats-row" id="examStats"></div>
+                <div class="exam-my-rank" id="examMyRank"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 通知 -->
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- 奖励弹窗 -->
@@ -407,6 +455,7 @@
     <script src="js/listening.js?v=7"></script>
     <script src="js/writing.js?v=9"></script>
     <script src="js/writing-ai.js?v=1"></script>
+    <script src="js/exam-scores.js?v=1"></script>
     <script src="js/app.js?v=9"></script>
     <!-- PWA Service Worker -->
     <script>
