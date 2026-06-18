@@ -264,6 +264,119 @@
             .toolbar { gap: 0.5rem; }
             .btn { padding: 8px 14px; font-size: 0.85rem; }
         }
+
+        /* 消息管理样式 */
+        .msg-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary);
+            transition: all 0.2s;
+        }
+        .msg-card.unreplied { border-left-color: var(--warning); }
+        .msg-card .msg-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.6rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .msg-card .msg-student-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--primary);
+        }
+        .msg-card .msg-username {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-left: 0.5rem;
+        }
+        .msg-card .msg-time {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+        .msg-card .msg-text {
+            padding: 0.8rem 1rem;
+            background: #f8fafc;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.6;
+            margin-bottom: 0.8rem;
+        }
+        .msg-card .msg-reply-box {
+            display: flex;
+            gap: 0.6rem;
+            align-items: flex-start;
+        }
+        .msg-card .msg-reply-input {
+            flex: 1;
+            padding: 0.7rem 0.8rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 36px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .msg-card .msg-reply-input:focus {
+            border-color: var(--primary);
+        }
+        .msg-card .msg-reply-btn {
+            padding: 0.7rem 1.2rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .msg-card .msg-reply-btn:hover {
+            background: #059669;
+        }
+        .msg-card .msg-existing-reply {
+            padding: 0.8rem 1rem;
+            background: #d1fae5;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #065f46;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        .msg-card .msg-existing-reply .reply-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 0.2rem;
+            opacity: 0.7;
+        }
+        .msg-card .msg-status {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .msg-card .msg-status.unreplied {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .msg-card .msg-status.replied {
+            background: #d1fae5;
+            color: #065f46;
+        }
     </style>
 </head>
 <body>
@@ -297,6 +410,10 @@
                         </button>
                         <button class="tab-btn" id="tabFeedback" onclick="switchTab('feedback')" style="padding:6px 14px;font-size:0.85rem;background:transparent;color:rgba(255,255,255,0.8);border:none;cursor:pointer;">
                             <i class="fas fa-clipboard-list"></i> 问卷反馈
+                        </button>
+                        <button class="tab-btn" id="tabMessages" onclick="switchTab('messages')" style="padding:6px 14px;font-size:0.85rem;background:transparent;color:rgba(255,255,255,0.8);border:none;cursor:pointer;">
+                            <i class="fas fa-comments"></i> 消息管理
+                            <span id="teacherMsgBadge" style="display:none;background:#ef4444;color:white;font-size:0.7rem;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span>
                         </button>
                     </div>
                     <span class="last-update" id="lastUpdate">等待数据加载...</span>
@@ -482,6 +599,23 @@
                                 </td></tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 消息管理区域 -->
+            <div id="messagesSection" style="display:none;">
+                <div class="msg-toolbar" style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+                    <button class="btn btn-primary" onclick="loadTeacherMessages()"><i class="fas fa-sync-alt"></i> 刷新消息</button>
+                    <span style="font-size:0.85rem;color:var(--text-light);margin-left:auto;">
+                        未回复消息: <strong id="msgUnrepliedCount" style="color:var(--danger);">0</strong>
+                    </span>
+                </div>
+                <div class="msg-list" id="teacherMsgList">
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>暂无学生消息</p>
+                        <p style="font-size:0.85rem;margin-top:0.5rem;">学生通过网站发送消息后，会出现在这里</p>
                     </div>
                 </div>
             </div>
@@ -847,32 +981,43 @@
         function switchTab(tab) {
             const tabProgress = document.getElementById('tabProgress');
             const tabFeedback = document.getElementById('tabFeedback');
+            const tabMessages = document.getElementById('tabMessages');
             const progressSection = document.getElementById('progressSection');
             const feedbackSection = document.getElementById('feedbackSection');
+            const messagesSection = document.getElementById('messagesSection');
             const toolbar = document.querySelector('.toolbar');
-            const statsRow = document.querySelector('.stats-row');
+            const statsRow = document.querySelector('.container > .stats-row');
+
+            // 重置所有tab样式
+            [tabProgress, tabFeedback, tabMessages].forEach(t => {
+                t.style.background = 'transparent';
+                t.style.color = 'rgba(255,255,255,0.8)';
+            });
+            // 隐藏所有区域
+            progressSection.style.display = 'none';
+            feedbackSection.style.display = 'none';
+            messagesSection.style.display = 'none';
+            toolbar.style.display = 'none';
+            statsRow.style.display = 'none';
+            document.getElementById('lastUpdate').style.display = 'none';
 
             if (tab === 'progress') {
                 tabProgress.style.background = 'rgba(255,255,255,0.3)';
                 tabProgress.style.color = 'white';
-                tabFeedback.style.background = 'transparent';
-                tabFeedback.style.color = 'rgba(255,255,255,0.8)';
                 progressSection.style.display = 'block';
-                feedbackSection.style.display = 'none';
                 statsRow.style.display = 'grid';
                 toolbar.style.display = 'flex';
                 document.getElementById('lastUpdate').style.display = 'inline';
-            } else {
-                tabProgress.style.background = 'transparent';
-                tabProgress.style.color = 'rgba(255,255,255,0.8)';
+            } else if (tab === 'feedback') {
                 tabFeedback.style.background = 'rgba(255,255,255,0.3)';
                 tabFeedback.style.color = 'white';
-                progressSection.style.display = 'none';
                 feedbackSection.style.display = 'block';
-                statsRow.style.display = 'none';
-                toolbar.style.display = 'none';
-                document.getElementById('lastUpdate').style.display = 'none';
                 loadFeedback();
+            } else if (tab === 'messages') {
+                tabMessages.style.background = 'rgba(255,255,255,0.3)';
+                tabMessages.style.color = 'white';
+                messagesSection.style.display = 'block';
+                loadTeacherMessages();
             }
         }
 
@@ -1037,6 +1182,176 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        }
+
+        /* ========== 消息管理 ========== */
+        let allMessages = [];
+
+        async function loadTeacherMessages() {
+            const list = document.getElementById('teacherMsgList');
+            list.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>正在加载消息...</p></div>`;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('messages')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(500);
+
+                if (error) {
+                    if (error.code === 'PGRST204' || error.code === '42P01') {
+                        list.innerHTML = `<div class="empty-state">
+                            <i class="fas fa-database"></i>
+                            <p>消息表尚未创建</p>
+                            <p style="font-size:0.85rem;margin-top:0.5rem;">请在 Supabase SQL Editor 中执行以下 SQL：</p>
+                            <pre style="text-align:left;background:#f1f5f9;padding:1rem;border-radius:8px;font-size:0.8rem;margin-top:0.5rem;max-width:600px;margin-left:auto;margin-right:auto;overflow-x:auto;">CREATE TABLE messages (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    sender_username TEXT NOT NULL,
+    sender_display_name TEXT,
+    message_text TEXT NOT NULL,
+    teacher_reply TEXT,
+    replied_at TIMESTAMPTZ,
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Students can insert messages"
+ON messages FOR INSERT
+TO anon
+WITH CHECK (true);
+
+CREATE POLICY "Students can view own messages"
+ON messages FOR SELECT
+TO anon
+USING (true);
+
+CREATE POLICY "Teacher can update messages"
+ON messages FOR UPDATE
+TO anon
+USING (true);</pre>
+                        </div>`;
+                        return;
+                    }
+                    console.error('加载消息失败:', error);
+                    list.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>加载失败: ${error.message}</p></div>`;
+                    return;
+                }
+
+                allMessages = data || [];
+                renderTeacherMessages();
+                updateMsgBadge();
+            } catch (e) {
+                console.error('加载消息失败:', e);
+                list.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>加载失败，请检查网络</p></div>`;
+            }
+        }
+
+        function renderTeacherMessages() {
+            const list = document.getElementById('teacherMsgList');
+            const unreplied = allMessages.filter(m => !m.teacher_reply);
+            document.getElementById('msgUnrepliedCount').textContent = unreplied.length;
+
+            if (allMessages.length === 0) {
+                list.innerHTML = `<div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>暂无学生消息</p>
+                    <p style="font-size:0.85rem;margin-top:0.5rem;">学生通过网站发送消息后，会出现在这里</p>
+                </div>`;
+                return;
+            }
+
+            function formatTime(iso) {
+                if (!iso) return '';
+                return new Date(iso).toLocaleString('zh-CN');
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text || '';
+                return div.innerHTML.replace(/\n/g, '<br>');
+            }
+
+            list.innerHTML = allMessages.map(m => {
+                const isReplied = !!m.teacher_reply;
+                return `
+                <div class="msg-card ${isReplied ? '' : 'unreplied'}">
+                    <div class="msg-card-header">
+                        <div>
+                            <span class="msg-student-name">${escapeHtml(m.sender_display_name || m.sender_username)}</span>
+                            <span class="msg-username">@${escapeHtml(m.sender_username)}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;">
+                            <span class="msg-status ${isReplied ? 'replied' : 'unreplied'}">
+                                <i class="fas ${isReplied ? 'fa-check-circle' : 'fa-clock'}"></i>
+                                ${isReplied ? '已回复' : '待回复'}
+                            </span>
+                            <span class="msg-time">${formatTime(m.created_at)}</span>
+                        </div>
+                    </div>
+                    <div class="msg-text">${escapeHtml(m.message_text)}</div>
+                    ${isReplied ? `
+                    <div class="msg-existing-reply">
+                        <span class="reply-label"><i class="fas fa-reply"></i> 我的回复 (${formatTime(m.replied_at)})</span>
+                        ${escapeHtml(m.teacher_reply)}
+                    </div>` : ''}
+                    <div class="msg-reply-box">
+                        <textarea class="msg-reply-input" id="replyInput_${m.id}" 
+                            placeholder="${isReplied ? '修改回复...' : '输入回复内容...'}" 
+                            rows="2">${isReplied ? m.teacher_reply : ''}</textarea>
+                        <button class="msg-reply-btn" onclick="replyToMsg('${m.id}')">
+                            <i class="fas fa-paper-plane"></i> ${isReplied ? '更新' : '回复'}
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function replyToMsg(messageId) {
+            const input = document.getElementById('replyInput_' + messageId);
+            const text = (input.value || '').trim();
+            if (!text) {
+                alert('请输入回复内容');
+                return;
+            }
+            try {
+                const { error } = await supabaseClient
+                    .from('messages')
+                    .update({
+                        teacher_reply: text,
+                        replied_at: new Date().toISOString(),
+                        is_read: true
+                    })
+                    .eq('id', messageId);
+
+                if (error) {
+                    alert('回复失败：' + error.message);
+                    return;
+                }
+                // 更新本地数据
+                const msg = allMessages.find(m => m.id === messageId);
+                if (msg) {
+                    msg.teacher_reply = text;
+                    msg.replied_at = new Date().toISOString();
+                    msg.is_read = true;
+                }
+                renderTeacherMessages();
+                updateMsgBadge();
+            } catch (e) {
+                alert('网络错误，请重试');
+            }
+        }
+
+        function updateMsgBadge() {
+            const badge = document.getElementById('teacherMsgBadge');
+            const unreplied = allMessages.filter(m => !m.teacher_reply).length;
+            if (unreplied > 0) {
+                badge.style.display = 'inline';
+                badge.textContent = unreplied;
+            } else {
+                badge.style.display = 'none';
+            }
         }
     </script>
 </body>

@@ -54,6 +54,7 @@ const App = {
             case 'grammar': Grammar.init(); break;
             case 'listening': Listening.init(); break;
             case 'exam': ExamScores.init(); break;
+            case 'messages': MessagesUI.load(); break;
         }
 
         // 滚动到顶部
