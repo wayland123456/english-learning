@@ -174,7 +174,7 @@ body {
     position: absolute;
     top: 100%;
     left: 0;
-    margin-top: 6px;
+    margin-top: 2px;
     min-width: 200px;
     background: rgba(255,255,255,0.98);
     backdrop-filter: blur(16px);
@@ -185,6 +185,17 @@ body {
     z-index: 1001;
     flex-direction: column;
     gap: 2px;
+}
+
+/* 透明桥接区域——防止鼠标在按钮和菜单之间移动时菜单消失 */
+.nav-dropdown-menu::before {
+    content: "";
+    position: absolute;
+    top: -12px;
+    left: 0;
+    right: 0;
+    height: 12px;
+    background: transparent;
 }
 
 .nav-dropdown:hover .nav-dropdown-menu {
