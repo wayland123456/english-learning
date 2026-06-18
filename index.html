@@ -974,7 +974,7 @@
     <script src="js/exam-scores.js?v=1"></script>
     <script src="js/study-tracker.js?v=1"></script>
     <script src="js/messages.js?v=1"></script>
-    <script src="js/portfolio.js?v=1"></script>
+    <script src="js/portfolio.js?v=2"></script>
     <script src="js/app.js?v=12"></script>
     <!-- PWA Service Worker -->
     <script>
@@ -986,8 +986,8 @@
     (function() {
         function checkVersion() {
             if (typeof SoundFx === 'undefined' || !Portfolio.COUNTRY_PALETTE) {
-                if (!sessionStorage.getItem('refreshed_v11')) {
-                    sessionStorage.setItem('refreshed_v11', '1');
+                if (!sessionStorage.getItem('refreshed_v12')) {
+                    sessionStorage.setItem('refreshed_v12', '1');
                     window.location.reload(true);
                 }
             }
