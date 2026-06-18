@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="/english-learning/img/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" href="/english-learning/img/icons/favicon.png">
     <link rel="manifest" href="/english-learning/manifest.json">
-    <link rel="stylesheet" href="css/style.css?v=12">
+    <link rel="stylesheet" href="css/style.css?v=13">
     <link rel="stylesheet" href="css/ai-styles.css?v=1">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -281,33 +281,84 @@
         .guide-actions .pf-btn-ghost { flex:1; }
 
         /* 日记结果样式 */
-        .diary-timeline { position:relative; padding-left:1.5rem; margin-bottom:1.5rem; }
-        .diary-timeline:before { content:""; position:absolute; left:8px; top:0; bottom:0; width:2px; background:var(--border); }
-        .diary-entry { display:flex; align-items:flex-start; gap:1rem; margin-bottom:0.8rem; position:relative; cursor:pointer; }
-        .diary-entry-dot { width:18px; height:18px; border-radius:50%; background:var(--primary); border:3px solid var(--bg-card); flex-shrink:0; position:relative; z-index:1; margin-top:10px; }
-        .diary-entry-card { flex:1; padding:0.8rem 1rem; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; transition:all 0.2s; display:flex; gap:1rem; align-items:center; }
-        .diary-entry:hover .diary-entry-card { border-color:var(--primary); }
-        .diary-entry-date { font-size:0.82rem; font-weight:500; color:var(--primary); white-space:nowrap; }
-        .diary-entry-dest { font-size:0.9rem; color:var(--text); flex:1; }
-        .diary-entry-mood { font-size:0.82rem; color:var(--text-light); }
+        /* ========== 旅行手账 ========== */
+        .sb-hero { position:relative; overflow:hidden; padding:1.8rem 1.5rem 1.5rem; color:#fff; border-radius:0 0 28px 28px; }
+        .sb-hero-bg { position:absolute; inset:0; opacity:0.15; background:radial-gradient(circle at 20% 50%,#fff 0%,transparent 50%),radial-gradient(circle at 80% 30%,#fff 0%,transparent 40%); }
+        .sb-hero h1 { font-size:1.5rem; font-weight:700; position:relative; }
+        .sb-hero p { font-size:0.85rem; opacity:0.85; margin-top:0.3rem; position:relative; }
+        .sb-hero-stats { display:flex; gap:1rem; margin-top:1.2rem; position:relative; }
+        .sb-stat { text-align:center; flex:1; background:rgba(255,255,255,0.15); border-radius:12px; padding:0.6rem 0.4rem; backdrop-filter:blur(4px); }
+        .sb-stat-num { font-size:1.5rem; font-weight:800; line-height:1; }
+        .sb-stat-label { font-size:0.68rem; opacity:0.8; margin-top:0.2rem; }
 
-        .diary-result { max-width:750px; margin:0 auto; padding:1.5rem; }
-        .diary-result-card { padding:2rem; background:linear-gradient(135deg,rgba(15,110,86,0.06),rgba(29,158,117,0.06)); border-radius:16px; margin-bottom:1.5rem; }
-        .diary-result-date { font-size:0.85rem; color:var(--text-light); margin-bottom:0.5rem; }
-        .diary-result-dest { font-size:1.05rem; font-weight:500; color:var(--text); margin-bottom:1rem; }
-        .diary-result-text { font-size:1rem; color:var(--text); line-height:1.8; font-style:italic; }
-        .diary-details { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; }
-        .diary-detail-item { padding:0.8rem 1rem; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; display:flex; flex-direction:column; gap:0.3rem; }
-        .diary-detail-label { font-size:0.72rem; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px; }
-        .diary-detail-item span:last-child { font-size:0.88rem; color:var(--text); }
+        /* 护照印章 */
+        .sb-stamp-bar { display:flex; gap:0.5rem; flex-wrap:wrap; padding:0.6rem 0; }
+        .sb-stamp-slot { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem; background:var(--bg); border:2px dashed var(--border); color:var(--text-light); transition:all 0.3s; }
+        .sb-stamp-slot.earned { border-style:solid; border-color:#0f6e56; background:linear-gradient(135deg,rgba(15,110,86,0.08),rgba(29,158,117,0.08)); animation:sbStampIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+        @keyframes sbStampIn { 0%{transform:scale(0) rotate(-25deg);opacity:0} 100%{transform:scale(1) rotate(-3deg);opacity:1} }
+
+        /* 明信片墙 */
+        .sb-postcard-wall { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:0.8rem; }
+        .sb-postcard { position:relative; border-radius:14px; overflow:hidden; cursor:pointer; transition:all 0.3s; aspect-ratio:3/4; display:flex; flex-direction:column; box-shadow:0 2px 12px rgba(0,0,0,0.08); }
+        .sb-postcard:hover { transform:translateY(-4px) rotate(-1deg); box-shadow:0 8px 30px rgba(0,0,0,0.15); }
+        .sb-postcard-front { flex:1; display:flex; align-items:center; justify-content:center; font-size:3.5rem; position:relative; }
+        .sb-postcard-stamp { position:absolute; top:10px; right:10px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center; font-size:1rem; box-shadow:0 2px 8px rgba(0,0,0,0.12); transform:rotate(8deg); }
+        .sb-postcard-info { padding:0.8rem 0.9rem; background:#fff; border-top:1px dashed rgba(0,0,0,0.08); }
+        .sb-postcard-date { font-size:0.68rem; color:var(--text-light); font-style:italic; }
+        .sb-postcard-dest { font-size:0.88rem; font-weight:600; color:var(--text); margin:0.15rem 0; }
+        .sb-postcard-mood { font-size:0.72rem; color:var(--text-light); }
+
+        /* 创建页 - 国家选择卡 */
+        .sb-country-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem; }
+        .sb-country-card { position:relative; padding:1.2rem 0.5rem; text-align:center; border-radius:14px; border:2px solid var(--border); cursor:pointer; transition:all 0.2s; background:var(--bg-card); }
+        .sb-country-card:hover { border-color:var(--primary); transform:translateY(-2px); }
+        .sb-country-card.selected { border-color:#0f6e56; background:linear-gradient(135deg,rgba(15,110,86,0.06),rgba(29,158,117,0.06)); }
+        .sb-country-card .sb-cc-flag { font-size:2rem; display:block; margin-bottom:0.3rem; }
+        .sb-country-card .sb-cc-name { font-size:0.75rem; color:var(--text); font-weight:500; }
+
+        /* 创建页 - 活动贴纸 */
+        .sb-sticker-grid { display:flex; flex-wrap:wrap; gap:0.5rem; }
+        .sb-sticker { display:inline-flex; align-items:center; gap:0.35rem; padding:0.45rem 0.7rem; border-radius:20px; border:1.5px solid var(--border); font-size:0.78rem; cursor:pointer; transition:all 0.2s; background:var(--bg-card); white-space:nowrap; }
+        .sb-sticker.checked { background:linear-gradient(135deg,rgba(15,110,86,0.12),rgba(29,158,117,0.12)); border-color:#0f6e56; color:#0f6e56; }
+        .sb-sticker .sb-sticker-icon { font-size:1rem; }
+
+        /* 结果页 - 大号明信片 */
+        .sb-postcard-result { max-width:420px; margin:0 auto; }
+        .sb-postcard-big { position:relative; border-radius:18px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.12); background:#fff; }
+        .sb-postcard-big-front { padding:2.5rem 1.5rem; text-align:center; color:#fff; position:relative; min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        .sb-postcard-big-front .sb-pbf-flag { font-size:4rem; margin-bottom:0.5rem; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        .sb-postcard-big-front .sb-pbf-country { font-size:1.3rem; font-weight:700; }
+        .sb-postcard-big-front .sb-pbf-date { font-size:0.8rem; opacity:0.85; margin-top:0.3rem; }
+        .sb-postcard-big-front .sb-pbf-weather { font-size:2.5rem; margin-top:0.5rem; }
+        .sb-big-stamp { position:absolute; top:16px; right:16px; width:56px; height:56px; border-radius:50%; background:rgba(255,255,255,0.95); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:1.5rem; box-shadow:0 3px 12px rgba(0,0,0,0.15); transform:rotate(12deg); }
+        .sb-big-stamp:after { content:'VISITED'; font-size:0.45rem; font-weight:700; color:#c53030; letter-spacing:0.5px; margin-top:-2px; }
+        .sb-postcard-big-body { padding:1.5rem; background:linear-gradient(180deg,#fffdf7,#fff); }
+        .sb-postcard-big-body .sb-pbb-text { font-family:Georgia,'Times New Roman',serif; font-size:0.95rem; line-height:1.9; color:#3d2b1f; font-style:italic; }
+        .sb-postcard-big-body .sb-pbb-divider { width:60px; height:2px; background:linear-gradient(90deg,transparent,#d4a574,transparent); margin:1rem auto; }
+        .sb-postcard-big-body .sb-pbb-details { display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; margin-top:1rem; }
+        .sb-pbb-detail { padding:0.6rem 0.8rem; background:rgba(212,165,116,0.08); border-radius:10px; font-size:0.75rem; }
+        .sb-pbb-detail .sb-pbbd-label { color:#8b7355; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.2rem; }
+        .sb-pbb-detail .sb-pbbd-val { color:#3d2b1f; font-weight:500; }
+
+        /* 空状态 */
+        .sb-empty { text-align:center; padding:3rem 1.5rem; }
+        .sb-empty-passport { width:100px; height:130px; margin:0 auto 1.5rem; background:linear-gradient(135deg,#1a365d,#2b6cb0); border-radius:10px 10px 2px 2px; position:relative; display:flex; align-items:center; justify-content:center; font-size:3rem; color:rgba(255,255,255,0.3); }
+        .sb-empty-passport:before { content:''; position:absolute; bottom:8px; left:8px; right:8px; height:3px; background:rgba(255,255,255,0.3); border-radius:2px; }
+        .sb-empty h3 { color:var(--text); margin-bottom:0.5rem; }
+        .sb-empty p { color:var(--text-light); font-size:0.85rem; }
+
+        /* 创建按钮 */
+        .sb-create-btn { display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%; padding:0.9rem; margin-top:1rem; background:linear-gradient(135deg,#0f6e56,#1d9e75); color:#fff; border:none; border-radius:14px; font-size:1rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+        .sb-create-btn:hover { transform:translateY(-2px); box-shadow:0 4px 20px rgba(15,110,86,0.35); }
 
         @media (max-width:768px) {
             .pf-option-grid { grid-template-columns:repeat(2,1fr); }
             .pf-check-grid { grid-template-columns:1fr; }
             .pf-row { grid-template-columns:1fr; }
-            .diary-details { grid-template-columns:1fr; }
             .guide-actions { flex-direction:column; }
             .guide-result-hero h1 { font-size:1.2rem; }
+            .sb-postcard-wall { grid-template-columns:repeat(2,1fr); }
+            .sb-postcard-big { max-width:100%; }
         }
     </style>
     <!-- Supabase CDN -->
@@ -924,7 +975,7 @@
     <script src="js/study-tracker.js?v=1"></script>
     <script src="js/messages.js?v=1"></script>
     <script src="js/portfolio.js?v=1"></script>
-    <script src="js/app.js?v=11"></script>
+    <script src="js/app.js?v=12"></script>
     <!-- PWA Service Worker -->
     <script>
     if ('serviceWorker' in navigator) {
@@ -934,9 +985,9 @@
     }
     (function() {
         function checkVersion() {
-            if (typeof SoundFx === 'undefined' || !App.togglePanel) {
-                if (!sessionStorage.getItem('refreshed_v10')) {
-                    sessionStorage.setItem('refreshed_v10', '1');
+            if (typeof SoundFx === 'undefined' || !Portfolio.COUNTRY_PALETTE) {
+                if (!sessionStorage.getItem('refreshed_v11')) {
+                    sessionStorage.setItem('refreshed_v11', '1');
                     window.location.reload(true);
                 }
             }

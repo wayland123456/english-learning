@@ -299,34 +299,103 @@ const Portfolio = {
         }
     },
 
-    /* ========== 旅行日记 ========== */
+    /* ========== 旅行手账 (Scrapbook) ========== */
+    COUNTRY_PALETTE: {
+        uk:     { grad:'linear-gradient(135deg,#1a365d,#2b6cb0)', accent:'#2b6cb0', illustration:'🏰' },
+        usa:    { grad:'linear-gradient(135deg,#c53030,#2b6cb0)', accent:'#c53030', illustration:'🗽' },
+        australia: { grad:'linear-gradient(135deg,#dd6b20,#ecc94b)', accent:'#dd6b20', illustration:'🦘' },
+        canada:  { grad:'linear-gradient(135deg,#c53030,#ed8936)', accent:'#c53030', illustration:'🍁' },
+        ireland: { grad:'linear-gradient(135deg,#276749,#48bb78)', accent:'#276749', illustration:'🍀' },
+        newzealand: { grad:'linear-gradient(135deg,#234e52,#38a169)', accent:'#234e52', illustration:'🏔️' }
+    },
+
+    ACTIVITY_ICONS: {
+        'visited famous landmarks':'🏛️','took beautiful photos':'📸','tried local food':'🍽️',
+        'met friendly local people':'👋','went on a guided tour':'🎯','explored the city on foot':'🚶',
+        'took a boat trip':'⛵','visited a museum':'🏛️','relaxed at the beach':'🏖️',
+        'went hiking in nature':'🥾','watched a live performance':'🎭','bought souvenirs':'🎁',
+        'learned about local history':'📜','tasted delicious street food':'🍢','went to a local market':'🛍️'
+    },
+
     diary: {
         init() {
             var container = document.getElementById('diaryContainer');
             var diaryEntries = Portfolio._loadLocal('travel_entries') || [];
-            container.innerHTML = Portfolio.diary._renderList(diaryEntries);
+            container.innerHTML = Portfolio.diary._renderScrapbook(diaryEntries);
+            Portfolio.diary._animateStamps();
         },
 
-        _renderList(entries) {
-            var html = '<div class="page-header portfolio-header" style="background:linear-gradient(135deg,#0f6e56,#1d9e75)"><div class="page-header-overlay"></div><div class="page-header-content"><h1><i class="fas fa-book-open"></i> 旅行日记</h1><p>每天选一选，自动生成一篇英文旅行日记！</p></div></div>';
+        _renderScrapbook(entries) {
+            // 统计
+            var visitedCountries = {};
+            entries.forEach(function(e) {
+                if (!visitedCountries[e.destination]) visitedCountries[e.destination] = { count:0, lastDate:e.date };
+                visitedCountries[e.destination].count++;
+                if (e.date > visitedCountries[e.destination].lastDate) visitedCountries[e.destination].lastDate = e.date;
+            });
+            var countryCount = Object.keys(visitedCountries).length;
+            var totalDays = entries.length;
+
+            // 收集活动统计
+            var allActs = {};
+            entries.forEach(function(e) { e.activities.forEach(function(a) { allActs[a] = (allActs[a]||0)+1; }); });
+            var topAct = '';
+            var topActCount = 0;
+            for (var k in allActs) { if (allActs[k] > topActCount) { topActCount = allActs[k]; topAct = k; } }
+
+            // 页头
+            var html = '<div class="sb-hero" style="background:linear-gradient(135deg,#1a365d 0%,#2b6cb0 50%,#38a169 100%)"><div class="sb-hero-bg"></div><h1>✈️ 我的旅行手账</h1><p>每一次勾选，都是一枚旅行印章</p><div class="sb-hero-stats"><div class="sb-stat"><div class="sb-stat-num">' + countryCount + '</div><div class="sb-stat-label">目的地</div></div><div class="sb-stat"><div class="sb-stat-num">' + totalDays + '</div><div class="sb-stat-label">旅行记忆</div></div><div class="sb-stat"><div class="sb-stat-num">' + (topActCount || 0) + '</div><div class="sb-stat-label">最爱的活动</div></div></div></div>';
+
             html += '<div class="page-body"><div class="portfolio-section">';
 
+            // 护照印章栏
+            html += '<h3 class="portfolio-subtitle">🛂 我的旅行印章</h3><div class="sb-stamp-bar">';
+            var allCountries = DATA.resources.map(function(c) { return {id:c.id, flag:c.flag, name:c.countryCN}; });
+            allCountries.forEach(function(c) {
+                var earned = !!visitedCountries[c.id];
+                html += '<div class="sb-stamp-slot' + (earned ? ' earned' : '') + '" title="' + c.name + '">' + (earned ? c.flag : '?') + '</div>';
+            });
+            html += '</div>';
+
+            // 明信片墙
             if (entries.length > 0) {
-                html += '<h3 class="portfolio-subtitle">我的旅程</h3><div class="diary-timeline">';
+                html += '<h3 class="portfolio-subtitle">📬 旅行明信片</h3><div class="sb-postcard-wall">';
                 entries.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
                 entries.forEach(function(e, i) {
                     var c = DATA.resources.find(function(x) { return x.id === e.destination; });
-                    var dest = c ? c.flag + ' ' + c.countryCN : e.destination;
-                    html += '<div class="diary-entry" onclick="Portfolio.diary.viewEntry(' + i + ')"><div class="diary-entry-dot"></div><div class="diary-entry-card"><div class="diary-entry-date">' + new Date(e.date).toLocaleDateString('zh-CN', {month:'short',day:'numeric'}) + '</div><div class="diary-entry-dest">' + dest + '</div><div class="diary-entry-mood">' + (Portfolio.MOOD_EMOJI[e.mood] || '') + ' ' + e.mood + '</div></div></div>';
+                    var palette = Portfolio.COUNTRY_PALETTE[e.destination] || Portfolio.COUNTRY_PALETTE['uk'];
+                    var destName = c ? c.countryCN : e.destination;
+                    var flag = c ? c.flag : '🌍';
+                    var illustration = palette.illustration;
+                    var dateStr = new Date(e.date).toLocaleDateString('zh-CN', {month:'short',day:'numeric'});
+                    var preview = e.activities.slice(0,2).map(function(a){return Portfolio.ACTIVITY_ICONS[a]||'';}).join(' ') + ' ' + (Portfolio.MOOD_EMOJI[e.mood]||'');
+                    html += '<div class="sb-postcard" onclick="Portfolio.diary.viewEntry(' + i + ')" style="--accent:' + palette.accent + '">';
+                    html += '<div class="sb-postcard-front" style="background:' + palette.grad + '">';
+                    html += '<span style="font-size:3rem">' + illustration + '</span>';
+                    html += '<div class="sb-postcard-stamp">' + (Portfolio.MOOD_EMOJI[e.mood]||'😊') + '</div>';
+                    html += '</div>';
+                    html += '<div class="sb-postcard-info">';
+                    html += '<div class="sb-postcard-date">' + dateStr + '</div>';
+                    html += '<div class="sb-postcard-dest">' + flag + ' ' + destName + '</div>';
+                    html += '<div class="sb-postcard-mood">' + preview + '</div>';
+                    html += '</div></div>';
                 });
                 html += '</div>';
             } else {
-                html += '<div class="pf-empty"><i class="fas fa-feather-alt"></i><h3>还没有旅行日记</h3><p>快写一篇你的虚拟旅行日记吧！</p></div>';
+                html += '<div class="sb-empty"><div class="sb-empty-passport">✈️</div><h3>你的旅行护照还是空的</h3><p>去「写一篇新日记」，收集你的第一枚旅行印章吧！</p></div>';
             }
 
-            html += '<button class="portfolio-create-btn" onclick="Portfolio.diary.create()"><i class="fas fa-plus-circle"></i> 写一篇新日记</button>';
+            html += '<button class="sb-create-btn" onclick="Portfolio.diary.create()"><i class="fas fa-feather-alt"></i> 开始新的旅行记忆</button>';
             html += '</div></div>';
             return html;
+        },
+
+        _animateStamps() {
+            var stamps = document.querySelectorAll('.sb-stamp-slot.earned');
+            stamps.forEach(function(s, i) {
+                s.style.animationDelay = (i * 0.1) + 's';
+                setTimeout(function() { s.classList.add('earned'); }, i * 100);
+            });
         },
 
         create() {
@@ -338,49 +407,48 @@ const Portfolio = {
         _renderBuilder() {
             var today = new Date().toISOString().split('T')[0];
 
-            var html = '<div class="pf-header-small"><button class="pf-back-btn" onclick="Portfolio.diary.init()"><i class="fas fa-arrow-left"></i> 返回</button><h2>写一篇新日记</h2></div>';
+            var html = '<div class="pf-header-small"><button class="pf-back-btn" onclick="Portfolio.diary.init()"><i class="fas fa-arrow-left"></i> 返回手账</button><h2>✏️ 今日旅行手账</h2></div>';
             html += '<div class="pf-form">';
 
-            // Step 1: Date + Destination
-            html += '<div class="pf-step"><div class="pf-step-title"><span class="pf-step-num">1</span> 日期 & 目的地</div>';
-            html += '<div class="pf-row"><div class="pf-field"><label>日期</label><input type="date" id="diaryDate" value="' + today + '" class="pf-input"></div>';
-            html += '<div class="pf-field"><label>目的地</label><select id="diaryDest" class="pf-input"><option value="">选择城市</option>';
+            // Step 1: 选目的地 — 国家卡片
+            html += '<div class="pf-step"><div class="pf-step-title"><span class="pf-step-num">1</span> 今天飞去哪？</div>';
+            html += '<div class="pf-field" style="margin-bottom:0.6rem"><label>日期</label><input type="date" id="diaryDate" value="' + today + '" class="pf-input"></div>';
+            html += '<div class="sb-country-grid" id="countryGrid">';
             DATA.resources.forEach(function(c) {
-                c.attractions.forEach(function(a) {
-                    var loc = a.location.split(',')[0].trim();
-                    html += '<option value="' + c.id + '">' + c.flag + ' ' + loc + '</option>';
-                });
+                var p = Portfolio.COUNTRY_PALETTE[c.id] || { illustration:'🌍' };
+                html += '<div class="sb-country-card" data-country="' + c.id + '" onclick="Portfolio.diary._selectCountry(this,\'' + c.id + '\')"><span class="sb-cc-flag">' + p.illustration + '</span><span class="sb-cc-name">' + c.flag + ' ' + c.countryCN + '</span></div>';
             });
-            html += '</select></div></div></div>';
+            html += '</div><input type="hidden" id="diaryDest" value=""></div>';
 
-            // Step 2: Activities
-            html += '<div class="pf-step"><div class="pf-step-title"><span class="pf-step-num">2</span> 今天做了什么？（多选）</div><div class="pf-check-grid">';
-            Portfolio.ACTIVITIES.forEach(function(a) {
-                html += '<label class="pf-check-item"><input type="checkbox" name="diaryAct" value="' + Portfolio._escape(a) + '"><span>' + a + '</span></label>';
+            // Step 2: 活动贴纸
+            html += '<div class="pf-step"><div class="pf-step-title"><span class="pf-step-num">2</span> 今天做了什么？（点击贴纸）</div><div class="sb-sticker-grid" id="stickerGrid">';
+            Portfolio.ACTIVITIES.forEach(function(a, i) {
+                var icon = Portfolio.ACTIVITY_ICONS[a] || '✨';
+                html += '<span class="sb-sticker" data-act="' + Portfolio._escape(a) + '" onclick="Portfolio.diary._toggleSticker(this)"><span class="sb-sticker-icon">' + icon + '</span>' + a + '</span>';
             });
             html += '</div></div>';
 
-            // Step 3: Weather
-            html += '<div class="pf-step"><div class="pf-step-title"><span class="pf-step-num">3</span> 天气怎么样？</div><div class="pf-option-grid">';
+            // Step 3: 天气 + 心情 (并排)
+            html += '<div class="pf-step"><div class="pf-step-title"><span class="pf-step-num">3</span> 天气 & 心情</div>';
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">';
+            html += '<div><label style="font-size:0.78rem;color:var(--text-light);margin-bottom:0.4rem;display:block">天气</label><div class="pf-option-grid" style="grid-template-columns:repeat(2,1fr)">';
             Portfolio.WEATHER.forEach(function(w) {
                 html += '<label class="pf-option-card pf-option-sm pf-radio"><input type="radio" name="diaryWeather" value="' + w + '"><span class="pf-option-emoji">' + (Portfolio.WEATHER_EMOJI[w] || '') + '</span><span class="pf-option-label">' + w + '</span></label>';
             });
             html += '</div></div>';
-
-            // Step 4: Mood
-            html += '<div class="pf-step"><div class="pf-step-title"><span class="pf-step-num">4</span> 心情如何？</div><div class="pf-option-grid">';
+            html += '<div><label style="font-size:0.78rem;color:var(--text-light);margin-bottom:0.4rem;display:block">心情</label><div class="pf-option-grid" style="grid-template-columns:repeat(2,1fr)">';
             Portfolio.MOOD.forEach(function(m) {
                 html += '<label class="pf-option-card pf-option-sm pf-radio"><input type="radio" name="diaryMood" value="' + m + '"><span class="pf-option-emoji">' + (Portfolio.MOOD_EMOJI[m] || '') + '</span><span class="pf-option-label">' + m + '</span></label>';
             });
-            html += '</div></div>';
+            html += '</div></div></div></div>';
 
-            // Step 5: Vocab
-            html += '<div class="pf-step"><div class="pf-step-title"><span class="pf-step-num">5</span> 今天学了什么词汇？（自动提取 + 可追加）</div>';
+            // Step 4: 词汇
+            html += '<div class="pf-step"><div class="pf-step-title"><span class="pf-step-num">4</span> 今天学了什么词汇？</div>';
             var learned = Portfolio.getLearnedVocab();
             if (learned.length > 0) {
-                html += '<div class="pf-vocab-hint">已为你提取学习记录中的词汇：</div><div class="pf-check-grid">';
+                html += '<div class="pf-vocab-hint">已为你提取学习记录中的词汇：</div><div class="sb-sticker-grid">';
                 learned.forEach(function(v) {
-                    html += '<label class="pf-check-item pf-check-sm"><input type="checkbox" name="diaryVocab" value="' + Portfolio._escape(v) + '" checked><span>' + v + '</span></label>';
+                    html += '<label class="sb-sticker checked"><input type="checkbox" name="diaryVocab" value="' + Portfolio._escape(v) + '" checked style="display:none"><span>' + v + '</span></label>';
                 });
                 html += '</div>';
             } else {
@@ -389,10 +457,34 @@ const Portfolio = {
             html += '</div>';
 
             // Generate
-            html += '<div class="pf-step"><button class="pf-generate-btn" onclick="Portfolio.diary.generate()"><i class="fas fa-feather-alt"></i> 一键生成日记！</button></div>';
+            html += '<div class="pf-step"><button class="pf-generate-btn" onclick="Portfolio.diary.generate()" style="background:linear-gradient(135deg,#0f6e56,#1d9e75)"><i class="fas fa-stamp"></i> 盖上旅行印章！</button></div>';
 
             html += '</div>';
             return html;
+        },
+
+        _selectCountry(el, countryId) {
+            document.querySelectorAll('.sb-country-card').forEach(function(c) { c.classList.remove('selected'); });
+            el.classList.add('selected');
+            document.getElementById('diaryDest').value = countryId;
+        },
+
+        _toggleSticker(el) {
+            el.classList.toggle('checked');
+            // 同步 hidden checkbox
+            var val = el.getAttribute('data-act');
+            var existing = document.querySelector('input[name="diaryAct"][value="' + Portfolio._escape(val).replace(/"/g,'&quot;') + '"]');
+            if (el.classList.contains('checked') && !existing) {
+                var input = document.createElement('input');
+                input.type = 'checkbox';
+                input.name = 'diaryAct';
+                input.value = val;
+                input.checked = true;
+                input.style.display = 'none';
+                el.appendChild(input);
+            } else if (!el.classList.contains('checked') && existing) {
+                existing.remove();
+            }
         },
 
         _bindBuilderEvents() {},
@@ -404,7 +496,7 @@ const Portfolio = {
             var moodEl = document.querySelector('input[name="diaryMood"]:checked');
 
             if (!date) { App.toast('请选择日期', 'error'); return; }
-            if (!dest) { App.toast('请选择目的地', 'error'); return; }
+            if (!dest) { App.toast('请选择目的地（点击国家卡片）', 'error'); return; }
             if (!weatherEl) { App.toast('请选择天气', 'error'); return; }
             if (!moodEl) { App.toast('请选择心情', 'error'); return; }
 
@@ -429,24 +521,17 @@ const Portfolio = {
 
             // Show result
             var container = document.getElementById('diaryContainer');
-            container.innerHTML = Portfolio.diary._renderEntry(entry);
-            App.toast('日记生成成功！', 'success');
+            container.innerHTML = Portfolio.diary._renderPostcard(entry);
+            App.toast('旅行印章已盖上！📬', 'success');
         },
 
-        _renderEntry(entry) {
+        _renderPostcard(entry) {
             var c = DATA.resources.find(function(x) { return x.id === entry.destination; });
-            var destName = c ? c.flag + ' ' + c.country : entry.destination;
-            var locName = '';
-            if (c) {
-                var attr = c.attractions[0];
-                if (attr) locName = attr.location;
-            }
+            var palette = Portfolio.COUNTRY_PALETTE[entry.destination] || Portfolio.COUNTRY_PALETTE['uk'];
+            var destName = c ? c.flag + ' ' + c.countryCN : entry.destination;
 
-            var html = '<div class="pf-header-small"><button class="pf-back-btn" onclick="Portfolio.diary.init()"><i class="fas fa-arrow-left"></i> 返回列表</button><h2>' + Portfolio.MOOD_EMOJI[entry.mood] + ' 旅行日记</h2></div>';
-            html += '<div class="diary-result">';
-
-            // Build the diary text
-            var diaryText = 'Today I visited ' + destName + '. ';
+            // Build diary text
+            var diaryText = 'Today I visited ' + (c ? c.country : entry.destination) + '. ';
             if (entry.activities.length > 0) {
                 diaryText += 'I ' + entry.activities.join(', ') + '. ';
             }
@@ -456,13 +541,34 @@ const Portfolio = {
             }
             diaryText += 'I feel ' + entry.mood + '!';
 
-            html += '<div class="diary-result-card"><div class="diary-result-date">' + new Date(entry.date).toLocaleDateString('zh-CN', {weekday:'long',year:'numeric',month:'long',day:'numeric'}) + '</div><div class="diary-result-dest">' + Portfolio.WEATHER_EMOJI[entry.weather] + ' ' + destName + ' ' + Portfolio.MOOD_EMOJI[entry.mood] + '</div><div class="diary-result-text">' + diaryText + '</div></div>';
+            var dateFull = new Date(entry.date).toLocaleDateString('zh-CN', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+            var dateShort = new Date(entry.date).toLocaleDateString('zh-CN', {month:'short',day:'numeric'});
 
-            // Details
-            html += '<div class="diary-details"><div class="diary-detail-item"><span class="diary-detail-label">Activities</span><span>' + (entry.activities.length > 0 ? entry.activities.join(', ') : 'None') + '</span></div><div class="diary-detail-item"><span class="diary-detail-label">Weather</span><span>' + Portfolio.WEATHER_EMOJI[entry.weather] + ' ' + entry.weather + '</span></div><div class="diary-detail-item"><span class="diary-detail-label">Mood</span><span>' + Portfolio.MOOD_EMOJI[entry.mood] + ' ' + entry.mood + '</span></div><div class="diary-detail-item"><span class="diary-detail-label">New Words</span><span>' + (entry.vocab.length > 0 ? entry.vocab.join(', ') : 'None') + '</span></div></div>';
+            var html = '<div class="pf-header-small"><button class="pf-back-btn" onclick="Portfolio.diary.init()"><i class="fas fa-arrow-left"></i> 返回手账</button><h2>📬 ' + Portfolio.MOOD_EMOJI[entry.mood] + ' 旅行明信片</h2></div>';
 
-            html += '<div class="guide-actions"><button class="pf-generate-btn" onclick="Portfolio.diary.create()"><i class="fas fa-plus-circle"></i> 再写一篇</button><button class="pf-generate-btn pf-btn-ghost" onclick="Portfolio.diary.init()"><i class="fas fa-list"></i> 日记列表</button></div>';
+            html += '<div class="sb-postcard-result">';
+            html += '<div class="sb-postcard-big">';
+            // 正面 — 目的地插画
+            html += '<div class="sb-postcard-big-front" style="background:' + palette.grad + '">';
+            html += '<span class="sb-pbf-flag">' + palette.illustration + '</span>';
+            html += '<span class="sb-pbf-country">' + destName + '</span>';
+            html += '<span class="sb-pbf-date">' + dateShort + '</span>';
+            html += '<span class="sb-pbf-weather">' + (Portfolio.WEATHER_EMOJI[entry.weather] || '') + '</span>';
+            html += '<div class="sb-big-stamp">' + (c ? c.flag : '🌍') + '</div>';
+            html += '</div>';
+            // 背面 — 日记正文
+            html += '<div class="sb-postcard-big-body">';
+            html += '<div class="sb-pbb-text">' + diaryText + '</div>';
+            html += '<div class="sb-pbb-divider"></div>';
+            html += '<div style="font-size:0.78rem;color:#8b7355;font-style:italic">— ' + dateFull + '</div>';
+            html += '<div class="sb-pbb-details">';
+            html += '<div class="sb-pbb-detail"><div class="sb-pbbd-label">Activities</div><div class="sb-pbbd-val">' + (entry.activities.length > 0 ? entry.activities.map(function(a){return (Portfolio.ACTIVITY_ICONS[a]||'')+' '+a;}).join(', ') : '—') + '</div></div>';
+            html += '<div class="sb-pbb-detail"><div class="sb-pbbd-label">Weather</div><div class="sb-pbbd-val">' + (Portfolio.WEATHER_EMOJI[entry.weather]||'') + ' ' + entry.weather + '</div></div>';
+            html += '<div class="sb-pbb-detail"><div class="sb-pbbd-label">Mood</div><div class="sb-pbbd-val">' + (Portfolio.MOOD_EMOJI[entry.mood]||'') + ' ' + entry.mood + '</div></div>';
+            html += '<div class="sb-pbb-detail"><div class="sb-pbbd-label">New Words</div><div class="sb-pbbd-val">' + (entry.vocab.length > 0 ? entry.vocab.join(', ') : '—') + '</div></div>';
+            html += '</div></div></div>';
 
+            html += '<div class="guide-actions" style="margin-top:1.5rem"><button class="pf-generate-btn" onclick="Portfolio.diary.create()"><i class="fas fa-plus-circle"></i> 再写一篇</button><button class="pf-generate-btn pf-btn-ghost" onclick="Portfolio.diary.init()"><i class="fas fa-images"></i> 我的明信片墙</button></div>';
             html += '</div>';
             return html;
         },
@@ -471,9 +577,9 @@ const Portfolio = {
             var entries = Portfolio._loadLocal('travel_entries') || [];
             entries.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
             var entry = entries[index];
-            if (!entry) { App.toast('日记不存在', 'error'); return; }
+            if (!entry) { App.toast('这篇旅行记忆找不到了', 'error'); return; }
             var container = document.getElementById('diaryContainer');
-            container.innerHTML = Portfolio.diary._renderEntry(entry);
+            container.innerHTML = Portfolio.diary._renderPostcard(entry);
         }
     },
 
