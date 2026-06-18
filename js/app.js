@@ -42,9 +42,9 @@ const App = {
             toggle.classList.toggle('active', !!hasActive);
         });
 
-        // 关闭移动端导航
+        // 关闭移动端导航和面板
         this.closeMobileNav();
-        this.closeMobileMoreMenu();
+        this.closePanel();
 
         // 更新底部导航高亮
         this._updateBottomNav(page);
@@ -71,9 +71,80 @@ const App = {
 
     toggleMobileNav() {
         const navLinks = document.getElementById('navLinks');
+        const isOpen = navLinks.classList.contains('show');
+
+        if (!isOpen) {
+            // 打开前注入遮罩层和抽屉头部
+            this._ensureDrawerOverlay();
+            this._injectDrawerHeader();
+            this._setupDropdownToggles();
+            document.getElementById('navDrawerOverlay').classList.add('show');
+            // 注入用户信息
+            const userEl = document.getElementById('navUser');
+            if (userEl) {
+                userEl.classList.add('show-in-drawer');
+                document.getElementById('navLinks').appendChild(userEl);
+            }
+        } else {
+            const overlay = document.getElementById('navDrawerOverlay');
+            if (overlay) overlay.classList.remove('show');
+            // 把用户信息移回navbar
+            const userEl = document.getElementById('navUser');
+            if (userEl && userEl.parentElement === navLinks) {
+                document.getElementById('navbar').appendChild(userEl);
+                userEl.classList.remove('show-in-drawer');
+            }
+        }
+
         navLinks.classList.toggle('show');
-        // 防止背景滚动
         document.body.style.overflow = navLinks.classList.contains('show') ? 'hidden' : '';
+    },
+
+    _ensureDrawerOverlay() {
+        if (!document.getElementById('navDrawerOverlay')) {
+            const overlay = document.createElement('div');
+            overlay.id = 'navDrawerOverlay';
+            overlay.className = 'nav-drawer-overlay';
+            overlay.onclick = () => this.closeMobileNav();
+            document.body.appendChild(overlay);
+        }
+    },
+
+    _injectDrawerHeader() {
+        const navLinks = document.getElementById('navLinks');
+        if (navLinks.querySelector('.nav-drawer-header')) return;
+
+        const username = document.getElementById('navUsername')?.textContent || '学生';
+        const header = document.createElement('div');
+        header.className = 'nav-drawer-header';
+        header.innerHTML = `
+            <div class="user-info">
+                <div class="nav-drawer-avatar"><i class="fas fa-user-graduate"></i></div>
+                <div>
+                    <div class="nav-drawer-username">${username}</div>
+                    <div class="nav-drawer-role">学生</div>
+                </div>
+            </div>
+            <button class="nav-drawer-close" onclick="App.closeMobileNav()"><i class="fas fa-times"></i></button>
+        `;
+        navLinks.insertBefore(header, navLinks.firstChild);
+    },
+
+    _setupDropdownToggles() {
+        document.querySelectorAll('#navLinks .nav-dropdown-toggle').forEach(toggle => {
+            if (toggle.dataset.mobileSetup) return;
+            toggle.dataset.mobileSetup = '1';
+            toggle.addEventListener('click', function(e) {
+                if (window.innerWidth > 768) return;
+                e.preventDefault();
+                e.stopPropagation();
+                const menu = this.nextElementSibling;
+                if (menu && menu.classList.contains('nav-dropdown-menu')) {
+                    menu.classList.toggle('show');
+                    this.classList.toggle('expanded');
+                }
+            });
+        });
     },
 
     closeMobileNav() {
@@ -81,33 +152,77 @@ const App = {
         if (navLinks) {
             navLinks.classList.remove('show');
             document.body.style.overflow = '';
+            // 把用户信息移回navbar
+            const userEl = document.getElementById('navUser');
+            if (userEl && userEl.parentElement === navLinks) {
+                document.getElementById('navbar').appendChild(userEl);
+                userEl.classList.remove('show-in-drawer');
+            }
         }
+        const overlay = document.getElementById('navDrawerOverlay');
+        if (overlay) overlay.classList.remove('show');
     },
 
-    toggleMobileMoreMenu() {
-        const overlay = document.getElementById('mobileMoreOverlay');
-        const menu = document.getElementById('mobileMoreMenu');
-        if (overlay && menu) {
+    /* ========== 移动端底部面板 ========== */
+    _activePanel: null,
+
+    togglePanel(panelName) {
+        if (this._activePanel === panelName) {
+            this.closePanel();
+            return;
+        }
+        this.closePanel();
+
+        const overlay = document.getElementById('mobilePanelOverlay');
+        const panel = document.getElementById('panel-' + panelName);
+
+        if (overlay && panel) {
             overlay.classList.remove('hidden');
-            menu.classList.remove('hidden');
+            panel.classList.remove('hidden');
+            this._activePanel = panelName;
             document.body.style.overflow = 'hidden';
+
+            // 高亮底部按钮
+            document.querySelectorAll('.mbn-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.page === panelName);
+            });
         }
     },
 
-    closeMobileMoreMenu() {
-        const overlay = document.getElementById('mobileMoreOverlay');
-        const menu = document.getElementById('mobileMoreMenu');
-        if (overlay && menu) {
-            overlay.classList.add('hidden');
-            menu.classList.add('hidden');
-            document.body.style.overflow = '';
-        }
+    closePanel() {
+        const overlay = document.getElementById('mobilePanelOverlay');
+        if (overlay) overlay.classList.add('hidden');
+
+        document.querySelectorAll('.mobile-panel').forEach(p => p.classList.add('hidden'));
+        this._activePanel = null;
+        document.body.style.overflow = '';
+
+        // 恢复底部导航高亮
+        this._updateBottomNav(this.currentPage);
+    },
+
+    fromPanel(page) {
+        this.closePanel();
+        this.showPage(page);
     },
 
     _updateBottomNav(page) {
         const items = document.querySelectorAll('.mbn-item');
         items.forEach(item => {
-            item.classList.toggle('active', item.dataset.page === page);
+            const dp = item.dataset.page;
+            let isActive = false;
+
+            if (dp === page) {
+                isActive = true;
+            } else if (dp === 'skills' && ['speaking','listening','vocabulary','grammar','sentences','writing'].includes(page)) {
+                isActive = true;
+            } else if (dp === 'showcase' && ['guide','diary'].includes(page)) {
+                isActive = true;
+            } else if (dp === 'mine' && ['exam','messages'].includes(page)) {
+                isActive = true;
+            }
+
+            item.classList.toggle('active', isActive);
         });
     },
 
