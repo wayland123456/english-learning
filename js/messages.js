@@ -71,36 +71,42 @@ const Messages = {
 
     /* ---------- 学生加载自己的消息（发送+接收） ---------- */
     async loadMyMessages(username) {
+        console.log('[Messages] loadMyMessages called, username:', username);
         try {
             // 加载我发的消息，以及老师发给我的消息
+            // 注意：Supabase .or() 里字符串值需要正确处理，用单独的 eq() 拼装
             const { data, error } = await db
                 .from('messages')
                 .select('*')
-                .or(`sender_username.eq.${username},receiver_username.eq.${username}`)
+                .or('sender_username.eq."' + username + '",receiver_username.eq."' + username + '"')
                 .order('created_at', { ascending: false })
                 .limit(50);
+
+            console.log('[Messages] loadMyMessages result:', { data, error, count: data ? data.length : 0 });
 
             if (error) {
                 // 如果 receiver_username 列不存在，降级为只查发送的消息
                 if (error.message && error.message.includes('receiver_username')) {
+                    console.warn('[Messages] receiver_username column not found, falling back');
                     const { data: d2, error: e2 } = await db
                         .from('messages')
                         .select('*')
                         .eq('sender_username', username)
                         .order('created_at', { ascending: false })
                         .limit(50);
-                    if (e2) return [];
+                    if (e2) { console.error('[Messages] fallback error:', e2); return []; }
                     return d2 || [];
                 }
                 if (error.code === 'PGRST204' || error.code === '42P01') {
+                    console.warn('[Messages] table not found');
                     return [];
                 }
-                console.error('加载消息失败：', error);
+                console.error('[Messages] load error:', error);
                 return [];
             }
             return data || [];
         } catch (e) {
-            console.error('加载消息失败：', e);
+            console.error('[Messages] load exception:', e);
             return [];
         }
     },
