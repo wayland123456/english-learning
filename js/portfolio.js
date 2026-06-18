@@ -360,11 +360,12 @@ const Portfolio = {
     diary: {
         init() {
             var container = document.getElementById('diaryContainer');
+            if (!container) return;
             var diaryEntries = Portfolio._loadLocal('travel_entries') || [];
             container.innerHTML = Portfolio.diary._renderScrapbook(diaryEntries);
             Portfolio.diary._animateStamps();
-            // 绑定按钮事件（替代 inline onclick，更可靠）
-            var createBtn = container.querySelector('.sb-create-btn');
+            // 绑定创建按钮（使用事件委托，更可靠）
+            var createBtn = document.getElementById('sbCreateBtn');
             if (createBtn) {
                 createBtn.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -483,7 +484,7 @@ const Portfolio = {
                 html += '</div></div>';
             }
 
-            html += '<button class="sb-create-btn" onclick="Portfolio.diary.create()"><i class="fas fa-feather-alt"></i> 开始新的旅行记忆 ✨</button>';
+            html += '<button class="sb-create-btn" id="sbCreateBtn"><i class="fas fa-feather-alt"></i> 开始新的旅行记忆 ✨</button>';
             html += '</div></div>';
             return html;
         },
@@ -497,12 +498,28 @@ const Portfolio = {
         },
 
         create() {
-            var container = document.getElementById('diaryContainer');
-            container.innerHTML = Portfolio.diary._renderBuilder();
-            Portfolio.diary._bindBuilderEvents();
+            try {
+                var container = document.getElementById('diaryContainer');
+                if (!container) {
+                    var msg = '页面加载异常，请刷新';
+                    if (typeof App !== 'undefined' && App.toast) App.toast(msg, 'error');
+                    else alert(msg);
+                    return;
+                }
+                container.innerHTML = Portfolio.diary._renderBuilder();
+                Portfolio.diary._bindBuilderEvents();
+            } catch(e) {
+                console.error('diary.create error:', e);
+                var errMsg = '打开创建页面失败：' + e.message;
+                if (typeof App !== 'undefined' && App.toast) App.toast(errMsg, 'error');
+                else alert(errMsg);
+            }
         },
 
         _renderBuilder() {
+            if (typeof DATA === 'undefined') {
+                return '<div class="sb-empty"><h3>⚠️ 数据加载失败</h3><p>请刷新页面重试。如果问题持续，请联系老师。</p></div>';
+            }
             var today = new Date().toISOString().split('T')[0];
 
             var html = '<div class="pf-header-small"><button class="pf-back-btn" onclick="Portfolio.diary.init()"><i class="fas fa-arrow-left"></i> 返回手账</button><h2>✏️ 今日旅行手账</h2></div>';
@@ -514,7 +531,7 @@ const Portfolio = {
             html += '<div class="sb-country-grid" id="countryGrid">';
             DATA.resources.forEach(function(c) {
                 var p = Portfolio.COUNTRY_PALETTE[c.id] || { illustration:'🌍' };
-                html += '<div class="sb-country-card" data-country="' + c.id + '" onclick="Portfolio.diary._selectCountry(this,\'' + c.id + '\')"><span class="sb-cc-flag">' + p.illustration + '</span><span class="sb-cc-name">' + c.flag + ' ' + c.countryCN + '</span></div>';
+                html += '<div class="sb-country-card" data-country="' + c.id + '"><span class="sb-cc-flag">' + p.illustration + '</span><span class="sb-cc-name">' + c.flag + ' ' + c.countryCN + '</span></div>';
             });
             html += '</div><input type="hidden" id="diaryDest" value=""></div>';
 
@@ -522,7 +539,7 @@ const Portfolio = {
             html += '<div class="pf-step"><div class="pf-step-title"><span class="pf-step-num">2</span> 今天做了什么？（点击贴纸）</div><div class="sb-sticker-grid" id="stickerGrid">';
             Portfolio.ACTIVITIES.forEach(function(a, i) {
                 var icon = Portfolio.ACTIVITY_ICONS[a] || '✨';
-                html += '<span class="sb-sticker" data-act="' + Portfolio._escape(a) + '" onclick="Portfolio.diary._toggleSticker(this)"><span class="sb-sticker-icon">' + icon + '</span>' + a + '</span>';
+                html += '<span class="sb-sticker" data-act="' + Portfolio._escape(a) + '"><span class="sb-sticker-icon">' + icon + '</span>' + a + '</span>';
             });
             html += '</div></div>';
 
@@ -555,7 +572,7 @@ const Portfolio = {
             html += '</div>';
 
             // Generate
-            html += '<div class="pf-step"><button class="pf-generate-btn" onclick="Portfolio.diary.generate()" style="background:linear-gradient(135deg,#0f6e56,#1d9e75)"><i class="fas fa-stamp"></i> 盖上旅行印章！</button></div>';
+            html += '<div class="pf-step"><button class="pf-generate-btn" id="diaryGenerateBtn" style="background:linear-gradient(135deg,#0f6e56,#1d9e75)"><i class="fas fa-stamp"></i> 盖上旅行印章！</button></div>';
 
             html += '</div>';
             return html;
@@ -585,7 +602,32 @@ const Portfolio = {
             }
         },
 
-        _bindBuilderEvents() {},
+        _bindBuilderEvents() {
+            // 国家卡片点击
+            var grid = document.getElementById('countryGrid');
+            if (grid) {
+                grid.addEventListener('click', function(e) {
+                    var card = e.target.closest('.sb-country-card');
+                    if (!card) return;
+                    Portfolio.diary._selectCountry(card, card.dataset.country);
+                });
+            }
+            // 贴纸点击
+            var stickerGrid = document.getElementById('stickerGrid');
+            if (stickerGrid) {
+                stickerGrid.addEventListener('click', function(e) {
+                    var sticker = e.target.closest('.sb-sticker');
+                    if (!sticker) return;
+                    Portfolio.diary._toggleSticker(sticker);
+                });
+            }
+            // 生成按钮
+            var genBtn = document.getElementById('diaryGenerateBtn');
+            if (genBtn) {
+                genBtn.addEventListener('click', function() { Portfolio.diary.generate(); });
+            }
+            // 返回按钮（使用事件委托在init里处理）
+        },
 
         generate() {
             var date = document.getElementById('diaryDate').value;
