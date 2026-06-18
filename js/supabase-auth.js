@@ -29,6 +29,7 @@ const SupabaseAuth = {
                     this.currentUser = data;
                     this.currentUsername = data.username;
                     this.onLoginSuccess();
+                    this._recordLogin();
                 } else {
                     localStorage.removeItem('travelEdu_currentUser');
                 }
@@ -64,6 +65,7 @@ const SupabaseAuth = {
         this.currentUsername = data.username;
         localStorage.setItem('travelEdu_currentUser', JSON.stringify(data));
         this.onLoginSuccess();
+        this._recordLogin();
         return { success: true, message: `欢迎回来，${data.display_name || username}！` };
     },
 
@@ -127,6 +129,10 @@ const SupabaseAuth = {
         App.updateProgress();
         // 登录后从云端加载进度
         this.loadProgress();
+        // 启动学习时长追踪
+        if (typeof StudyTracker !== 'undefined') {
+            StudyTracker.init();
+        }
     },
 
     /* ---------- 获取进度（同步，从 localStorage 读） ---------- */
@@ -187,7 +193,34 @@ const SupabaseAuth = {
         }
     },
 
-    /* ---------- 从云端加载进度到本地 ---------- */
+    /* ---------- 记录登录时间到 progress 表 ---------- */
+    async _recordLogin() {
+        if (!this.currentUsername) return;
+        try {
+            const now = new Date().toISOString();
+            const { error } = await db
+                .from('progress')
+                .upsert([{
+                    username: this.currentUsername,
+                    last_login: now,
+                    last_update: now
+                }], {
+                    onConflict: 'username',
+                    ignoreDuplicates: false
+                });
+
+            if (error) {
+                // 如果 last_login 字段还不存在（数据库未更新），静默失败
+                if (error.code !== 'PGRST204' && error.code !== '42703') {
+                    console.warn('[Auth] 记录登录时间失败：', error.message);
+                }
+            } else {
+                console.log('[Auth] 登录时间已记录：', now);
+            }
+        } catch (e) {
+            // 网络错误静默处理，不影响用户体验
+        }
+    },
     async loadProgress() {
         if (!this.currentUsername) return;
         try {
