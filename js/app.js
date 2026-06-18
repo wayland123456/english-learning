@@ -35,6 +35,12 @@ const App = {
         document.querySelectorAll('.nav-link').forEach(link => {
             link.classList.toggle('active', link.dataset.page === page);
         });
+        // 更新下拉菜单父级高亮
+        document.querySelectorAll('.nav-dropdown-toggle').forEach(toggle => {
+            const dropdown = toggle.closest('.nav-dropdown');
+            const hasActive = dropdown && dropdown.querySelector('.nav-link.active');
+            toggle.classList.toggle('active', !!hasActive);
+        });
 
         // 关闭移动端导航
         this.closeMobileNav();

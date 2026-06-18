@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="/english-learning/img/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" href="/english-learning/img/icons/favicon.png">
     <link rel="manifest" href="/english-learning/manifest.json">
-    <link rel="stylesheet" href="css/style.css?v=9">
+    <link rel="stylesheet" href="css/style.css?v=10">
     <link rel="stylesheet" href="css/ai-styles.css?v=1">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -346,41 +346,57 @@
                 <i class="fas fa-home"></i> 首页
             </a>
             <a href="#" onclick="App.showPage('resources');return false" class="nav-link" data-page="resources">
-                <i class="fas fa-book-open"></i> 自主学习
+                <i class="fas fa-globe-americas"></i> 自主学习
             </a>
-            <a href="#" onclick="App.showPage('speaking');return false" class="nav-link" data-page="speaking">
-                <i class="fas fa-microphone"></i> 口语练习
-            </a>
-            <a href="#" onclick="App.showPage('listening');return false" class="nav-link" data-page="listening">
-                <i class="fas fa-headphones"></i> 听力练习
-            </a>
-            <a href="#" onclick="App.showPage('vocabulary');return false" class="nav-link" data-page="vocabulary">
-                <i class="fas fa-layer-group"></i> 词汇闪卡
-            </a>
-            <a href="#" onclick="App.showPage('grammar');return false" class="nav-link" data-page="grammar">
-                <i class="fas fa-puzzle-piece"></i> 语法练习
-            </a>
-            <a href="#" onclick="App.showPage('sentences');return false" class="nav-link" data-page="sentences">
-                <i class="fas fa-pen-fancy"></i> 句式练习
-            </a>
-            <a href="#" onclick="App.showPage('writing');return false" class="nav-link" data-page="writing">
-                <i class="fas fa-file-alt"></i> 作文练习
-            </a>
-            <a href="#" onclick="App.showPage('guide');return false" class="nav-link" data-page="guide">
-                <i class="fas fa-map-marked-alt"></i> 我的攻略
-            </a>
-            <a href="#" onclick="App.showPage('diary');return false" class="nav-link" data-page="diary">
-                <i class="fas fa-book-open"></i> 旅行日记
-            </a>
+
+            <!-- 技能练习下拉 -->
+            <div class="nav-dropdown" data-dropdown="skills">
+                <span class="nav-dropdown-toggle" data-dropdown-toggle="skills">
+                    <i class="fas fa-graduation-cap"></i> 技能练习 <i class="fas fa-chevron-down nav-dropdown-arrow"></i>
+                </span>
+                <div class="nav-dropdown-menu">
+                    <a href="#" onclick="App.showPage('speaking');return false" class="nav-link" data-page="speaking">
+                        <i class="fas fa-microphone"></i> 口语练习
+                    </a>
+                    <a href="#" onclick="App.showPage('listening');return false" class="nav-link" data-page="listening">
+                        <i class="fas fa-headphones"></i> 听力练习
+                    </a>
+                    <a href="#" onclick="App.showPage('vocabulary');return false" class="nav-link" data-page="vocabulary">
+                        <i class="fas fa-layer-group"></i> 词汇闪卡
+                    </a>
+                    <a href="#" onclick="App.showPage('grammar');return false" class="nav-link" data-page="grammar">
+                        <i class="fas fa-puzzle-piece"></i> 语法练习
+                    </a>
+                    <a href="#" onclick="App.showPage('sentences');return false" class="nav-link" data-page="sentences">
+                        <i class="fas fa-pen"></i> 句式练习
+                    </a>
+                    <a href="#" onclick="App.showPage('writing');return false" class="nav-link" data-page="writing">
+                        <i class="fas fa-file-alt"></i> 作文练习
+                    </a>
+                </div>
+            </div>
+
+            <!-- 学习成果下拉 -->
+            <div class="nav-dropdown" data-dropdown="showcase">
+                <span class="nav-dropdown-toggle" data-dropdown-toggle="showcase">
+                    <i class="fas fa-map-marked-alt"></i> 学习成果 <i class="fas fa-chevron-down nav-dropdown-arrow"></i>
+                </span>
+                <div class="nav-dropdown-menu">
+                    <a href="#" onclick="App.showPage('guide');return false" class="nav-link" data-page="guide">
+                        <i class="fas fa-map"></i> 旅行攻略
+                    </a>
+                    <a href="#" onclick="App.showPage('diary');return false" class="nav-link" data-page="diary">
+                        <i class="fas fa-book-open"></i> 旅行日记
+                    </a>
+                </div>
+            </div>
+
             <a href="#" onclick="App.showPage('exam');return false" class="nav-link" data-page="exam">
-                <i class="fas fa-search"></i> 成绩查询
+                <i class="fas fa-chart-bar"></i> 成绩查询
             </a>
             <a href="#" onclick="App.showPage('messages');return false" class="nav-link" data-page="messages" id="navMessages">
                 <i class="fas fa-comments"></i> 消息
                 <span class="nav-badge hidden" id="msgBadge">0</span>
-            </a>
-            <a href="feedback.html" class="nav-link" style="color:var(--secondary);">
-                <i class="fas fa-clipboard-list"></i> 反馈问卷
             </a>
         </div>
         <div class="nav-user" id="navUser">
@@ -818,7 +834,7 @@
     <script src="js/study-tracker.js?v=1"></script>
     <script src="js/messages.js?v=1"></script>
     <script src="js/portfolio.js?v=1"></script>
-    <script src="js/app.js?v=9"></script>
+    <script src="js/app.js?v=10"></script>
     <!-- PWA Service Worker -->
     <script>
     if ('serviceWorker' in navigator) {
