@@ -806,7 +806,7 @@ const Portfolio = {
     },
 
     _escape(str) {
-        return (str || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return String(str || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     },
 
     _pickRandom(arr, n) {
