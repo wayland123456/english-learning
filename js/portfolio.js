@@ -43,7 +43,12 @@ const Portfolio = {
 
     /* ========== 获取已学词汇（从进度中） ========== */
     getLearnedVocab() {
-        const progress = SupabaseAuth.getProgress();
+        var progress = {};
+        try {
+            if (typeof SupabaseAuth !== 'undefined' && SupabaseAuth.getProgress) {
+                progress = SupabaseAuth.getProgress() || {};
+            }
+        } catch(e) { progress = {}; }
         var words = [];
         if (progress.vocabulary && progress.vocabulary.length > 0) {
             words = progress.vocabulary.slice(0, 10);
@@ -356,6 +361,24 @@ const Portfolio = {
         'went hiking in nature':'🥾','watched a live performance':'🎭','bought souvenirs':'🎁',
         'learned about local history':'📜','tasted delicious street food':'🍢','went to a local market':'🛍️'
     },
+
+    // 活动列表
+    ACTIVITIES: [
+        'visited famous landmarks','took beautiful photos','tried local food',
+        'met friendly local people','went on a guided tour','explored the city on foot',
+        'took a boat trip','visited a museum','relaxed at the beach',
+        'went hiking in nature','watched a live performance','bought souvenirs',
+        'learned about local history','tasted delicious street food','went to a local market'
+    ],
+
+    // 天气选项
+    WEATHER: ['sunny','rainy','windy','foggy'],
+    WEATHER_EMOJI: {'sunny':'☀️','rainy':'🌧️','windy':'💨','foggy':'🌫️'},
+
+    // 心情选项
+    MOOD: ['happy','excited','relaxed','tired'],
+    MOOD_EMOJI: {'happy':'😊','excited':'🤩','relaxed':'😌','tired':'😴'},
+
 
     diary: {
         init() {
