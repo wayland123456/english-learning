@@ -57,8 +57,15 @@ const Speaking = {
             return;
         }
 
-        // 提前请求麦克风权限（只弹窗一次）
-        this._requestMicPermission();
+        // 提前初始化并复用 SpeechRecognition 实例（iOS 上避免每次新建实例弹权限窗）
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        if (!isIOS) {
+            // 非 iOS：用 getUserMedia 预请求麦克风权限（只弹一次）
+            this._requestMicPermission();
+        }
+        // iOS：SpeechRecognition 有自己的权限体系，getUserMedia 对其无效
+        // 在 init 时创建唯一实例，后续复用
+        this._initRecognition();
 
         this.renderSentence();
         if (this.currentIndex > 0) {
@@ -120,6 +127,72 @@ const Speaking = {
 
         this.lastScore = null;
         this.userSpeechResult = '';
+    },
+
+    /* 初始化语音识别实例（只创建一次，后续复用，iOS 上避免重复弹权限窗） */
+    _initRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return;
+
+        // 如果已有实例先清理
+        if (this.recognition) {
+            try { this.recognition.abort(); } catch(e) {}
+        }
+
+        this.recognition = new SpeechRecognition();
+        this.recognition.lang = 'en-US';
+        this.recognition.interimResults = false;
+        this.recognition.maxAlternatives = 3;
+        this.recognition.continuous = false;
+
+        // 绑定事件（只绑定一次）
+        this.recognition.onresult = (event) => {
+            const results = event.results;
+            if (!results || results.length === 0) return;
+            const lastIdx = results.length - 1;
+            const alt = results[lastIdx] && results[lastIdx][0];
+            if (alt && alt.transcript) {
+                this.userSpeechResult = alt.transcript.trim();
+                if (!this._scored) {
+                    this._scored = true;
+                    this.scoreSpeech();
+                }
+            }
+        };
+
+        this.recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            this.isRecording = false;
+            this._resetRecordBtn();
+            if (event.error === 'no-speech') {
+                App.toast('未检测到语音，请再试一次', 'info');
+            } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                App.toast('请在 iPhone 设置 → Safari → 麦克风与语音识别 中允许访问', 'error');
+            } else if (event.error === 'audio-capture') {
+                App.toast('无法访问麦克风，请检查系统权限设置', 'error');
+            } else if (event.error === 'network') {
+                App.toast('网络异常，请检查网络连接', 'error');
+            } else if (event.error === 'aborted') {
+                // 正常中断，不提示
+            } else {
+                App.toast('语音识别出错：' + event.error, 'error');
+            }
+        };
+
+        this.recognition.onend = () => {
+            this.isRecording = false;
+            this._resetRecordBtn();
+            if (!this._scored && this.userSpeechResult) {
+                this._scored = true;
+                this.scoreSpeech();
+            } else if (!this._scored && !this.userSpeechResult) {
+                App.toast('未识别到语音内容，请大声朗读句子后再试', 'info');
+            }
+            if (this._scoreTimeout) {
+                clearTimeout(this._scoreTimeout);
+                this._scoreTimeout = null;
+            }
+        };
     },
 
     /* 渲染兼容性警告界面 */
@@ -281,14 +354,12 @@ const Speaking = {
             return;
         }
 
-        // 统一权限检查：如果还没请求过麦克风权限，先请求一次
-        if (!this._micPermissionGranted && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        // 非 iOS：统一权限检查
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        if (!isIOS && !this._micPermissionGranted && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             const granted = await this._requestMicPermission();
             if (!granted) {
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-                App.toast(isIOS
-                    ? '请在 iPhone 设置 → Safari → 麦克风 中允许访问'
-                    : '请允许浏览器访问麦克风，然后重新点击录音', 'error');
+                App.toast('请允许浏览器访问麦克风，然后重新点击录音', 'error');
                 return;
             }
         }
@@ -300,14 +371,11 @@ const Speaking = {
             btn.onclick = () => this.stopRecording();
         }
 
-        try {
-            this.recognition = new SpeechRecognition();
-            this.recognition.lang = 'en-US';
-            this.recognition.interimResults = false;
-            this.recognition.maxAlternatives = 3;
-            // iOS Safari 忽略 continuous 属性，始终在静音后自动停止
-            this.recognition.continuous = false;
-        } catch (e) {
+        // 复用 recognition 实例（iOS 上避免每次新建实例弹权限窗）
+        if (!this.recognition) {
+            this._initRecognition();
+        }
+        if (!this.recognition) {
             App.toast('启动语音识别失败，请刷新页面试试', 'error');
             this._resetRecordBtn();
             return;
@@ -316,58 +384,6 @@ const Speaking = {
         this.isRecording = true;
         this.userSpeechResult = '';
         this._scored = false;
-
-        this.recognition.onresult = (event) => {
-            const results = event.results;
-            if (!results || results.length === 0) return;
-
-            // 取最新一条转录结果
-            const lastIdx = results.length - 1;
-            const alt = results[lastIdx] && results[lastIdx][0];
-            if (alt && alt.transcript) {
-                this.userSpeechResult = alt.transcript.trim();
-                // 拿到结果立即打分，防止 onend 不触发
-                if (!this._scored) {
-                    this._scored = true;
-                    this.scoreSpeech();
-                }
-            }
-        };
-
-        this.recognition.onerror = (event) => {
-            console.error('Speech recognition error:', event.error);
-            this.isRecording = false;
-            this._resetRecordBtn();
-            if (event.error === 'no-speech') {
-                App.toast('未检测到语音，请再试一次', 'info');
-            } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-                App.toast('请在 iPhone 设置 → Safari → 麦克风 中允许访问', 'error');
-            } else if (event.error === 'audio-capture') {
-                App.toast('无法访问麦克风，请检查系统权限设置', 'error');
-            } else if (event.error === 'network') {
-                App.toast('网络异常，请检查网络连接', 'error');
-            } else {
-                App.toast('语音识别出错：' + event.error, 'error');
-            }
-        };
-
-        this.recognition.onend = () => {
-            this.isRecording = false;
-            this._resetRecordBtn();
-            // onresult 没触发时的兜底打分
-            if (!this._scored && this.userSpeechResult) {
-                this._scored = true;
-                this.scoreSpeech();
-            } else if (!this._scored && !this.userSpeechResult) {
-                // 完全没识别到任何语音
-                App.toast('未识别到语音内容，请大声朗读句子后再试', 'info');
-            }
-            // 清除超时定时器
-            if (this._scoreTimeout) {
-                clearTimeout(this._scoreTimeout);
-                this._scoreTimeout = null;
-            }
-        };
 
         try {
             this.recognition.start();
