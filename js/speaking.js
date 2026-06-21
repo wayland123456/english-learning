@@ -710,13 +710,71 @@ const Speaking = {
        Play TTS
        ========================================== */
 
+    /* 检测语音合成是否真正可用（不仅检测 API 存在，还要检测有可用语音） */
+    _hasWorkingSpeechSynthesis() {
+        if (!('speechSynthesis' in window)) return false;
+        // 尝试获取语音列表，如果返回空可能是异步加载
+        var voices = window.speechSynthesis.getVoices();
+        if (voices && voices.length > 0) return true;
+        return 'pending'; // 异步加载中，稍后再试
+    },
+
+    /* 播放标准读音（增强版：处理异步语音加载 + 不可用时的降级） */
     playSentence() {
         var sentence = DATA.speakingSentences[this.currentIndex];
-        if (!('speechSynthesis' in window)) {
-            App.toast('您的浏览器不支持语音合成', 'error');
+        var hasSynth = this._hasWorkingSpeechSynthesis();
+
+        // 语音合成完全不可用 → 降级：显示文字提示，不阻止流程
+        if (hasSynth === false) {
+            App.toast('当前浏览器不支持语音播放，请参考文字自行朗读', 'info');
+            // 仍然显示录音按钮，让用户可以继续练习
+            var mode = this.speakMode;
+            var el = document.getElementById('speakingActions');
+            if (el && !document.getElementById('btnRecord')) {
+                var label = mode === 'record' ? '开始录音' : '开始跟读';
+                el.insertAdjacentHTML('beforeend',
+                    '<button class="btn-record" id="btnRecord" onclick="Speaking.startRecording()">' +
+                        '<i class="fas fa-microphone"></i> ' + label +
+                    '</button>'
+                );
+            }
             return;
         }
 
+        // 语音列表异步加载中 → 等待 voiceschanged 事件
+        if (hasSynth === 'pending') {
+            var self = this;
+            var waited = false;
+            var onVoicesLoaded = function() {
+                if (waited) return;
+                waited = true;
+                window.speechSynthesis.removeEventListener('voiceschanged', onVoicesLoaded);
+                self.playSentence(); // 重新调用，此时 voices 已加载
+            };
+            window.speechSynthesis.addEventListener('voiceschanged', onVoicesLoaded);
+            // 最多等 3 秒，超时则降级
+            setTimeout(function() {
+                if (!waited) {
+                    waited = true;
+                    window.speechSynthesis.removeEventListener('voiceschanged', onVoicesLoaded);
+                    // 超时仍不可用 → 降级
+                    App.toast('语音加载超时，请参考文字自行朗读', 'info');
+                    var mode = self.speakMode;
+                    var el = document.getElementById('speakingActions');
+                    if (el && !document.getElementById('btnRecord')) {
+                        var label = mode === 'record' ? '开始录音' : '开始跟读';
+                        el.insertAdjacentHTML('beforeend',
+                            '<button class="btn-record" id="btnRecord" onclick="Speaking.startRecording()">' +
+                                '<i class="fas fa-microphone"></i> ' + label +
+                            '</button>'
+                        );
+                    }
+                }
+            }, 3000);
+            return;
+        }
+
+        // 语音合成可用 → 正常播放
         var oldBtn = document.getElementById('btnRecord');
         if (oldBtn) oldBtn.remove();
 
@@ -733,12 +791,12 @@ const Speaking = {
         window.speechSynthesis.speak(utterance);
 
         var idx = this.currentIndex;
-        var self = this;
+        var self2 = this;
         var mode = this.speakMode;
 
         var addRecordButton = function() {
-            if (document.getElementById('btnRecord') || self.isRecording) return;
-            if (self.currentIndex !== idx) return;
+            if (document.getElementById('btnRecord') || self2.isRecording) return;
+            if (self2.currentIndex !== idx) return;
             var el = document.getElementById('speakingActions');
             if (el) {
                 var label = mode === 'record' ? '开始录音' : '开始跟读';
