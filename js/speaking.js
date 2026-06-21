@@ -290,30 +290,25 @@ const Speaking = {
         const isIOS = /iPad|iPhone|iPod/.test(ua);
         const isAndroid = /Android/i.test(ua);
 
-        // 已知的独立浏览器，排除
-        if (/Safari/.test(ua) && !/CriOS|FxiOS/.test(ua)) return false; // iOS Safari
-        if (/Chrome/.test(ua) && !/Edge/.test(ua) && !/OPR/.test(ua) && !/YaBrowser/.test(ua)) {
-            // Chrome 独立浏览器（排除 Edge/Opera 等套壳）
-            const isMobileChrome = /Mobile/.test(ua);
-            if (isMobileChrome || !isIOS) {
-                // Android Chrome 或 iOS CriOS 已被上面排除，这里是桌面 Chrome
-                // Android Chrome 的 UA 通常同时有 Chrome 和 Mobile
-                // 简单判断：如果是 Android + Chrome 且不含 MicroMessenger/QQ/等 WebView 标记
-            }
-        }
-        // 显式检测 WebView 环境
+        // 显式检测已知 App 内置浏览器
         if (/MicroMessenger/i.test(ua)) return true;  // 微信
         if (/AlipayClient/i.test(ua)) return true;    // 支付宝
         if (/MQQBrowser|QQ\//i.test(ua)) return true; // QQ / QQ浏览器
-        if (/baiduboxapp|Baidu/i.test(ua) && /Mobile/.test(ua)) return true; // 百度 App
-        if (/Weibo/i.test(ua)) return true;           // 微博
+        if (/baiduboxapp/i.test(ua)) return true;     // 百度 App
+        if (/Weibo/i.test(ua) && !/Weibo/i.test(ua)) return false; // 微博 App 极少内嵌用
         if (/DingTalk/i.test(ua)) return true;        // 钉钉
-        if (/Lark|Feishu/i.test(ua)) return true;     // 飞书/ Lark
+        if (/Lark|Feishu/i.test(ua)) return true;     // 飞书/Lark
 
-        // iOS 上排除 Safari 后，剩下的内置浏览器都是 WebView
-        if (isIOS) return true;
+        // iOS：只有 Safari、Chrome(CriOS)、Firefox(FxiOS) 能正常使用语音识别
+        // 其余所有 App 内置浏览器（包括阿里百炼等）都无法访问麦克风
+        if (isIOS) {
+            if (/Safari/.test(ua) && !/CriOS|FxiOS/.test(ua)) return false; // Safari
+            if (/CriOS/.test(ua)) return false;  // Chrome for iOS
+            if (/FxiOS/.test(ua)) return false;  // Firefox for iOS
+            return true; // 其他全是 WebView，无法用语音识别
+        }
 
-        // 安卓：如果 UA 不含常见独立浏览器标记 → 可能是未知 App 的 WebView
+        // 安卓：UA 不含常见独立浏览器标记 → 可能是未知 App 的 WebView
         if (isAndroid) {
             const hasBrowser = /Chrome|Firefox|Edge|Opera|SamsungBrowser|UCBrowser/i.test(ua);
             if (!hasBrowser) return true;
@@ -360,11 +355,19 @@ const Speaking = {
 
         // iOS / Android WebView（阿里百炼、微信、QQ 等 App 内置浏览器）
         if (this._isWebView()) {
-            const platform = isIOS ? 'Safari' : 'Chrome';
+            if (isIOS) {
+                // iOS WebView：无法访问麦克风，直接拦截
+                return {
+                    ok: false,
+                    reason: 'App 内置浏览器无法使用语音识别功能',
+                    suggestion: '请在 Safari 中打开本页面再使用口语练习功能。<br><br>操作步骤：<br>1. 点击下方按钮复制链接<br>2. 打开 Safari，粘贴并访问'
+                };
+            }
+            // 安卓 WebView：API 存在但可能不稳定，先警告
             return {
                 ok: true,
                 isWebView: true,
-                warning: `你正在 App 内置浏览器中打开，语音识别可能不稳定。建议用 ${platform} 打开本页面。`
+                warning: '你正在 App 内置浏览器中打开，语音识别可能不稳定。建议用 Chrome 打开本页面。'
             };
         }
 
