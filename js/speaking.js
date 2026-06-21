@@ -57,6 +57,11 @@ const Speaking = {
             return;
         }
 
+        // iOS WebView 警告：语音识别可能不稳定
+        if (compat.isWebView) {
+            this._showWebViewNotice(compat.warning);
+        }
+
         // 提前初始化并复用 SpeechRecognition 实例（iOS 上避免每次新建实例弹权限窗）
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         if (!isIOS) {
@@ -167,7 +172,10 @@ const Speaking = {
             if (event.error === 'no-speech') {
                 App.toast('未检测到语音，请再试一次', 'info');
             } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-                App.toast('请在 iPhone 设置 → Safari → 麦克风与语音识别 中允许访问', 'error');
+                const isWebView = this._isIOSWebView();
+                App.toast(isWebView
+                    ? 'App 内置浏览器不支持语音识别，请用 Safari 打开'
+                    : '请在 iPhone 设置 → Safari → 麦克风与语音识别 中允许访问', 'error');
             } else if (event.error === 'audio-capture') {
                 App.toast('无法访问麦克风，请检查系统权限设置', 'error');
             } else if (event.error === 'network') {
@@ -205,11 +213,27 @@ const Speaking = {
                 <h2 style="color:var(--text);margin-bottom:0.8rem;">口语练习暂不可用</h2>
                 <p style="color:var(--danger);font-weight:500;margin-bottom:0.5rem;">${reason}</p>
                 <p style="color:var(--text-light);font-size:0.9rem;line-height:1.6;max-width:360px;margin:0 auto 1.5rem;">${suggestion}</p>
-                <button onclick="navigator.clipboard && navigator.clipboard.writeText(window.location.href)" style="padding:0.6rem 1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:0.85rem;">
-                    <i class="fas fa-copy"></i> 复制链接到其他浏览器打开
+                <button onclick="navigator.clipboard && navigator.clipboard.writeText(window.location.href);App.toast('链接已复制，请在 Safari 中粘贴打开','success')" style="padding:0.6rem 1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:0.85rem;">
+                    <i class="fas fa-copy"></i> 复制链接到 Safari 打开
                 </button>
             </div>
         `;
+    },
+
+    /* iOS WebView 顶部提示条 */
+    _showWebViewNotice(msg) {
+        const container = document.getElementById('speakingContainer');
+        if (!container) return;
+        const notice = document.createElement('div');
+        notice.style.cssText = 'background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:10px 16px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;font-size:0.85rem;color:#b45309;line-height:1.5;';
+        notice.innerHTML = `
+            <span style="font-size:1.2rem;flex-shrink:0;">⚠️</span>
+            <span style="flex:1;">${msg}</span>
+            <button onclick="navigator.clipboard&&navigator.clipboard.writeText(window.location.href);App.toast('链接已复制，请在 Safari 中粘贴打开','success')" style="flex-shrink:0;padding:6px 12px;background:#fff;border:1px solid rgba(245,158,11,0.3);border-radius:6px;color:#b45309;font-size:0.8rem;white-space:nowrap;cursor:pointer;">
+                <i class="fas fa-copy"></i> 复制链接
+            </button>
+        `;
+        container.insertBefore(notice, container.firstChild);
     },
 
     /* 提前请求麦克风权限（所有平台），避免每次录音都弹窗 */
@@ -258,7 +282,18 @@ const Speaking = {
         return result;
     },
 
-    /* 检查浏览器兼容性，返回 { ok, reason } */
+    /* 检测是否为 iOS WebView（App 内嵌浏览器，非独立 Safari） */
+    _isIOSWebView() {
+        const ua = navigator.userAgent || '';
+        const isIOS = /iPad|iPhone|iPod/.test(ua);
+        if (!isIOS) return false;
+        // Safari 独立浏览器：UA 含 "Safari" 且不含 "CriOS" "FxiOS"
+        if (/Safari/.test(ua) && !/CriOS|FxiOS/.test(ua)) return false;
+        // 其他情况（微信/QQ/阿里百炼等内置浏览器）都算 WebView
+        return true;
+    },
+
+    /* 检查浏览器兼容性，返回 { ok, reason, isWebView } */
     _checkCompatibility() {
         const ua = navigator.userAgent || '';
         const isQQBrowser = /MQQBrowser|QQ\//i.test(ua);
@@ -291,6 +326,15 @@ const Speaking = {
                 ok: false,
                 reason: 'iOS 内置浏览器不支持语音识别',
                 suggestion: '请在 Safari 中打开本页面，然后在「设置 → Safari → 麦克风」中允许访问'
+            };
+        }
+
+        // iOS WebView（阿里百炼等 App 内置浏览器）
+        if (this._isIOSWebView()) {
+            return {
+                ok: true,
+                isWebView: true,
+                warning: '你正在 App 内置浏览器中打开，语音识别可能不稳定。建议用 Safari 打开。'
             };
         }
 
