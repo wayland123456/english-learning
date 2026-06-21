@@ -62,15 +62,17 @@ const Speaking = {
             this._showWebViewNotice(compat.warning);
         }
 
-        // 提前初始化并复用 SpeechRecognition 实例（iOS 上避免每次新建实例弹权限窗）
+        // 提前初始化并复用 SpeechRecognition 实例
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isWebView = compat.isWebView;
         if (!isIOS) {
             // 非 iOS：用 getUserMedia 预请求麦克风权限（只弹一次）
             this._requestMicPermission();
         }
-        // iOS：SpeechRecognition 有自己的权限体系，getUserMedia 对其无效
-        // 在 init 时创建唯一实例，后续复用
-        this._initRecognition();
+        // iOS 和 WebView 环境：创建唯一 SpeechRecognition 实例，后续复用，避免重复弹权限窗
+        if (isIOS || isWebView) {
+            this._initRecognition();
+        }
 
         this.renderSentence();
         if (this.currentIndex > 0) {
@@ -172,9 +174,9 @@ const Speaking = {
             if (event.error === 'no-speech') {
                 App.toast('未检测到语音，请再试一次', 'info');
             } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-                const isWebView = this._isIOSWebView();
+                const isWebView = this._isWebView();
                 App.toast(isWebView
-                    ? 'App 内置浏览器不支持语音识别，请用 Safari 打开'
+                    ? 'App 内置浏览器不支持语音识别，请用系统自带浏览器打开'
                     : '请在 iPhone 设置 → Safari → 麦克风与语音识别 中允许访问', 'error');
             } else if (event.error === 'audio-capture') {
                 App.toast('无法访问麦克风，请检查系统权限设置', 'error');
@@ -282,15 +284,42 @@ const Speaking = {
         return result;
     },
 
-    /* 检测是否为 iOS WebView（App 内嵌浏览器，非独立 Safari） */
-    _isIOSWebView() {
+    /* 检测是否为 App 内置浏览器（iOS WebView / 安卓 WebView），非独立浏览器 */
+    _isWebView() {
         const ua = navigator.userAgent || '';
         const isIOS = /iPad|iPhone|iPod/.test(ua);
-        if (!isIOS) return false;
-        // Safari 独立浏览器：UA 含 "Safari" 且不含 "CriOS" "FxiOS"
-        if (/Safari/.test(ua) && !/CriOS|FxiOS/.test(ua)) return false;
-        // 其他情况（微信/QQ/阿里百炼等内置浏览器）都算 WebView
-        return true;
+        const isAndroid = /Android/i.test(ua);
+
+        // 已知的独立浏览器，排除
+        if (/Safari/.test(ua) && !/CriOS|FxiOS/.test(ua)) return false; // iOS Safari
+        if (/Chrome/.test(ua) && !/Edge/.test(ua) && !/OPR/.test(ua) && !/YaBrowser/.test(ua)) {
+            // Chrome 独立浏览器（排除 Edge/Opera 等套壳）
+            const isMobileChrome = /Mobile/.test(ua);
+            if (isMobileChrome || !isIOS) {
+                // Android Chrome 或 iOS CriOS 已被上面排除，这里是桌面 Chrome
+                // Android Chrome 的 UA 通常同时有 Chrome 和 Mobile
+                // 简单判断：如果是 Android + Chrome 且不含 MicroMessenger/QQ/等 WebView 标记
+            }
+        }
+        // 显式检测 WebView 环境
+        if (/MicroMessenger/i.test(ua)) return true;  // 微信
+        if (/AlipayClient/i.test(ua)) return true;    // 支付宝
+        if (/MQQBrowser|QQ\//i.test(ua)) return true; // QQ / QQ浏览器
+        if (/baiduboxapp|Baidu/i.test(ua) && /Mobile/.test(ua)) return true; // 百度 App
+        if (/Weibo/i.test(ua)) return true;           // 微博
+        if (/DingTalk/i.test(ua)) return true;        // 钉钉
+        if (/Lark|Feishu/i.test(ua)) return true;     // 飞书/ Lark
+
+        // iOS 上排除 Safari 后，剩下的内置浏览器都是 WebView
+        if (isIOS) return true;
+
+        // 安卓：如果 UA 不含常见独立浏览器标记 → 可能是未知 App 的 WebView
+        if (isAndroid) {
+            const hasBrowser = /Chrome|Firefox|Edge|Opera|SamsungBrowser|UCBrowser/i.test(ua);
+            if (!hasBrowser) return true;
+        }
+
+        return false;
     },
 
     /* 检查浏览器兼容性，返回 { ok, reason, isWebView } */
@@ -329,12 +358,13 @@ const Speaking = {
             };
         }
 
-        // iOS WebView（阿里百炼等 App 内置浏览器）
-        if (this._isIOSWebView()) {
+        // iOS / Android WebView（阿里百炼、微信、QQ 等 App 内置浏览器）
+        if (this._isWebView()) {
+            const platform = isIOS ? 'Safari' : 'Chrome';
             return {
                 ok: true,
                 isWebView: true,
-                warning: '你正在 App 内置浏览器中打开，语音识别可能不稳定。建议用 Safari 打开。'
+                warning: `你正在 App 内置浏览器中打开，语音识别可能不稳定。建议用 ${platform} 打开本页面。`
             };
         }
 
