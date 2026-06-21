@@ -10,6 +10,8 @@ const Speaking = {
     dialogueCompleted: 0,
     currentDialogue: 1,
     userSpeechResult: '',
+    _micPermissionGranted: false,
+    _permissionPromise: null,
 
     _storageKey: 'el_speaking_progress',
 
@@ -47,6 +49,17 @@ const Speaking = {
             this.currentDialogue = 1;
             this._clearProgress();
         }
+
+        // 兼容性检查
+        const compat = this._checkCompatibility();
+        if (!compat.ok) {
+            this._renderCompatWarning(compat.reason, compat.suggestion);
+            return;
+        }
+
+        // 提前请求麦克风权限（只弹窗一次）
+        this._requestMicPermission();
+
         this.renderSentence();
         if (this.currentIndex > 0) {
             setTimeout(() => {
@@ -109,6 +122,108 @@ const Speaking = {
         this.userSpeechResult = '';
     },
 
+    /* 渲染兼容性警告界面 */
+    _renderCompatWarning(reason, suggestion) {
+        const container = document.getElementById('speakingContainer');
+        if (!container) return;
+        container.innerHTML = `
+            <div style="text-align:center;padding:3rem 1.5rem;">
+                <div style="font-size:3rem;margin-bottom:1rem;opacity:0.6;">🎤</div>
+                <h2 style="color:var(--text);margin-bottom:0.8rem;">口语练习暂不可用</h2>
+                <p style="color:var(--danger);font-weight:500;margin-bottom:0.5rem;">${reason}</p>
+                <p style="color:var(--text-light);font-size:0.9rem;line-height:1.6;max-width:360px;margin:0 auto 1.5rem;">${suggestion}</p>
+                <button onclick="navigator.clipboard && navigator.clipboard.writeText(window.location.href)" style="padding:0.6rem 1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:0.85rem;">
+                    <i class="fas fa-copy"></i> 复制链接到其他浏览器打开
+                </button>
+            </div>
+        `;
+    },
+
+    /* 提前请求麦克风权限（所有平台），避免每次录音都弹窗 */
+    async _requestMicPermission() {
+        // 已授权就不再请求
+        if (this._micPermissionGranted) return true;
+
+        // 如果正在请求中，返回同一个 Promise（防止并发重复弹窗）
+        if (this._permissionPromise) return this._permissionPromise;
+
+        this._permissionPromise = (async () => {
+            // 检查浏览器是否支持 getUserMedia
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.warn('[Speaking] getUserMedia not supported, will rely on SpeechRecognition permission');
+                return true; // 不阻塞主流程
+            }
+
+            // 先快速探测一下当前权限状态（不会弹窗）
+            try {
+                if (navigator.permissions && navigator.permissions.query) {
+                    const perm = await navigator.permissions.query({ name: 'microphone' });
+                    if (perm.state === 'granted') {
+                        this._micPermissionGranted = true;
+                        console.log('[Speaking] 麦克风权限已提前授权');
+                        return true;
+                    }
+                }
+            } catch(e) { /* permissions API 不可用 */ }
+
+            // 主动请求一次麦克风权限（会弹窗一次，之后就不再弹了）
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getTracks().forEach(t => t.stop());
+                this._micPermissionGranted = true;
+                console.log('[Speaking] 麦克风权限请求成功');
+                return true;
+            } catch (err) {
+                console.warn('[Speaking] 麦克风权限被拒绝或取消:', err.message);
+                this._micPermissionGranted = false;
+                return false;
+            }
+        })();
+
+        const result = await this._permissionPromise;
+        this._permissionPromise = null;
+        return result;
+    },
+
+    /* 检查浏览器兼容性，返回 { ok, reason } */
+    _checkCompatibility() {
+        const ua = navigator.userAgent || '';
+        const isQQBrowser = /MQQBrowser|QQ\//i.test(ua);
+        const isAndroid = /Android/i.test(ua);
+        const isIOS = /iPad|iPhone|iPod/i.test(ua);
+        const hasSpeech = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+        const hasMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+        // QQ 浏览器 + Android：X5 内核对 Web Speech API 支持极差
+        if (isQQBrowser && isAndroid) {
+            return {
+                ok: false,
+                reason: 'QQ浏览器对语音识别支持有限',
+                suggestion: '请使用手机自带浏览器或 Chrome 打开本页面'
+            };
+        }
+
+        // 完全不支持 SpeechRecognition 的浏览器
+        if (!hasSpeech) {
+            return {
+                ok: false,
+                reason: '您的浏览器不支持语音识别功能',
+                suggestion: '请使用 Chrome、Edge 或 Safari 浏览器'
+            };
+        }
+
+        // iOS + 非 Safari 浏览器（如 iOS 微信/QQ内置浏览器）
+        if (isIOS && !hasMedia) {
+            return {
+                ok: false,
+                reason: 'iOS 内置浏览器不支持语音识别',
+                suggestion: '请在 Safari 中打开本页面，然后在「设置 → Safari → 麦克风」中允许访问'
+            };
+        }
+
+        return { ok: true };
+    },
+
     playSentence() {
         const sentence = DATA.speakingSentences[this.currentIndex];
         if (!('speechSynthesis' in window)) {
@@ -166,15 +281,14 @@ const Speaking = {
             return;
         }
 
-        // iOS Safari 必须先通过 getUserMedia 触发麦克风权限弹窗
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        if (isIOS && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                stream.getTracks().forEach(t => t.stop());
-            } catch (permErr) {
-                console.error('麦克风权限被拒绝:', permErr);
-                App.toast('请在 iPhone 设置 → Safari → 麦克风 中允许访问', 'error');
+        // 统一权限检查：如果还没请求过麦克风权限，先请求一次
+        if (!this._micPermissionGranted && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            const granted = await this._requestMicPermission();
+            if (!granted) {
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                App.toast(isIOS
+                    ? '请在 iPhone 设置 → Safari → 麦克风 中允许访问'
+                    : '请允许浏览器访问麦克风，然后重新点击录音', 'error');
                 return;
             }
         }
@@ -244,11 +358,34 @@ const Speaking = {
             if (!this._scored && this.userSpeechResult) {
                 this._scored = true;
                 this.scoreSpeech();
+            } else if (!this._scored && !this.userSpeechResult) {
+                // 完全没识别到任何语音
+                App.toast('未识别到语音内容，请大声朗读句子后再试', 'info');
+            }
+            // 清除超时定时器
+            if (this._scoreTimeout) {
+                clearTimeout(this._scoreTimeout);
+                this._scoreTimeout = null;
             }
         };
 
         try {
             this.recognition.start();
+            // 超时兜底：15秒后如果还没打分，强制停止并尝试打分
+            this._scoreTimeout = setTimeout(() => {
+                if (!this._scored && this.isRecording) {
+                    console.warn('[Speaking] 录音超时，强制停止');
+                    try { this.recognition.stop(); } catch(e) {}
+                    this.isRecording = false;
+                    this._resetRecordBtn();
+                    if (this.userSpeechResult && !this._scored) {
+                        this._scored = true;
+                        this.scoreSpeech();
+                    } else if (!this._scored) {
+                        App.toast('录音超时，请检查麦克风后再试', 'info');
+                    }
+                }
+            }, 15000);
         } catch (e) {
             App.toast('启动录音失败，请点击允许麦克风权限', 'error');
             this.isRecording = false;
@@ -265,6 +402,11 @@ const Speaking = {
     },
 
     stopRecording() {
+        // 清除超时定时器
+        if (this._scoreTimeout) {
+            clearTimeout(this._scoreTimeout);
+            this._scoreTimeout = null;
+        }
         if (this.recognition) {
             try {
                 this.recognition.stop();
