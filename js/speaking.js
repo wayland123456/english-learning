@@ -610,10 +610,18 @@ const Speaking = {
         else if (score >= 55) { scoreClass = 'score-fair'; scoreLabel = '自评：一般，继续练！'; }
         else { scoreClass = 'score-poor'; scoreLabel = '自评：加油，多听几遍！'; }
 
-        if (score >= 75) SoundFx.correct();
-        else SoundFx.wrong();
+        try { if (score >= 75) { if (typeof SoundFx !== 'undefined') SoundFx.correct(); } else { if (typeof SoundFx !== 'undefined') SoundFx.wrong(); } } catch(e) {}
 
         var resultDiv = document.getElementById('speakingResult');
+        if (!resultDiv) {
+            // 如果 speakingResult div 不存在，动态创建它
+            var container = document.querySelector('.speaking-card') || document.getElementById('speakingContainer');
+            if (container) {
+                resultDiv = document.createElement('div');
+                resultDiv.id = 'speakingResult';
+                container.appendChild(resultDiv);
+            }
+        }
         if (resultDiv) {
             var sentence = DATA.speakingSentences[this.currentIndex];
             resultDiv.innerHTML =
@@ -668,10 +676,17 @@ const Speaking = {
         else if (score >= 60) { scoreClass = 'score-fair'; scoreLabel = '还不错，再练练！'; }
         else { scoreClass = 'score-poor'; scoreLabel = '加油，多听几遍再试试！'; }
 
-        if (score >= 75) SoundFx.correct();
-        else SoundFx.wrong();
+        try { if (score >= 75) { if (typeof SoundFx !== 'undefined') SoundFx.correct(); } else { if (typeof SoundFx !== 'undefined') SoundFx.wrong(); } } catch(e) {}
 
         var resultDiv = document.getElementById('speakingResult');
+        if (!resultDiv) {
+            var container = document.querySelector('.speaking-card') || document.getElementById('speakingContainer');
+            if (container) {
+                resultDiv = document.createElement('div');
+                resultDiv.id = 'speakingResult';
+                container.appendChild(resultDiv);
+            }
+        }
         if (resultDiv) {
             resultDiv.innerHTML =
                 '<div class="speaking-result">' +
@@ -966,7 +981,7 @@ const Speaking = {
         if (resultDiv) {
             var percentage = Math.round(correct / total * 100);
             if (percentage === 100) {
-                SoundFx.correct();
+                try { if (typeof SoundFx !== 'undefined') SoundFx.correct(); } catch(e) {}
                 resultDiv.innerHTML =
                     '<div style="margin-top:1rem;padding:1.5rem;background:rgba(16,185,129,0.1);border-radius:12px;text-align:center;">' +
                         '<div style="font-size:2rem;margin-bottom:0.5rem;">🎉</div>' +
@@ -985,7 +1000,7 @@ const Speaking = {
                     }
                 }
             } else {
-                SoundFx.wrong();
+                try { if (typeof SoundFx !== 'undefined') SoundFx.wrong(); } catch(e) {}
                 resultDiv.innerHTML =
                     '<div style="margin-top:1rem;padding:1.5rem;background:rgba(245,158,11,0.08);border-radius:12px;text-align:center;">' +
                         '<p>答对了 <strong>' + correct + '</strong>/' + total + ' 题，修改错误的答案后再试一次吧！</p>' +
