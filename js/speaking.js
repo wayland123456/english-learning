@@ -124,6 +124,19 @@ const Speaking = {
             };
         }
 
+        // === iOS 直接用录音回放模式（SpeechRecognition 不稳定）===
+        if (platform === 'ios') {
+            if (hasMedia && hasMediaRecorder) {
+                return { engine: 'record' };
+            }
+            return {
+                engine: 'none',
+                reason: '您的浏览器不支持录音功能',
+                suggestion: '请使用 Safari 浏览器打开本页面',
+                actionBtn: 'copy'
+            };
+        }
+
         // === SpeechRecognition 可用 → ASR 引擎 ===
         if (hasSpeech) {
             return { engine: 'asr' };
@@ -468,9 +481,9 @@ const Speaking = {
         this.audioBlob = null;
         if (this.audioUrl) { URL.revokeObjectURL(this.audioUrl); this.audioUrl = null; }
 
-        // 选择最佳编码格式
+        // 选择最佳编码格式（iOS Safari 只支持 MP4/AAC）
         var mimeType = '';
-        var types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4', 'audio/wav'];
+        var types = ['audio/mp4', 'audio/aac', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/wav'];
         for (var i = 0; i < types.length; i++) {
             if (MediaRecorder.isTypeSupported(types[i])) {
                 mimeType = types[i];
