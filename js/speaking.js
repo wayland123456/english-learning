@@ -180,17 +180,9 @@ const Speaking = {
         }
         this.speakMode = cap.engine;
 
-        // 提前请求麦克风权限（只弹一次）
-        if (hasGetUserMedia()) {
-            this._requestMicPermission();
-        }
-
-        // ASR 模式预初始化 SpeechRecognition 实例
-        if (this.speakMode === 'asr') {
-            const isIOS = this._getPlatform() === 'ios';
-            if (isIOS || cap.isWebView) {
-                this._initRecognition();
-            }
+        // 非 iOS 桌面/Android Chrome 提前初始化 Recognition，iOS 推迟到用户点击时再初始化
+        if (this.speakMode === 'asr' && this._getPlatform() !== 'ios' && !this._isWebView()) {
+            this._initRecognition();
         }
 
         this.renderSentence();
@@ -261,6 +253,9 @@ const Speaking = {
                 '<div class="speaking-actions" id="speakingActions">' +
                     '<button class="btn-play" onclick="Speaking.playSentence()">' +
                         '<i class="fas fa-play"></i> 听标准读音' +
+                    '</button>' +
+                    '<button class="btn-record" id="btnRecord" onclick="Speaking.startRecording()">' +
+                        '<i class="fas fa-microphone"></i> ' + (this.speakMode === 'record' ? '开始录音' : '开始跟读') +
                     '</button>' +
                 '</div>' +
                 '<div id="speakingResult"></div>' +
@@ -742,17 +737,7 @@ const Speaking = {
         // 语音合成完全不可用 → 降级：显示文字提示，不阻止流程
         if (hasSynth === false) {
             App.toast('当前浏览器不支持语音播放，请参考文字自行朗读', 'info');
-            // 仍然显示录音按钮，让用户可以继续练习
-            var mode = this.speakMode;
-            var el = document.getElementById('speakingActions');
-            if (el && !document.getElementById('btnRecord')) {
-                var label = mode === 'record' ? '开始录音' : '开始跟读';
-                el.insertAdjacentHTML('beforeend',
-                    '<button class="btn-record" id="btnRecord" onclick="Speaking.startRecording()">' +
-                        '<i class="fas fa-microphone"></i> ' + label +
-                    '</button>'
-                );
-            }
+            // 录音按钮已在 renderSentence 中直接渲染，无需动态插入
             return;
         }
 
@@ -774,25 +759,13 @@ const Speaking = {
                     window.speechSynthesis.removeEventListener('voiceschanged', onVoicesLoaded);
                     // 超时仍不可用 → 降级
                     App.toast('语音加载超时，请参考文字自行朗读', 'info');
-                    var mode = self.speakMode;
-                    var el = document.getElementById('speakingActions');
-                    if (el && !document.getElementById('btnRecord')) {
-                        var label = mode === 'record' ? '开始录音' : '开始跟读';
-                        el.insertAdjacentHTML('beforeend',
-                            '<button class="btn-record" id="btnRecord" onclick="Speaking.startRecording()">' +
-                                '<i class="fas fa-microphone"></i> ' + label +
-                            '</button>'
-                        );
-                    }
+                    // 录音按钮已在 renderSentence 中直接渲染，无需动态插入
                 }
             }, 3000);
             return;
         }
 
         // 语音合成可用 → 正常播放
-        var oldBtn = document.getElementById('btnRecord');
-        if (oldBtn) oldBtn.remove();
-
         var utterance = new window.SpeechSynthesisUtterance(sentence.english);
         utterance.lang = 'en-US';
         utterance.rate = 0.9;
@@ -807,26 +780,20 @@ const Speaking = {
 
         var idx = this.currentIndex;
         var self2 = this;
-        var mode = this.speakMode;
 
-        var addRecordButton = function() {
-            if (document.getElementById('btnRecord') || self2.isRecording) return;
+        var markReady = function() {
             if (self2.currentIndex !== idx) return;
-            var el = document.getElementById('speakingActions');
-            if (el) {
-                var label = mode === 'record' ? '开始录音' : '开始跟读';
-                el.insertAdjacentHTML('beforeend',
-                    '<button class="btn-record" id="btnRecord" onclick="Speaking.startRecording()">' +
-                        '<i class="fas fa-microphone"></i> ' + label +
-                    '</button>'
-                );
+            var btn = document.getElementById('btnRecord');
+            if (btn && !btn.classList.contains('recording')) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
             }
         };
 
-        utterance.onend = addRecordButton;
+        utterance.onend = markReady;
         var wordCount = sentence.english.trim().split(/\s+/).length;
         var estMs = Math.max(4000, wordCount * 800 + 2000);
-        setTimeout(addRecordButton, estMs);
+        setTimeout(markReady, estMs);
     },
 
     /* ==========================================
