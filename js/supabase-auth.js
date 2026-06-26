@@ -178,6 +178,10 @@ const SupabaseAuth = {
                     grammar: progress.grammar || null,
                     sentences: progress.sentences || [],
                     writing: progress.writing || null,
+                    learned_country_attractions: progress.learnedCountryAttractions || [],
+                    done_dialogues: progress.doneDialogues || [],
+                    done_reading: progress.doneReading || [],
+                    learned_resources: progress.learnedResources || [],
                     last_update: new Date().toISOString()
                 }], {
                     onConflict: 'username'
@@ -226,7 +230,7 @@ const SupabaseAuth = {
         try {
             const { data, error } = await db
                 .from('progress')
-                .select('resources, speaking, listening, vocabulary, grammar, sentences, writing')
+                .select('resources, speaking, listening, vocabulary, grammar, sentences, writing, learned_country_attractions, done_dialogues, done_reading, learned_resources')
                 .eq('username', this.currentUsername)
                 .single();
 
@@ -238,7 +242,11 @@ const SupabaseAuth = {
                     vocabulary: data.vocabulary || [],
                     grammar: data.grammar || null,
                     sentences: data.sentences || [],
-                    writing: data.writing || null
+                    writing: data.writing || null,
+                    learnedCountryAttractions: data.learned_country_attractions || [],
+                    doneDialogues: data.done_dialogues || [],
+                    doneReading: data.done_reading || [],
+                    learnedResources: data.learned_resources || []
                 };
                 // 写入 localStorage
                 const users = JSON.parse(localStorage.getItem('travelEdu_users') || '{}');

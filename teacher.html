@@ -546,7 +546,7 @@
                                 <th>序号</th>
                                 <th>姓名</th>
                                 <th>账号</th>
-                                <th>自主学习<br><span style="font-weight:400;font-size:0.7rem;text-transform:none;">(20个景点)</span></th>
+                                <th>自主学习<br><span style="font-weight:400;font-size:0.7rem;text-transform:none;">景点/对话/阅读/单元</span></th>
                                 <th>口语练习</th>
                                 <th>听力练习</th>
                                 <th>词汇闪卡</th>
@@ -792,7 +792,7 @@
                 // 从 Supabase 获取所有学生进度
                 const { data: progressData, error } = await supabaseClient
                     .from('progress')
-                    .select('username, resources, speaking, listening, vocabulary, grammar, sentences, writing, last_update, last_login, total_study_seconds')
+                    .select('username, resources, speaking, listening, vocabulary, grammar, sentences, writing, learned_country_attractions, done_dialogues, done_reading, learned_resources, last_update, last_login, total_study_seconds')
                     .order('last_update', { ascending: false, nullsFirst: true });
 
                 if (error) {
@@ -814,6 +814,10 @@
                 // 计算进度
                 studentsData = (progressData || []).map(p => {
                     const resourcesDone = (p.resources || []).length;
+                    const learnedCountryAttractions = p.learned_country_attractions || [];
+                    const doneDialogues = p.done_dialogues || [];
+                    const doneReading = p.done_reading || [];
+                    const learnedResources = p.learned_resources || [];
                     const speakingNums = (p.speaking || []).filter(x => typeof x === 'number');
                     const speakingDone = speakingNums.length;
                     const dialogueDone = (p.speaking || []).includes('dialogue');
@@ -832,14 +836,22 @@
                     const resourcesMax = 20;
                     const speakingFollowMax = 30;  // 跟读30句
                     const sentencesMax = 30;       // 句式30题
+                    const totalAttractions = 20;   // 6国共20个景点
+                    const totalDialogues = 12;     // 6国×2=12组对话
+                    const totalReading = 6;        // 6国×1=6篇阅读
                     let moduleCount = 0;
                     let moduleSum = 0;
 
-                    moduleSum += Math.min(resourcesDone / resourcesMax, 1); moduleCount++;
+                    // 自主学习：景点(40%) + 对话(30%) + 阅读(20%) + 单元完成(10%)
+                    const attrPct = totalAttractions > 0 ? Math.min(learnedCountryAttractions.length / totalAttractions, 1) * 0.4 : 0;
+                    const dlgPct = totalDialogues > 0 ? Math.min(doneDialogues.length / totalDialogues, 1) * 0.3 : 0;
+                    const readPct = totalReading > 0 ? Math.min(doneReading.length / totalReading, 1) * 0.2 : 0;
+                    const unitPct = Math.min(learnedResources.filter(r => r.startsWith('country_')).length / 6, 1) * 0.1;
+                    moduleSum += attrPct + dlgPct + readPct + unitPct; moduleCount++;
                     // 口语 = 跟读(30句) + 对话 各占一半
                     const followPct = Math.min(speakingDone / speakingFollowMax, 1);
-                    const dialoguePct = dialogueDone ? 1 : 0;
-                    moduleSum += (followPct + dialoguePct) / 2; moduleCount++;
+                    const speakDlgPct = dialogueDone ? 1 : 0;
+                    moduleSum += (followPct + speakDlgPct) / 2; moduleCount++;
                     if (listeningTotal > 0) { moduleSum += Math.min(listeningScore / listeningTotal, 1); }
                     moduleCount++;
                     if (vocabularyDone > 0) { moduleSum += Math.min(vocabularyDone / Math.max(vocabularyDone, 1), 1); }
@@ -856,6 +868,14 @@
                         displayName: studentMap[p.username] || p.username,
                         resourcesDone,
                         resourcesMax,
+                        learnedCountryAttractions,
+                        learnedAttractionsCount: learnedCountryAttractions.length,
+                        doneDialogues,
+                        doneDialoguesCount: doneDialogues.length,
+                        doneReading,
+                        doneReadingCount: doneReading.length,
+                        learnedResources,
+                        learnedResourcesCount: learnedResources.filter(r => r.startsWith('country_')).length,
                         speakingDone,
                         speakingMax: speakingFollowMax,
                         dialogueDone,
@@ -968,11 +988,21 @@
                     ? `<span class="badge badge-info">${s.grammarScore}/${s.grammarTotal}</span>`
                     : '<span style="color:var(--text-light);">-</span>';
 
+                // 自主学习：显示景点/对话/阅读/单元完成情况
+                const attrPct = Math.round(s.learnedAttractionsCount / 20 * 100);
+                const attrColor = attrPct >= 50 ? '#10b981' : attrPct >= 20 ? '#f59e0b' : '#94a3b8';
+                const resourcesHTML = `<div style="display:flex;flex-direction:column;gap:3px;font-size:0.78rem;">
+                    <span style="color:${attrColor};"><i class="fas fa-landmark"></i> 景点 ${s.learnedAttractionsCount}/20</span>
+                    <span style="color:${s.doneDialoguesCount > 0 ? '#10b981' : '#94a3b8'};"><i class="fas fa-comments"></i> 对话 ${s.doneDialoguesCount}/12</span>
+                    <span style="color:${s.doneReadingCount > 0 ? '#10b981' : '#94a3b8'};"><i class="fas fa-book-open"></i> 阅读 ${s.doneReadingCount}/6</span>
+                    <span style="color:${s.learnedResourcesCount > 0 ? '#6366f1' : '#94a3b8'};font-weight:${s.learnedResourcesCount > 0 ? '700' : '400'};"><i class="fas fa-trophy"></i> 单元 ${s.learnedResourcesCount}/6</span>
+                </div>`;
+
                 return `<tr>
                     <td style="font-weight:600;color:var(--text-light);">${i + 1}</td>
                     <td style="font-weight:600;">${s.displayName || s.username}</td>
                     <td style="color:var(--text-light);font-size:0.85rem;">${s.username}</td>
-                    <td><span class="badge badge-info">景点 ${s.resourcesDone}/${s.resourcesMax}</span></td>
+                    <td>${resourcesHTML}</td>
                     <td>${speakingHTML}</td>
                     <td>${listeningHTML}</td>
                     <td>${vocabHTML}</td>
@@ -1017,7 +1047,7 @@
             }
 
             // CSV 表头
-            const headers = ['序号', '姓名', '账号', '自主学习', '口语跟读', '对话填空', '听力练习', '词汇闪卡', '语法练习', '句式练习', '作文练习', '总进度', '最后登录', '学习时长', '最后上报'];
+            const headers = ['序号', '姓名', '账号', '自主学习-景点', '自主学习-对话', '自主学习-阅读', '自主学习-单元', '口语跟读', '对话填空', '听力练习', '词汇闪卡', '语法练习', '句式练习', '作文练习', '总进度', '最后登录', '学习时长', '最后上报'];
 
             // 数据行
             const rows = studentsData.map((s, i) => {
@@ -1032,7 +1062,10 @@
                     i + 1,
                     s.displayName || s.username,
                     s.username,
-                    s.resourcesDone + '/20',
+                    s.learnedAttractionsCount + '/20',
+                    s.doneDialoguesCount + '/12',
+                    s.doneReadingCount + '/6',
+                    s.learnedResourcesCount + '/6',
                     followStr,
                     dialogueStr,
                     listeningStr,
