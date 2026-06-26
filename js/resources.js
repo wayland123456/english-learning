@@ -85,9 +85,11 @@ const Resources = {
         this.bindReadingEvents(country.id);
     },
 
-    // Step 1：国家介绍视频
+    // Step 1：国家介绍视频（Bilibili 嵌入）
     renderStep1_Video(country) {
-        if (!country.video) return '';
+        if (!country.countryVideo || !country.countryVideo.bvid) return '';
+        const bvid = country.countryVideo.bvid;
+        const embedUrl = `//player.bilibili.com/player.html?bvid=${bvid}&page=1&high_quality=1`;
         return `
         <div class="learning-step">
             <div class="step-header">
@@ -96,10 +98,10 @@ const Resources = {
             </div>
             <div style="padding:1.5rem;">
                 <div class="video-container">
-                    <iframe src="${country.video}" frameborder="0" allowfullscreen></iframe>
+                    <iframe src="${embedUrl}" frameborder="0" allowfullscreen scrolling="no" sandbox="allow-same-origin allow-scripts allow-popups"></iframe>
                 </div>
                 <p style="text-align:center;color:var(--text-light);font-size:0.85rem;margin-top:0.75rem;">
-                    观看视频，初步了解${country.country}的文化与风景
+                    观看视频，初步了解${country.countryCN}的文化与风景
                 </p>
             </div>
         </div>`;
@@ -109,15 +111,16 @@ const Resources = {
     renderStep2_Attractions(country, progress) {
         if (!country.attractions) return '';
         const learned = progress?.learnedCountryAttractions || [];
-        let cards = country.attractions.map(a => {
-            const done = learned.includes(a.id);
+        let cards = country.attractions.map((a, ai) => {
+            const attrId = `${country.id}_attr_${ai}`;
+            const done = learned.includes(attrId);
             return `
-            <div class="attraction-card ${done ? 'learned' : ''}" onclick="Resources.toggleAttraction('${a.id}')">
+            <div class="attraction-card ${done ? 'learned' : ''}" onclick="Resources.toggleAttraction('${attrId}')">
                 <div class="attraction-header">
-                    <h4>${a.name} <span class="attraction-en">${a.nameEN}</span></h4>
+                    <h4>${a.title} <span class="attraction-en">${a.location}</span></h4>
                     ${done ? '<span class="learned-badge"><i class="fas fa-check"></i> 已学习</span>' : ''}
                 </div>
-                <p class="attraction-desc">${a.desc}</p>
+                <p class="attraction-desc">${a.description}</p>
                 <div class="vocabulary-list">
                     <h5>📖 关键词汇</h5>
                     <div class="vocab-items">
@@ -348,7 +351,7 @@ const Resources = {
         const doneDlgs = progress?.doneDialogues || [];
         const doneRd = progress?.doneReading || [];
         const totalAttractions = country.attractions ? country.attractions.length : 0;
-        const attractionsDone = country.attractions ? country.attractions.filter(a => learned.includes(a.id)).length : 0;
+        const attractionsDone = country.attractions ? country.attractions.filter((a, ai) => learned.includes(`${country.id}_attr_${ai}`)).length : 0;
         const dialoguesDone = country.dialogues ? country.dialogues.filter(d => doneDlgs.includes(`${country.id}_${d.id}`)).length : 0;
         const totalDialogues = country.dialogues ? country.dialogues.length : 0;
         const readingDone = doneRd.includes(country.id);
