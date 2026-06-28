@@ -18,11 +18,9 @@ const DATA = {
                     location: 'London, England',
                     description: 'Big Ben is the nickname for the Great Bell of the clock at the north end of the Palace of Westminster. The tower is one of the most prominent symbols of the United Kingdom and is often used in establishing film settings set in London.',
                     vocabulary: [
-                        { word: 'Parliament', meaning: 'n. 议会' },
-                        { word: 'iconic', meaning: 'adj. 标志性的' },
-                        { word: 'landmark', meaning: 'n. 地标' },
-                        { word: 'heritage', meaning: 'n. 遗产' },
-                        { word: 'Gothic architecture', meaning: '哥特式建筑' }
+                        { word: ' Parliament', meaning: 'n. 议会' },
+                        { word: 'famous', meaning: 'adj. 著名的' },
+                        { word: 'clock', meaning: 'n. 时钟' }
                     ]
                 },
                 {
@@ -30,11 +28,9 @@ const DATA = {
                     location: 'London, England',
                     description: 'The Tower of London is a historic castle on the north bank of the River Thames. Founded in 1066, it has served as a royal palace, prison, and treasury. The Crown Jewels have been kept there since the 14th century.',
                     vocabulary: [
-                        { word: 'conquest', meaning: 'n. 征服' },
-                        { word: 'fortress', meaning: 'n. 堡垒' },
-                        { word: 'crown jewels', meaning: '皇冠珠宝' },
-                        { word: 'execution', meaning: 'n. 处决' },
-                        { word: 'medieval', meaning: 'adj. 中世纪的' }
+                        { word: 'historic', meaning: 'adj. 历史性的' },
+                        { word: 'castle', meaning: 'n. 城堡' },
+                        { word: 'prison', meaning: 'n. 监狱' }
                     ]
                 },
                 {
@@ -42,11 +38,9 @@ const DATA = {
                     location: 'London, England',
                     description: 'Buckingham Palace is the London residence and administrative headquarters of the monarch of the United Kingdom. The Changing of the Guard ceremony is one of the most popular tourist attractions in London.',
                     vocabulary: [
-                        { word: 'residence', meaning: 'n. 住所' },
-                        { word: 'monarch', meaning: 'n. 君主' },
-                        { word: 'ceremony', meaning: 'n. 仪式' },
-                        { word: 'guard', meaning: 'n. 卫兵' },
-                        { word: 'administrative', meaning: 'adj. 行政的' }
+                        { word: 'palace', meaning: 'n. 宫殿' },
+                        { word: 'queen', meaning: 'n. 女王' },
+                        { word: 'tourist', meaning: 'n. 游客' }
                     ]
                 },
                 {
@@ -54,11 +48,9 @@ const DATA = {
                     location: 'Wiltshire, England',
                     description: 'Stonehenge is a prehistoric monument consisting of a ring of standing stones, dating back to around 3000 BC. It remains one of the most famous and mysterious archaeological sites in the world.',
                     vocabulary: [
-                        { word: 'prehistoric', meaning: 'adj. 史前的' },
-                        { word: 'monument', meaning: 'n. 纪念碑/遗迹' },
-                        { word: 'mysterious', meaning: 'adj. 神秘的' },
-                        { word: 'ancient', meaning: 'adj. 古代的' },
-                        { word: 'archaeological', meaning: 'adj. 考古的' }
+                        { word: 'old', meaning: 'adj. 古老的' },
+                        { word: 'stone', meaning: 'n. 石头' },
+                        { word: 'world', meaning: 'n. 世界' }
                     ]
                 }
             ]
@@ -75,11 +67,9 @@ const DATA = {
                     location: 'New York City, USA',
                     description: 'The Statue of Liberty is a colossal neoclassical sculpture on Liberty Island in New York Harbor. A gift from France, it was dedicated in 1886 and has become an enduring symbol of freedom and democracy.',
                     vocabulary: [
-                        { word: 'colossal', meaning: 'adj. 巨大的' },
-                        { word: 'neoclassical', meaning: 'adj. 新古典主义的' },
-                        { word: 'sculpture', meaning: 'n. 雕塑' },
-                        { word: 'symbol', meaning: 'n. 象征' },
-                        { word: 'dedicate', meaning: 'v. 奉献/落成' }
+                        { word: 'statue', meaning: 'n. 雕像' },
+                        { word: 'freedom', meaning: 'n. 自由' },
+                        { word: 'gift', meaning: 'n. 礼物' }
                     ]
                 },
                 {
@@ -87,11 +77,9 @@ const DATA = {
                     location: 'Arizona, USA',
                     description: 'The Grand Canyon is a steep-sided canyon carved by the Colorado River. It is 277 miles long, up to 18 miles wide, and over a mile deep. It is considered one of the Seven Natural Wonders of the World.',
                     vocabulary: [
-                        { word: 'canyon', meaning: 'n. 峡谷' },
-                        { word: 'carved', meaning: 'v. 雕刻/冲刷形成' },
-                        { word: 'overwhelming', meaning: 'adj. 令人震撼的' },
-                        { word: 'intricate', meaning: 'adj. 错综复杂的' },
-                        { word: 'landscape', meaning: 'n. 景观' }
+                        { word: 'river', meaning: 'n. 河流' },
+                        { word: 'long', meaning: 'adj. 长的' },
+                        { word: 'deep', meaning: 'adj. 深的' }
                     ]
                 },
                 {
@@ -99,11 +87,9 @@ const DATA = {
                     location: 'San Francisco, USA',
                     description: 'The Golden Gate Bridge is a suspension bridge spanning the Golden Gate strait. Completed in 1937, it was the longest suspension bridge in the world at that time and has become one of the most internationally recognized symbols of San Francisco.',
                     vocabulary: [
-                        { word: 'suspension bridge', meaning: 'n. 悬索桥' },
-                        { word: 'spanning', meaning: 'v. 横跨' },
-                        { word: 'strait', meaning: 'n. 海峡' },
-                        { word: 'recognized', meaning: 'adj. 公认的' },
-                        { word: 'engineering', meaning: 'n. 工程' }
+                        { word: 'bridge', meaning: 'n. 桥' },
+                        { word: 'city', meaning: 'n. 城市' },
+                        { word: 'famous', meaning: 'adj. 著名的' }
                     ]
                 },
                 {
@@ -132,11 +118,9 @@ const DATA = {
                     location: 'Sydney, Australia',
                     description: 'The Sydney Opera House is a multi-venue performing arts centre identified as one of the 20th century\'s most distinctive buildings. Designed by Danish architect Jørn Utzon, it was declared a UNESCO World Heritage Site in 2007.',
                     vocabulary: [
-                        { word: 'venue', meaning: 'n. 场馆' },
-                        { word: 'distinctive', meaning: 'adj. 独特的' },
-                        { word: 'performing arts', meaning: '表演艺术' },
-                        { word: 'masterpiece', meaning: 'n. 杰作' },
-                        { word: 'architect', meaning: 'n. 建筑师' }
+                        { word: 'opera', meaning: 'n. 歌剧' },
+                        { word: 'beautiful', meaning: 'adj. 美丽的' },
+                        { word: 'famous', meaning: 'adj. 著名的' }
                     ]
                 },
                 {
@@ -144,11 +128,9 @@ const DATA = {
                     location: 'Queensland, Australia',
                     description: 'The Great Barrier Reef is the world\'s largest coral reef system, visible from outer space. It stretches over 2,300 kilometres and is home to more than 1,500 species of fish and 400 types of coral.',
                     vocabulary: [
-                        { word: 'coral reef', meaning: 'n. 珊瑚礁' },
-                        { word: 'visible', meaning: 'adj. 可见的' },
-                        { word: 'species', meaning: 'n. 物种' },
-                        { word: 'marine', meaning: 'adj. 海洋的' },
-                        { word: 'biodiversity', meaning: 'n. 生物多样性' }
+                        { word: 'sea', meaning: 'n. 海洋' },
+                        { word: 'fish', meaning: 'n. 鱼' },
+                        { word: 'colourful', meaning: 'adj. 多彩的' }
                     ]
                 },
                 {
@@ -156,11 +138,9 @@ const DATA = {
                     location: 'Northern Territory, Australia',
                     description: 'Uluru, also known as Ayers Rock, is a large sandstone rock formation in the southern part of the Northern Territory. It is sacred to the Aboriginal people and is listed as a UNESCO World Heritage Site.',
                     vocabulary: [
-                        { word: 'sandstone', meaning: 'n. 砂岩' },
-                        { word: 'formation', meaning: 'n. 构造/形态' },
-                        { word: 'sacred', meaning: 'adj. 神圣的' },
-                        { word: 'Aboriginal', meaning: 'adj./n. 原住的/原住民' },
-                        { word: 'magnificent', meaning: 'adj. 壮丽的' }
+                        { word: 'rock', meaning: 'n. 岩石' },
+                        { word: 'red', meaning: 'adj. 红色的' },
+                        { word: 'people', meaning: 'n. 人们' }
                     ]
                 }
             ]
@@ -178,10 +158,8 @@ const DATA = {
                     description: 'Niagara Falls is a group of waterfalls on the border between Canada and the United States. Known as one of the world\'s most spectacular natural wonders, over 30 million visitors come each year to witness its breathtaking power.',
                     vocabulary: [
                         { word: 'waterfall', meaning: 'n. 瀑布' },
-                        { word: 'spectacular', meaning: 'adj. 壮观的' },
-                        { word: 'natural wonder', meaning: '自然奇观' },
-                        { word: 'border', meaning: 'n. 边界' },
-                        { word: 'breathtaking', meaning: 'adj. 令人叹为观止的' }
+                        { word: 'beautiful', meaning: 'adj. 美丽的' },
+                        { word: 'visit', meaning: 'v. 参观' }
                     ]
                 },
                 {
@@ -189,11 +167,9 @@ const DATA = {
                     location: 'Alberta, Canada',
                     description: 'Banff National Park is Canada\'s oldest national park, established in 1885. Located in the Rocky Mountains, it is famous for its turquoise lakes, mountain peaks, and abundant wildlife including bears, elk, and bighorn sheep.',
                     vocabulary: [
-                        { word: 'turquoise', meaning: 'adj./n. 绿松石色' },
-                        { word: 'abundant', meaning: 'adj. 丰富的' },
-                        { word: 'glacier', meaning: 'n. 冰川' },
-                        { word: 'wilderness', meaning: 'n. 荒野' },
-                        { word: 'scenic', meaning: 'adj. 风景优美的' }
+                        { word: 'mountain', meaning: 'n. 山' },
+                        { word: 'lake', meaning: 'n. 湖泊' },
+                        { word: 'animal', meaning: 'n. 动物' }
                     ]
                 },
                 {
@@ -201,11 +177,9 @@ const DATA = {
                     location: 'Toronto, Canada',
                     description: 'The CN Tower is a 553-metre concrete communications and observation tower in Toronto. Once the world\'s tallest free-standing structure, it offers breathtaking views of the city and Lake Ontario from its revolving restaurant and glass floor.',
                     vocabulary: [
-                        { word: 'concrete', meaning: 'n./adj. 混凝土' },
-                        { word: 'observation', meaning: 'n. 观测' },
-                        { word: 'free-standing', meaning: 'adj. 独立式的' },
-                        { word: 'structure', meaning: 'n. 建筑结构' },
-                        { word: 'skyline', meaning: 'n. 天际线' }
+                        { word: 'tower', meaning: 'n. 塔' },
+                        { word: 'view', meaning: 'n. 景色' },
+                        { word: 'high', meaning: 'adj. 高的' }
                     ]
                 }
             ]
@@ -222,11 +196,9 @@ const DATA = {
                     location: 'County Clare, Ireland',
                     description: 'The Cliffs of Moher are sea cliffs at the southwestern edge of the Burren region. Rising 214 metres above the Atlantic Ocean, they are one of Ireland\'s most spectacular natural attractions and a UNESCO Global Geopark.',
                     vocabulary: [
-                        { word: 'cliff', meaning: 'n. 悬崖' },
-                        { word: 'rugged', meaning: 'adj. 崎岖的' },
-                        { word: 'coastline', meaning: 'n. 海岸线' },
-                        { word: 'breathtaking', meaning: 'adj. 令人惊叹的' },
-                        { word: 'habitat', meaning: 'n. 栖息地' }
+                        { word: 'sea', meaning: 'n. 海' },
+                        { word: 'high', meaning: 'adj. 高的' },
+                        { word: 'view', meaning: 'n. 景色' }
                     ]
                 },
                 {
@@ -234,11 +206,9 @@ const DATA = {
                     location: 'Dublin, Ireland',
                     description: 'Trinity College Dublin, founded in 1592, is Ireland\'s oldest university. Its Long Room Library houses the famous Book of Kells, a beautifully illustrated manuscript created by Celtic monks around the year 800.',
                     vocabulary: [
-                        { word: 'founded', meaning: 'v. 创办' },
-                        { word: 'manuscript', meaning: 'n. 手稿' },
-                        { word: 'illustrated', meaning: 'adj. 有插图的' },
-                        { word: 'scholar', meaning: 'n. 学者' },
-                        { word: 'monk', meaning: 'n. 修道士' }
+                        { word: 'university', meaning: 'n. 大学' },
+                        { word: 'old', meaning: 'adj. 古老的' },
+                        { word: 'book', meaning: 'n. 书' }
                     ]
                 },
                 {
@@ -246,11 +216,9 @@ const DATA = {
                     location: 'County Antrim, Northern Ireland',
                     description: 'The Giant\'s Causeway is an area of about 40,000 interlocking basalt columns, the result of an ancient volcanic eruption. It is the only UNESCO World Heritage Site in Northern Ireland and is steeped in myth and legend.',
                     vocabulary: [
-                        { word: 'interlocking', meaning: 'adj. 互锁的' },
-                        { word: 'basalt', meaning: 'n. 玄武岩' },
-                        { word: 'column', meaning: 'n. 柱子' },
-                        { word: 'volcanic', meaning: 'adj. 火山的' },
-                        { word: 'legend', meaning: 'n. 传说' }
+                        { word: 'rock', meaning: 'n. 岩石' },
+                        { word: 'story', meaning: 'n. 故事' },
+                        { word: 'special', meaning: 'adj. 特别的' }
                     ]
                 }
             ]
@@ -267,11 +235,9 @@ const DATA = {
                     location: 'South Island, New Zealand',
                     description: 'Milford Sound is a fiord in the southwest of New Zealand\'s South Island. Known for its towering Mitre Peak and stunning natural beauty, Rudyard Kipling once called it the "eighth wonder of the world."',
                     vocabulary: [
-                        { word: 'fiord', meaning: 'n. 峡湾' },
-                        { word: 'towering', meaning: 'adj. 高耸的' },
-                        { word: 'stunning', meaning: 'adj. 绝美的' },
-                        { word: 'glacier', meaning: 'n. 冰川' },
-                        { word: 'rainforest', meaning: 'n. 雨林' }
+                        { word: 'mountain', meaning: 'n. 山' },
+                        { word: 'beautiful', meaning: 'adj. 美丽的' },
+                        { word: 'water', meaning: 'n. 水' }
                     ]
                 },
                 {
@@ -279,11 +245,9 @@ const DATA = {
                     location: 'Matamata, New Zealand',
                     description: 'Hobbiton is the movie set used for The Lord of the Rings and The Hobbit film trilogies. Located on a 1,250-acre sheep farm, it has become one of New Zealand\'s most popular tourist destinations, attracting fans from around the world.',
                     vocabulary: [
-                        { word: 'movie set', meaning: 'n. 电影布景' },
-                        { word: 'destination', meaning: 'n. 目的地' },
-                        { word: 'fictional', meaning: 'adj. 虚构的' },
-                        { word: 'picturesque', meaning: 'adj. 如画的' },
-                        { word: 'trilogy', meaning: 'n. 三部曲' }
+                        { word: 'movie', meaning: 'n. 电影' },
+                        { word: 'farm', meaning: 'n. 农场' },
+                        { word: 'popular', meaning: 'adj. 受欢迎的' }
                     ]
                 },
                 {
@@ -291,11 +255,9 @@ const DATA = {
                     location: 'Otago, New Zealand',
                     description: 'Queenstown is a resort town on New Zealand\'s South Island, known as the adventure capital of the world. Surrounded by mountains and Lake Wakatipu, it offers bungee jumping, skydiving, and skiing, making it a paradise for thrill-seekers.',
                     vocabulary: [
-                        { word: 'resort', meaning: 'n. 度假胜地' },
-                        { word: 'adventure', meaning: 'n. 冒险' },
-                        { word: 'bungee jumping', meaning: '蹦极' },
-                        { word: 'thrill-seeker', meaning: 'n. 追求刺激者' },
-                        { word: 'paradise', meaning: 'n. 天堂' }
+                        { word: 'town', meaning: 'n. 小镇' },
+                        { word: 'sport', meaning: 'n. 运动' },
+                        { word: 'fun', meaning: 'n. 乐趣' }
                     ]
                 }
             ]

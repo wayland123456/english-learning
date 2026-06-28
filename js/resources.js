@@ -181,6 +181,7 @@ const Resources = {
             <div class="dialogue-card ${done ? 'dialogue-done' : ''}" id="dialogue-card-${di}">
                 <div class="dialogue-title">
                     💬 ${dlg.title}
+                    <button class="btn-audio" onclick="Resources.playDialogue(${di}, '${country.id}')" title="听对话音频">🔊 听对话</button>
                     ${done ? '<span class="learned-badge" style="font-size:0.75rem;"><i class="fas fa-check"></i> 已完成</span>' : ''}
                 </div>
                 <div class="dialogue-scene">📍 ${dlg.scene}</div>
@@ -200,11 +201,51 @@ const Resources = {
             </div>
             <div style="padding:0.5rem 0;">
                 <p style="color:var(--text-light);margin-bottom:1rem;font-size:0.9rem;padding:0 1.5rem;">
-                    在空白处填入合适的单词，完成对话后点击"检查答案"
+                    点击"听对话"按钮播放音频，听完后填入合适的单词，再点击"检查答案"
                 </p>
                 ${cards}
             </div>
         </div>`;
+    },
+
+    // 播放对话音频（Web Speech API）
+    playDialogue(dlgIdx, countryId) {
+        const country = DATA.resources.find(c => c.id === countryId);
+        if (!country || !country.dialogues) return;
+        const dlg = country.dialogues[dlgIdx];
+        if (!dlg) return;
+
+        // 停止正在播放的语音
+        window.speechSynthesis.cancel();
+
+        // 构建对话文本
+        let fullText = '';
+        dlg.lines.forEach(line => {
+            // 替换空白标记为空白提示
+            let text = line.text.replace(/\{0\}/g, '______');
+            fullText += `${line.speaker}: ${text}  `;
+        });
+
+        // 使用 Web Speech API 朗读
+        const utter = new SpeechSynthesisUtterance(fullText);
+        utter.lang = 'en-US';
+        utter.rate = 0.9; // 稍微慢一点，方便学生听清
+        utter.pitch = 1;
+        utter.volume = 1;
+
+        // 可选：如果是 A 说话用稍微不同的音调
+        window.speechSynthesis.speak(utter);
+
+        // 按钮反馈
+        const btn = event.target.closest('.btn-audio');
+        if (btn) {
+            btn.innerHTML = '🔊 播放中...';
+            btn.disabled = true;
+            utter.onend = () => {
+                btn.innerHTML = '🔊 听对话';
+                btn.disabled = false;
+            };
+        }
     },
 
     checkDialogue(dlgIdx, countryId, dlgId) {
