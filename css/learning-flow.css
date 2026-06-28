@@ -56,11 +56,88 @@
     font-size: 0.75rem;
 }
 
+/* ========= 景点卡片 ========= */
+.attraction-card {
+    margin: 1rem 1.5rem;
+    padding: 1.25rem;
+    background: var(--card-bg, #fff);
+    border-radius: 16px;
+    border: 2px solid var(--border, #e8e8e8);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.attraction-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+    border-color: var(--primary, #0f6e56);
+}
+.attraction-card.learned {
+    border-color: var(--success, #0f6e56);
+    background: linear-gradient(135deg, #e8f5e9, #f1f8f4);
+}
+.attraction-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.attraction-header h4 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--text, #333);
+}
+.attraction-en {
+    font-size: 0.82rem;
+    color: var(--text-light, #888);
+    font-weight: 400;
+}
+.attraction-card .learned-badge {
+    background: var(--success, #0f6e56);
+    color: #fff;
+    padding: 0.25rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 /* 景点描述 */
 .attraction-desc {
     color: var(--text-light, #666);
     line-height: 1.7;
     margin-bottom: 1rem;
+}
+
+/* 景点词汇 */
+.vocabulary-list {
+    margin-top: 0.75rem;
+}
+.vocabulary-list h5 {
+    font-size: 0.88rem;
+    color: var(--text, #333);
+    margin-bottom: 0.6rem;
+}
+.vocab-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+.vocab-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.35rem 0.7rem;
+    background: rgba(15,110,86,0.07);
+    color: var(--primary, #0f6e56);
+    border-radius: 20px;
+    font-size: 0.82rem;
+    transition: background 0.2s;
+}
+.vocab-tag small {
+    color: var(--text-light, #888);
+    font-size: 0.78rem;
 }
 
 /* ========= 对话卡片 ========= */
