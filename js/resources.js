@@ -445,20 +445,28 @@ const Resources = {
     renderMovies(container, progress) {
         let html = '<h2 style="margin-bottom:1.5rem;"><i class="fas fa-film"></i> 英文电影推荐</h2>';
         html += '<div class="movies-grid">';
-        if (!DATA.movies) return;
-        DATA.movies.forEach(m => {
-            const learned = progress.learnedResources && progress.learnedResources.includes(m.id);
-            html += `
-            <div class="movie-card ${learned ? 'learned' : ''}" onclick="Resources.markLearned('${m.id}', this)">
-                <div class="movie-poster">${m.poster ? `<img src="${m.poster}" alt="${m.title}" />` : '🎬'}</div>
-                <div class="movie-info">
-                    <h4>${m.title} <span class="movie-year">${m.year}</span></h4>
-                    <p class="movie-desc">${m.desc}</p>
-                    ${m.trailer ? `<a href="${m.trailer}" target="_blank" class="movie-trailer-btn" onclick="event.stopPropagation()"><i class="fas fa-play"></i> 观看预告片</a>` : ''}
-                </div>
-                ${learned ? '<div class="learned-badge"><i class="fas fa-check"></i> 已观看</div>' : ''}
-            </div>`;
-        });
+        if (!DATA.movies || DATA.movies.length === 0) {
+            html += '<p style="color:var(--text-light);">暂无电影推荐</p>';
+        } else {
+            DATA.movies.forEach(m => {
+                const learned = progress.learnedResources && progress.learnedResources.includes(m.id);
+                html += `
+                <div class="movie-card ${learned ? 'learned' : ''}" onclick="Resources.markLearned('${m.id}', this)">
+                    <div class="movie-poster">
+                        <div class="movie-poster-emoji">${m.poster || '🎬'}</div>
+                        <div class="movie-poster-year">${m.year}</div>
+                    </div>
+                    <div class="movie-info">
+                        <h4>${m.title} <span style="color:var(--text-light);font-weight:normal;font-size:0.9rem;">${m.titleCN}</span></h4>
+                        <p class="movie-desc">${m.description}</p>
+                        <p class="movie-why" style="margin-top:0.5rem;font-size:0.85rem;color:var(--primary);">💡 ${m.whyLearn}</p>
+                        <p class="movie-quote" style="margin-top:0.5rem;font-style:italic;color:var(--text-light);font-size:0.85rem;">${m.famousLine}</p>
+                        ${m.bilibiliUrl ? `<a href="${m.bilibiliUrl}" target="_blank" class="movie-trailer-btn" onclick="event.stopPropagation()"><i class="fas fa-play"></i> B站观看</a>` : ''}
+                    </div>
+                    ${learned ? '<div class="learned-badge"><i class="fas fa-check"></i> 已观看</div>' : ''}
+                </div>`;
+            });
+        }
         html += '</div>';
         container.innerHTML = html;
     },
