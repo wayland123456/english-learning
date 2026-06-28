@@ -154,7 +154,7 @@ const Resources = {
         } else {
             progress.learnedCountryAttractions.splice(idx, 1);
         }
-        SupabaseAuth.updateProgress(progress);
+        SupabaseAuth.saveProgress(progress);
         this.renderContent();
     },
 
@@ -218,11 +218,17 @@ const Resources = {
         // 停止正在播放的语音
         window.speechSynthesis.cancel();
 
-        // 构建对话文本
+        // 构建对话文本（空白处读答案，不读横线）
         let fullText = '';
         dlg.lines.forEach(line => {
-            // 替换空白标记为空白提示
-            let text = line.text.replace(/\{0\}/g, '______');
+            let text = line.text;
+            if (line.blanks && line.blanks.length > 0) {
+                // 按 blanks 顺序替换 {0} 为实际答案
+                line.blanks.sort((a, b) => a.index - b.index);
+                line.blanks.forEach(blank => {
+                    text = text.replace('{0}', blank.answer);
+                });
+            }
             fullText += `${line.speaker}: ${text}  `;
         });
 
@@ -276,7 +282,7 @@ const Resources = {
             if (!progress.doneDialogues) progress.doneDialogues = [];
             const key = `${countryId}_${dlgId}`;
             if (!progress.doneDialogues.includes(key)) progress.doneDialogues.push(key);
-            SupabaseAuth.updateProgress(progress);
+            SupabaseAuth.saveProgress(progress);
             document.getElementById(`dialogue-card-${dlgIdx}`).classList.add('dialogue-done');
         } else {
             resultEl.textContent = '❌ 有错误，正确答案已显示';
@@ -376,7 +382,7 @@ const Resources = {
             });
             if (allDone) {
                 progress.doneReading.push(countryId);
-                SupabaseAuth.updateProgress(progress);
+                SupabaseAuth.saveProgress(progress);
                 this.renderContent();
             }
         }
@@ -425,7 +431,7 @@ const Resources = {
         const key = `country_${countryId}`;
         if (!progress.learnedResources.includes(key)) {
             progress.learnedResources.push(key);
-            SupabaseAuth.updateProgress(progress);
+            SupabaseAuth.saveProgress(progress);
             this.renderContent();
             alert('🎉 恭喜完成 ' + DATA.resources.find(c => c.id === countryId).country + ' 单元！\n\n前往"学习成果"模块，生成你的旅行攻略或旅行日记吧！');
         }
@@ -462,7 +468,7 @@ const Resources = {
         if (!progress.learnedResources) progress.learnedResources = [];
         if (progress.learnedResources.includes(id)) return;
         progress.learnedResources.push(id);
-        SupabaseAuth.updateProgress(progress);
+        SupabaseAuth.saveProgress(progress);
         el.classList.add('learned');
         const badge = document.createElement('div');
         badge.className = 'learned-badge';
