@@ -1,5 +1,5 @@
 // Service Worker for 环游世界英语学习 PWA
-const CACHE_NAME = 'travelling-english-v6';
+const CACHE_NAME = 'travelling-english-v11';
 
 const CRITICAL_ASSETS = [
   '/english-learning/',
