@@ -6,6 +6,8 @@ const App = {
     currentPage: 'auth',
 
     init() {
+        // 检测企业微信/微信 WebView，提示用户用浏览器打开
+        this.checkWebView();
         // 创建粒子效果
         this.createParticles();
         // 初始化认证
@@ -19,6 +21,33 @@ const App = {
                 navbar.classList.remove('scrolled');
             }
         });
+    },
+
+    checkWebView() {
+        var ua = navigator.userAgent.toLowerCase();
+        var isWecom = ua.indexOf('wxwork') > -1;       // 企业微信
+        var isWechat = ua.indexOf('micromessenger') > -1 && !isWecom; // 微信（排除企业微信）
+        if (!isWecom && !isWechat) return;
+
+        var bar = document.createElement('div');
+        bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;'
+            + 'background:#ff9800;color:#fff;padding:10px 16px;font-size:14px;'
+            + 'display:flex;align-items:center;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,0.2);'
+            + 'line-height:1.5;';
+        bar.innerHTML = '<span style="font-size:18px;">⚠️</span>'
+            + '<span>语音和录音功能在此环境无法使用，请点击右上角 <b>···</b> → 选择 <b>在浏览器中打开</b>（推荐 Chrome）</span>';
+        document.body.appendChild(bar);
+
+        // 把页面往下推，不被提示条挡住
+        document.body.style.paddingTop = '52px';
+
+        // 10秒后自动收起
+        setTimeout(function() {
+            bar.style.transition = 'opacity 0.5s';
+            bar.style.opacity = '0';
+            document.body.style.paddingTop = '0';
+            setTimeout(function() { bar.remove(); }, 500);
+        }, 10000);
     },
 
     showPage(page) {
