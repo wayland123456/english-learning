@@ -34,13 +34,43 @@
     header {
       background: linear-gradient(135deg, var(--primary), #1d4ed8);
       color: #fff;
-      padding: 1rem 1.25rem 1.5rem;
+      padding: 1rem 1.25rem 1.25rem;
       position: sticky;
       top: 0;
       z-index: 10;
     }
-    header h1 { font-size: 1.25rem; font-weight: 600; }
+    header h1 { font-size: 1.2rem; font-weight: 600; }
     header .date { opacity: 0.85; font-size: 0.875rem; margin-top: 0.25rem; }
+
+    /* 教师选择器 */
+    .teacher-selector {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0 1rem 0.75rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .teacher-btn {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 9999px;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .teacher-btn.active {
+      background: #fff;
+      color: var(--primary);
+      border-color: #fff;
+      font-weight: 600;
+    }
+
     .container { padding: 1rem; max-width: 600px; margin: 0 auto; }
     .tabs {
       display: flex;
@@ -240,13 +270,23 @@
       margin: 2rem 0 1rem;
       padding: 0 1rem;
     }
+
+    /* 当前选中教师名显示 */
+    .teacher-label {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      margin-top: 0.2rem;
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>高三英语课表</h1>
     <div class="date" id="current-date">加载中...</div>
+    <div class="teacher-label" id="teacher-label"></div>
   </header>
+
+  <div class="teacher-selector" id="teacher-selector"></div>
 
   <div class="container">
     <div class="notice-bar" id="notice-bar">
@@ -300,93 +340,188 @@
   </div>
 
   <script>
-    const schedule = [
-      { day: 1, slot: '早自习', start: '07:10', end: '07:40', class: '高三-18班', subject: '英语' },
-      { day: 2, slot: '早自习', start: '07:10', end: '07:40', class: '高三-1班', subject: '英语' },
-      { day: 3, slot: '早自习', start: '07:10', end: '07:40', class: '高三-18班', subject: '英语' },
-      { day: 4, slot: '早自习', start: '07:10', end: '07:40', class: '高三-1班', subject: '英语' },
-      { day: 5, slot: '早自习', start: '07:10', end: '07:40', class: '高三-18班', subject: '英语' },
+    // ========== 多教师课表数据 ==========
+    const teachers = {
+      wanglang: {
+        name: '王浪老师',
+        shortName: '王浪',
+        schedule: [
+          { day: 1, slot: '早自习', start: '07:10', end: '07:40', class: '高三-18班', subject: '英语' },
+          { day: 2, slot: '早自习', start: '07:10', end: '07:40', class: '高三-1班', subject: '英语' },
+          { day: 3, slot: '早自习', start: '07:10', end: '07:40', class: '高三-18班', subject: '英语' },
+          { day: 4, slot: '早自习', start: '07:10', end: '07:40', class: '高三-1班', subject: '英语' },
+          { day: 5, slot: '早自习', start: '07:10', end: '07:40', class: '高三-18班', subject: '英语' },
 
-      { day: 2, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
-      { day: 3, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
-      { day: 4, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
-      { day: 5, slot: '第1节', start: '07:50', end: '08:30', class: '高三-18班', subject: '英语' },
-      { day: 0, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
+          { day: 2, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
+          { day: 3, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
+          { day: 4, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
+          { day: 5, slot: '第1节', start: '07:50', end: '08:30', class: '高三-18班', subject: '英语' },
+          { day: 0, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
 
-      { day: 3, slot: '第2节', start: '08:40', end: '09:20', class: '高三-1班', subject: '英语' },
-      { day: 0, slot: '第2节', start: '08:40', end: '09:20', class: '高三-1班', subject: '英语' },
+          { day: 3, slot: '第2节', start: '08:40', end: '09:20', class: '高三-1班', subject: '英语' },
+          { day: 0, slot: '第2节', start: '08:40', end: '09:20', class: '高三-1班', subject: '英语' },
 
-      { day: 1, slot: '第3节', start: '09:30', end: '10:10', class: '高三-1班', subject: '英语' },
-      { day: 2, slot: '第3节', start: '09:30', end: '10:10', class: '高三-18班', subject: '英语' },
-      { day: 0, slot: '第3节', start: '09:30', end: '10:10', class: '高三-18班', subject: '英语' },
+          { day: 1, slot: '第3节', start: '09:30', end: '10:10', class: '高三-1班', subject: '英语' },
+          { day: 2, slot: '第3节', start: '09:30', end: '10:10', class: '高三-18班', subject: '英语' },
+          { day: 0, slot: '第3节', start: '09:30', end: '10:10', class: '高三-18班', subject: '英语' },
 
-      { day: 2, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
-      { day: 3, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
-      { day: 4, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
-      { day: 0, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
+          { day: 2, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
+          { day: 3, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
+          { day: 4, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
+          { day: 0, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
 
-      { day: 2, slot: '第5节', start: '11:10', end: '11:50', class: '高三-1班', subject: '英语' },
-      { day: 4, slot: '第5节', start: '11:10', end: '11:50', class: '高三-18班', subject: '英语' },
-      { day: 0, slot: '第5节', start: '11:10', end: '11:50', class: '高三-18班', subject: '英语' },
+          { day: 2, slot: '第5节', start: '11:10', end: '11:50', class: '高三-1班', subject: '英语' },
+          { day: 4, slot: '第5节', start: '11:10', end: '11:50', class: '高三-18班', subject: '英语' },
+          { day: 0, slot: '第5节', start: '11:10', end: '11:50', class: '高三-18班', subject: '英语' },
 
-      { day: 0, slot: '第6节', start: '14:10', end: '14:50', class: '高三-1班', subject: '英语' },
+          { day: 0, slot: '第6节', start: '14:10', end: '14:50', class: '高三-1班', subject: '英语' },
 
-      { day: 5, slot: '第7节', start: '15:05', end: '15:45', class: '高三-1班', subject: '英语' },
+          { day: 5, slot: '第7节', start: '15:05', end: '15:45', class: '高三-1班', subject: '英语' },
 
-      { day: 1, slot: '第8节', start: '15:55', end: '16:35', class: '高三-18班', subject: '英语' },
-      { day: 4, slot: '第8节', start: '15:55', end: '16:35', class: '高三-1班', subject: '英语' },
+          { day: 1, slot: '第8节', start: '15:55', end: '16:35', class: '高三-18班', subject: '英语' },
+          { day: 4, slot: '第8节', start: '15:55', end: '16:35', class: '高三-1班', subject: '英语' },
 
-      { day: 1, slot: '第9节', start: '16:45', end: '17:25', class: '高三-18班', subject: '英语' },
+          { day: 1, slot: '第9节', start: '16:45', end: '17:25', class: '高三-18班', subject: '英语' },
 
-      { day: 2, slot: '晚自习1', start: '19:00', end: '20:10', class: '高三-18班', subject: '英语' },
-      { day: 5, slot: '晚自习1', start: '19:00', end: '20:10', class: '高三-1班', subject: '英语' },
+          { day: 2, slot: '晚自习1', start: '19:00', end: '20:10', class: '高三-18班', subject: '英语' },
+          { day: 5, slot: '晚自习1', start: '19:00', end: '20:10', class: '高三-1班', subject: '英语' },
 
-      { day: 2, slot: '晚自习2', start: '20:20', end: '22:00', class: '高三-1班', subject: '英语' },
-      { day: 5, slot: '晚自习2', start: '20:20', end: '22:00', class: '高三-18班', subject: '英语' }
-    ];
+          { day: 2, slot: '晚自习2', start: '20:20', end: '22:00', class: '高三-1班', subject: '英语' },
+          { day: 5, slot: '晚自习2', start: '20:20', end: '22:00', class: '高三-18班', subject: '英语' }
+        ]
+      },
+      zengshuqiong: {
+        name: '曾淑琼老师',
+        shortName: '曾老师',
+        schedule: [
+          // 周一 (day=1)
+          { day: 1, slot: '早自习', start: '07:10', end: '07:40', class: '高三-15班', subject: '英语' },
+          { day: 1, slot: '第2节', start: '08:40', end: '09:20', class: '高三-12班', subject: '英语' },
+          { day: 1, slot: '第3节', start: '09:30', end: '10:10', class: '高三-15班', subject: '英语' },
 
-    const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+          // 周二 (day=2)
+          { day: 2, slot: '早自习', start: '07:10', end: '07:40', class: '高三-12班', subject: '英语' },
+          { day: 2, slot: '第1节', start: '07:50', end: '08:30', class: '高三-15班', subject: '英语' },
+          { day: 2, slot: '第2节', start: '08:40', end: '09:20', class: '高三-15班', subject: '英语' },
+          { day: 2, slot: '第8节', start: '15:55', end: '16:35', class: '高三-12班', subject: '英语' },
+          { day: 2, slot: '第9节', start: '16:45', end: '17:25', class: '高三-12班', subject: '英语' },
+          { day: 2, slot: '晚自习1', start: '19:00', end: '20:10', class: '高三-15班', subject: '英语' },
+          { day: 2, slot: '晚自习2', start: '20:20', end: '22:00', class: '高三-12班', subject: '英语' },
+
+          // 周三 (day=3)
+          { day: 3, slot: '早自习', start: '07:10', end: '07:40', class: '高三-15班', subject: '英语' },
+          { day: 3, slot: '第1节', start: '07:50', end: '08:30', class: '高三-12班', subject: '英语' },
+          { day: 3, slot: '第2节', start: '08:40', end: '09:20', class: '高三-15班', subject: '英语' },
+          { day: 3, slot: '第3节', start: '09:30', end: '10:10', class: '高三-15班', subject: '英语' },
+          { day: 3, slot: '第5节', start: '11:10', end: '11:50', class: '高三-12班', subject: '英语' },
+
+          // 周四 (day=4)
+          { day: 4, slot: '早自习', start: '07:10', end: '07:40', class: '高三-12班', subject: '英语' },
+          { day: 4, slot: '第1节', start: '07:50', end: '08:30', class: '高三-15班', subject: '英语' },
+          { day: 4, slot: '第3节', start: '09:30', end: '10:10', class: '高三-12班', subject: '英语' },
+          { day: 4, slot: '第7节', start: '15:05', end: '15:45', class: '高三-15班', subject: '英语' },
+          { day: 4, slot: '第8节', start: '15:55', end: '16:35', class: '高三-12班', subject: '英语' },
+
+          // 周五 (day=5)
+          { day: 5, slot: '第2节', start: '08:40', end: '09:20', class: '高三-12班', subject: '英语' },
+          { day: 5, slot: '第9节', start: '16:45', end: '17:25', class: '高三-15班', subject: '英语' },
+          { day: 5, slot: '晚自习1', start: '19:00', end: '20:10', class: '高三-12班', subject: '英语' },
+          { day: 5, slot: '晚自习2', start: '20:20', end: '22:00', class: '高三-15班', subject: '英语' },
+
+          // 周日 (day=0)
+          { day: 0, slot: '第1节', start: '07:50', end: '08:30', class: '高三-15班', subject: '英语' },
+          { day: 0, slot: '第2节', start: '08:40', end: '09:20', class: '高三-15班', subject: '英语' },
+          { day: 0, slot: '第6节', start: '14:10', end: '14:50', class: '高三-15班', subject: '英语' },
+          { day: 0, slot: '第7节', start: '15:05', end: '15:45', class: '高三-12班', subject: '英语' },
+          { day: 0, slot: '第8节', start: '15:55', end: '16:35', class: '高三-12班', subject: '英语' },
+          { day: 0, slot: '第9节', start: '16:45', end: '17:25', class: '高三-12班', subject: '英语' }
+        ]
+      }
+    };
+
+    const teacherOrder = ['wanglang', 'zengshuqiong'];
+
     const fullDayNames = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 
-    const state = {
-      notifyEnabled: localStorage.getItem('notifyEnabled') === 'true',
-      advanceMin: parseInt(localStorage.getItem('advanceMin') || '5', 10),
-      notifiedKeys: JSON.parse(localStorage.getItem('notifiedKeys') || '{}')
-    };
+    // 当前选中的教师
+    let currentTeacher = localStorage.getItem('selectedTeacher') || 'wanglang';
+
+    // 状态（按教师分别存储）
+    function getState() {
+      const prefix = currentTeacher + '_';
+      return {
+        notifyEnabled: localStorage.getItem(prefix + 'notifyEnabled') === 'true',
+        advanceMin: parseInt(localStorage.getItem(prefix + 'advanceMin') || '5', 10),
+        notifiedKeys: JSON.parse(localStorage.getItem(prefix + 'notifiedKeys') || '{}')
+      };
+    }
+    let state = getState();
+
+    function saveState(key, val) {
+      const prefix = currentTeacher + '_';
+      localStorage.setItem(prefix + key, val);
+      state[key] = val;
+    }
+
+    function getSchedule() {
+      return teachers[currentTeacher].schedule;
+    }
 
     function today() { return new Date(); }
 
     function parseDate(timeStr) {
       const now = today();
       const [h, m] = timeStr.split(':').map(Number);
-      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
-      return d;
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
     }
 
     function getDayLessons(dayIndex) {
-      return schedule.filter(l => l.day === dayIndex).sort((a, b) => a.start.localeCompare(b.start));
+      return getSchedule().filter(l => l.day === dayIndex).sort((a, b) => a.start.localeCompare(b.start));
     }
 
     function isCurrent(lesson) {
-      const start = parseDate(lesson.start);
-      const end = parseDate(lesson.end);
       const now = today();
-      return now >= start && now <= end;
+      return now >= parseDate(lesson.start) && now <= parseDate(lesson.end);
     }
 
     function isNext(lesson, lessons) {
       const now = today();
-      const start = parseDate(lesson.start);
       const current = lessons.find(isCurrent);
       if (current) return false;
       const upcoming = lessons.filter(l => parseDate(l.start) > now);
       return upcoming.length > 0 && upcoming[0] === lesson;
     }
 
+    // ========== 渲染教师选择器 ==========
+    function renderTeacherSelector() {
+      const container = document.getElementById('teacher-selector');
+      container.innerHTML = '';
+      teacherOrder.forEach(key => {
+        const btn = document.createElement('button');
+        btn.className = 'teacher-btn' + (key === currentTeacher ? ' active' : '');
+        btn.textContent = teachers[key].shortName;
+        btn.addEventListener('click', () => selectTeacher(key));
+        container.appendChild(btn);
+      });
+      document.getElementById('teacher-label').textContent = teachers[currentTeacher].name + ' 的课表';
+    }
+
+    function selectTeacher(key) {
+      if (key === currentTeacher) return;
+      currentTeacher = key;
+      localStorage.setItem('selectedTeacher', key);
+      state = getState();
+      renderTeacherSelector();
+      updateNotice();
+      document.getElementById('advance-min').value = state.advanceMin;
+      renderWeek();
+      tick();
+    }
+
     function renderHeader() {
       const now = today();
-      const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${fullDayNames[now.getDay()]}`;
-      document.getElementById('current-date').textContent = dateStr;
+      document.getElementById('current-date').textContent =
+        `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${fullDayNames[now.getDay()]}`;
     }
 
     function renderToday() {
@@ -400,10 +535,9 @@
       if (lessons.length === 0) {
         currentClass.innerHTML = `
           <div class="empty-state">
-            <div class="emoji">🎉</div>
+            <div class="emoji">&#127881;</div>
             <div>今天没有课，好好休息！</div>
-          </div>
-        `;
+          </div>`;
         return;
       }
 
@@ -416,40 +550,35 @@
             <div class="card-row">
               <div>
                 <div class="class-name">${current.class}</div>
-                <div class="class-subject">${current.subject} · ${current.slot}</div>
+                <div class="class-subject">${current.subject} &middot; ${current.slot}</div>
               </div>
               <span class="time-badge">${current.start}-${current.end}</span>
             </div>
             <div class="status-text current">正在上课</div>
           </div>
-          <div class="section-title">当前课程</div>
-        `;
+          <div class="section-title">当前课程</div>`;
       } else if (next) {
-        const start = parseDate(next.start);
-        const diffMin = Math.round((start - now) / 60000);
+        const diffMin = Math.round((parseDate(next.start) - now) / 60000);
         currentClass.innerHTML = `
           <div class="card next">
             <div class="card-row">
               <div>
                 <div class="class-name">${next.class}</div>
-                <div class="class-subject">${next.subject} · ${next.slot}</div>
+                <div class="class-subject">${next.subject} &middot; ${next.slot}</div>
               </div>
               <span class="time-badge">${next.start}-${next.end}</span>
             </div>
             <div class="status-text next">下一节：${diffMin > 0 ? `还有 ${diffMin} 分钟` : '即将开始'}</div>
           </div>
-          <div class="section-title">下一节课</div>
-        `;
+          <div class="section-title">下一节课</div>`;
       } else {
         const last = lessons[lessons.length - 1];
-        const end = parseDate(last.end);
-        if (now > end) {
+        if (now > parseDate(last.end)) {
           currentClass.innerHTML = `
             <div class="empty-state">
-              <div class="emoji">🍺</div>
+              <div class="emoji">&#127867;</div>
               <div>今天的课已全部结束</div>
-            </div>
-          `;
+            </div>`;
         }
       }
 
@@ -462,11 +591,10 @@
           <div class="card-row">
             <div>
               <div class="class-name">${l.class}</div>
-              <div class="class-subject">${l.subject} · ${l.slot}</div>
+              <div class="class-subject">${l.subject} &middot; ${l.slot}</div>
             </div>
             <span class="time-badge">${l.start}-${l.end}</span>
-          </div>
-        `;
+          </div>`;
         list.appendChild(card);
       });
     }
@@ -476,11 +604,12 @@
       list.innerHTML = '';
       const todayIndex = today().getDay();
       const order = [1, 2, 3, 4, 5, 6, 0];
+
       order.forEach(dayIndex => {
         const lessons = getDayLessons(dayIndex);
+        const isToday = dayIndex === todayIndex;
         const dayCard = document.createElement('div');
         dayCard.className = 'day-card';
-        const isToday = dayIndex === todayIndex;
         dayCard.innerHTML = `
           <div class="day-header">
             <span>${fullDayNames[dayIndex]}${isToday ? '<span class="today-tag">今天</span>' : ''}</span>
@@ -495,10 +624,8 @@
                   <div class="lesson-class">${l.class}</div>
                   <div class="class-subject">${l.subject}</div>
                 </div>
-              </div>
-            `).join('')}
-          </div>
-        `;
+              </div>`).join('')}
+          </div>`;
         list.appendChild(dayCard);
       });
     }
@@ -511,9 +638,8 @@
       const dayIndex = now.getDay();
       const lessons = getDayLessons(dayIndex);
       const advanceMs = state.advanceMin * 60 * 1000;
-      const todayKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+      const todayKey = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
 
-      // 每天重置通知记录
       if (state.notifiedKeys.date !== todayKey) {
         state.notifiedKeys = { date: todayKey };
       }
@@ -521,41 +647,35 @@
       lessons.forEach(l => {
         const start = parseDate(l.start);
         const diff = start - now;
-        const key = `${l.slot}-${l.start}`;
+        const key = l.slot + '-' + l.start;
 
-        // 提前提醒
-        if (diff > 0 && diff <= advanceMs && !state.notifiedKeys[`before-${key}`]) {
-          new Notification('上课提醒', {
-            body: `${l.start} 要上 ${l.class} ${l.subject}（${l.slot}），准备一下。`,
+        if (diff > 0 && diff <= advanceMs && !state.notifiedKeys['before-' + key]) {
+          new Notification('上课提醒 - ' + teachers[currentTeacher].shortName, {
+            body: l.start + ' 要上 ' + l.class + ' ' + l.subject + '（' + l.slot + '），准备一下。',
             icon: 'icon-192.png',
             badge: 'icon-192.png',
-            tag: `before-${key}`
+            tag: currentTeacher + '-before-' + key
           });
-          state.notifiedKeys[`before-${key}`] = true;
+          state.notifiedKeys['before-' + key] = true;
         }
 
-        // 上课开始提醒
-        if (diff <= 0 && diff > -60000 && !state.notifiedKeys[`start-${key}`]) {
-          new Notification('上课时间到', {
-            body: `${l.class} ${l.subject}（${l.slot}）现在开始上课。`,
+        if (diff <= 0 && diff > -60000 && !state.notifiedKeys['start-' + key]) {
+          new Notification('上课时间到 - ' + teachers[currentTeacher].shortName, {
+            body: l.class + ' ' + l.subject + '（' + l.slot + '）现在开始上课。',
             icon: 'icon-192.png',
             badge: 'icon-192.png',
-            tag: `start-${key}`
+            tag: currentTeacher + '-start-' + key
           });
-          state.notifiedKeys[`start-${key}`] = true;
+          state.notifiedKeys['start-' + key] = true;
         }
       });
 
-      localStorage.setItem('notifiedKeys', JSON.stringify(state.notifiedKeys));
+      localStorage.setItem(currentTeacher + '_notifiedKeys', JSON.stringify(state.notifiedKeys));
     }
 
     async function requestNotificationPermission() {
-      if (!('Notification' in window)) {
-        alert('你的浏览器不支持通知功能');
-        return false;
-      }
-      const permission = await Notification.requestPermission();
-      return permission === 'granted';
+      if (!('Notification' in window)) { alert('你的浏览器不支持通知功能'); return false; }
+      return (await Notification.requestPermission()) === 'granted';
     }
 
     function updateNotice() {
@@ -563,6 +683,7 @@
       const text = document.getElementById('notice-text');
       const toggle = document.getElementById('notify-toggle');
       toggle.checked = state.notifyEnabled;
+      bar.classList.remove('show');
       if (!state.notifyEnabled) {
         bar.classList.add('show');
         text.textContent = '点击右侧开关开启上课通知。';
@@ -572,19 +693,17 @@
       } else if (Notification.permission !== 'granted') {
         bar.classList.add('show');
         text.textContent = '需要通知权限才能提醒上课。';
-      } else {
-        bar.classList.remove('show');
       }
     }
 
     document.getElementById('notify-toggle').addEventListener('change', async e => {
       state.notifyEnabled = e.target.checked;
-      localStorage.setItem('notifyEnabled', state.notifyEnabled);
+      saveState('notifyEnabled', state.notifyEnabled ? 'true' : 'false');
       if (state.notifyEnabled) {
         const granted = await requestNotificationPermission();
         if (!granted) {
           state.notifyEnabled = false;
-          localStorage.setItem('notifyEnabled', false);
+          saveState('notifyEnabled', 'false');
           e.target.checked = false;
         }
       }
@@ -594,21 +713,15 @@
     document.getElementById('advance-min').addEventListener('change', e => {
       const val = parseInt(e.target.value, 10);
       state.advanceMin = isNaN(val) || val < 1 ? 5 : val;
-      localStorage.setItem('advanceMin', state.advanceMin);
+      saveState('advanceMin', String(state.advanceMin));
       e.target.value = state.advanceMin;
     });
 
     document.getElementById('test-notify').addEventListener('click', async () => {
-      if (!('Notification' in window)) {
-        alert('浏览器不支持通知');
-        return;
-      }
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        alert('请允许通知权限');
-        return;
-      }
-      new Notification('测试提醒', {
+      if (!('Notification' in window)) { alert('浏览器不支持通知'); return; }
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { alert('请允许通知权限'); return; }
+      new Notification('测试提醒 - ' + teachers[currentTeacher].shortName, {
         body: '这是一条测试通知，上课提醒会像这样弹出。',
         icon: 'icon-192.png'
       });
@@ -630,13 +743,13 @@
     }
 
     // 初始化
+    renderTeacherSelector();
     document.getElementById('advance-min').value = state.advanceMin;
     updateNotice();
     renderWeek();
     tick();
-    setInterval(tick, 30 * 1000); // 每30秒刷新一次
+    setInterval(tick, 30000);
 
-    // Service Worker 注册
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js').catch(err => console.error('SW 注册失败', err));
     }
