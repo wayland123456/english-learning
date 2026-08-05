@@ -1,0 +1,24 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    - cron: '0 0,12 * * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          echo "🏓 Pinging Supabase to keep project alive..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: sb_publishable_PqN5m9yOrWZzBazFjO7Y_w_pfIMO1PI" \
+            -H "Authorization: Bearer sb_publishable_PqN5m9yOrWZzBazFjO7Y_w_pfIMO1PI" \
+            "https://gqlwspxcyhjtzhikcexj.supabase.co/rest/v1/")
+          echo "HTTP status: $STATUS"
+          if [ "$STATUS" = "200" ] || [ "$STATUS" = "401" ] || [ "$STATUS" = "404" ]; then
+            echo "✅ Supabase 项目已响应，活动已更新"
+          else
+            echo "⚠️ 异常状态码: $STATUS"
+          fi
