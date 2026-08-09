@@ -348,50 +348,47 @@
         name: '王浪老师',
         shortName: '王浪',
         schedule: [
-          { day: 1, slot: '早自习', start: '07:10', end: '07:40', class: '高三-18班', subject: '英语' },
-          { day: 2, slot: '早自习', start: '07:10', end: '07:40', class: '高三-1班', subject: '英语' },
-          { day: 3, slot: '早自习', start: '07:10', end: '07:40', class: '高三-18班', subject: '英语' },
-          { day: 4, slot: '早自习', start: '07:10', end: '07:40', class: '高三-1班', subject: '英语' },
-
-          { day: 2, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
-          { day: 3, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
-          { day: 4, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
-          { day: 5, slot: '第1节', start: '07:50', end: '08:30', class: '高三-18班', subject: '英语' },
-          { day: 0, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
-
-          { day: 3, slot: '第2节', start: '08:40', end: '09:20', class: '高三-1班', subject: '英语' },
-          { day: 0, slot: '第2节', start: '08:40', end: '09:20', class: '高三-1班', subject: '英语' },
-
-          { day: 1, slot: '第3节', start: '09:30', end: '10:10', class: '高三-1班', subject: '英语' },
-          { day: 2, slot: '第3节', start: '09:30', end: '10:10', class: '高三-18班', subject: '英语' },
-          { day: 0, slot: '第3节', start: '09:30', end: '10:10', class: '高三-18班', subject: '英语' },
-
-          { day: 2, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
-          { day: 3, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
-          { day: 4, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
-          { day: 0, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
-
-          { day: 2, slot: '第5节', start: '11:10', end: '11:50', class: '高三-1班', subject: '英语' },
-          { day: 4, slot: '第5节', start: '11:10', end: '11:50', class: '高三-18班', subject: '英语' },
-          { day: 0, slot: '第5节', start: '11:10', end: '11:50', class: '高三-18班', subject: '英语' },
-
-          { day: 2, slot: '限时训练', start: '12:30', end: '13:10', class: '高三-1班', subject: '英语' },
-          { day: 4, slot: '限时训练', start: '12:30', end: '13:10', class: '高三-1班', subject: '英语' },
-
-          { day: 0, slot: '第6节', start: '14:10', end: '14:50', class: '高三-1班', subject: '英语' },
-
-          { day: 5, slot: '第7节', start: '15:05', end: '15:45', class: '高三-1班', subject: '英语' },
-
-          { day: 1, slot: '第8节', start: '15:55', end: '16:35', class: '高三-18班', subject: '英语' },
-          { day: 4, slot: '第8节', start: '15:55', end: '16:35', class: '高三-1班', subject: '英语' },
-
+          // 周一 (day=1)
+          { day: 1, slot: '早自习', start: '07:00', end: '07:30', class: '高三-18班', subject: '英语' },
+          { day: 1, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
           { day: 1, slot: '第9节', start: '16:45', end: '17:25', class: '高三-18班', subject: '英语' },
 
+          // 周二 (day=2)
+          { day: 2, slot: '早自习', start: '07:00', end: '07:30', class: '高三-1班', subject: '英语' },
+          { day: 2, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
+          { day: 2, slot: '第3节', start: '09:30', end: '10:10', class: '高三-18班', subject: '英语' },
+          { day: 2, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
           { day: 2, slot: '晚自习1', start: '19:00', end: '20:10', class: '高三-18班', subject: '英语' },
-          { day: 5, slot: '晚自习1', start: '19:00', end: '20:10', class: '高三-1班', subject: '英语' },
-
           { day: 2, slot: '晚自习2', start: '20:20', end: '22:00', class: '高三-1班', subject: '英语' },
-          { day: 5, slot: '晚自习2', start: '20:20', end: '22:00', class: '高三-18班', subject: '英语' }
+
+          // 周三 (day=3)
+          { day: 3, slot: '第2节', start: '08:40', end: '09:20', class: '高三-1班', subject: '英语' },
+          { day: 3, slot: '第3节', start: '09:30', end: '10:10', class: '高三-1班', subject: '英语' },
+          { day: 3, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
+
+          // 周四 (day=4)
+          { day: 4, slot: '早自习', start: '07:00', end: '07:30', class: '高三-1班', subject: '英语' },
+          { day: 4, slot: '第3节', start: '09:30', end: '10:10', class: '高三-1班', subject: '英语' },
+          { day: 4, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
+          { day: 4, slot: '第5节', start: '11:10', end: '11:50', class: '高三-18班', subject: '英语' },
+          { day: 4, slot: '第6节', start: '14:00', end: '14:40', class: '高三-1班', subject: '英语' },
+
+          // 周五 (day=5)
+          { day: 5, slot: '早自习', start: '07:00', end: '07:30', class: '高三-18班', subject: '英语' },
+          { day: 5, slot: '第1节', start: '07:50', end: '08:30', class: '高三-18班', subject: '英语' },
+          { day: 5, slot: '第2节', start: '08:40', end: '09:20', class: '高三-1班', subject: '英语' },
+          { day: 5, slot: '晚自习1', start: '19:00', end: '20:10', class: '高三-1班', subject: '英语' },
+          { day: 5, slot: '晚自习2', start: '20:20', end: '22:00', class: '高三-18班', subject: '英语' },
+
+          // 周六 (day=6) — 无英语课
+
+          // 周日 (day=0)
+          { day: 0, slot: '第1节', start: '07:50', end: '08:30', class: '高三-1班', subject: '英语' },
+          { day: 0, slot: '第2节', start: '08:40', end: '09:20', class: '高三-1班', subject: '英语' },
+          { day: 0, slot: '第3节', start: '09:30', end: '10:10', class: '高三-18班', subject: '英语' },
+          { day: 0, slot: '第4节', start: '10:20', end: '11:00', class: '高三-18班', subject: '英语' },
+          { day: 0, slot: '第5节', start: '11:10', end: '11:50', class: '高三-18班', subject: '英语' },
+          { day: 0, slot: '第6节', start: '14:00', end: '14:40', class: '高三-1班', subject: '英语' }
         ]
       },
       zengshuqiong: {
