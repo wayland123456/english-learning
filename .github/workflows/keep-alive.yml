@@ -11,14 +11,19 @@ jobs:
     steps:
       - name: Ping Supabase REST API
         run: |
+          set +e
           echo "🏓 Pinging Supabase to keep project alive..."
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "apikey: sb_publishable_PqN5m9yOrWZzBazFjO7Y_w_pfIMO1PI" \
             -H "Authorization: Bearer sb_publishable_PqN5m9yOrWZzBazFjO7Y_w_pfIMO1PI" \
             "https://gqlwspxcyhjtzhikcexj.supabase.co/rest/v1/")
-          echo "HTTP status: $STATUS"
+          CURL_EXIT=$?
+          echo "HTTP status: $STATUS (curl exit code: $CURL_EXIT)"
           if [ "$STATUS" = "200" ] || [ "$STATUS" = "401" ] || [ "$STATUS" = "404" ]; then
             echo "✅ Supabase 项目已响应，活动已更新"
+          elif [ "$CURL_EXIT" -ne 0 ]; then
+            echo "⚠️ curl 请求失败 (exit code: $CURL_EXIT)，项目可能已暂停或被删除，请检查 Supabase Dashboard"
           else
             echo "⚠️ 异常状态码: $STATUS"
           fi
+          exit 0
