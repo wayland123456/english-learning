@@ -2,7 +2,7 @@ name: Supabase Keep Alive
 
 on:
   schedule:
-    - cron: '0 0,12 * * *'
+    - cron: '0 0 */5 * *'  # 每 5 天一次（UTC 0:00 = 北京时间 8:00），Supabase 7 天无活动才暂停
   workflow_dispatch:
 
 jobs:
