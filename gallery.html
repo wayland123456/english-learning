@@ -171,7 +171,7 @@
     const WORKS = [
         {
             id: 'wuhan-1', title: 'Travel in Wuhan', subtitle: '武大 · 东湖之眼 · 热干面',
-            author: '范雅静 / 王雪菲 / 梅诗诗',
+            author: '学生原创',
             img: 'img/gallery/wuhan-1.jpg',
             paragraphs: [
                 'Wuhan University, founded in 1993, is a prestigious "985 Project" university. Nested by East Lake and Luojia Mountain, it\'s known for China\'s most beautiful campus. Its motto: self-improvement, perseverance, truth-seeking, innovation.',
@@ -187,7 +187,7 @@
         },
         {
             id: 'sichuan', title: 'Travel in Sichuan', subtitle: '火锅 · 熊猫 · 三种景观',
-            author: '萧亦菲 等',
+            author: '学生原创',
             img: 'img/gallery/sichuan.jpg',
             paragraphs: [
                 'Sichuan, a treasure trove of nature and delicacy for good reasons. The lovely China is world-famous for giant pandas, the lovely national treasures that live in bamboo forests. It also boasts breathtaking landscapes like the mist-shrouded mountains and lush bamboo groves.',
@@ -203,7 +203,7 @@
         },
         {
             id: 'dunhuang', title: 'Travel in Dunhuang', subtitle: '莫高窟 · 玉门关 · 鸣沙山',
-            author: '祁与新 等',
+            author: '学生原创',
             img: 'img/gallery/dunhuang.jpg',
             paragraphs: [
                 'Dunhuang is a cultural city in Gansu Province, known for Grottes, blend desert as the "Pearl" of the Silk Road.',
@@ -219,7 +219,7 @@
         },
         {
             id: 'xian', title: 'Travel in Xi\'an', subtitle: '钟楼 · 碑林 · 兵马俑',
-            author: '沈先念 等',
+            author: '学生原创',
             img: 'img/gallery/xian.jpg',
             paragraphs: [
                 'Datong Never Sleeps City is Xi\'an Tang, the first of the three choices. Huashan, the first of the five mountains. The Bell Tower is the largest and best preserved bell tower in China.',
@@ -234,7 +234,7 @@
         },
         {
             id: 'wuhan-2', title: 'Travel in Wuhan', subtitle: '武大樱花 · 黄鹤楼 · 蔡林记',
-            author: '陈思静 等',
+            author: '学生原创',
             img: 'img/gallery/wuhan-2.jpg',
             paragraphs: [
                 'Wuhan University is a top university in China, founded in 1893. It is especially famous for cherry blossom. The cherry blossom festival makes Wuhan stand out from Western cherry blossom festivals. Cherry trees are widely distributed, blanketing the whole campus, here making it a place both literary and famous.',
@@ -250,7 +250,7 @@
         },
         {
             id: 'egypt', title: 'Travel in Egypt', subtitle: '金字塔 · 狮身人面像 · 尼罗河',
-            author: '宁嘉 等',
+            author: '学生原创',
             img: 'img/gallery/egypt.jpg',
             paragraphs: [
                 'Egypt is a treasure trove of ancient wonders, and this is the perfect itinerary to soak up its most iconic sights.',
@@ -288,7 +288,7 @@
                     <p class="card-sub">${w.subtitle}</p>
                     <p class="card-snippet">${w.paragraphs[0]}</p>
                     <div class="card-meta">
-                        <span class="card-author"><i class="fas fa-user-edit"></i>&nbsp; by ${w.author}</span>
+                        <span class="card-author"><i class="fas fa-user-edit"></i>&nbsp; ${w.author}</span>
                         <span class="card-status ${done.has(w.id) ? 'done' : ''}">
                             ${done.has(w.id)
                                 ? '<i class="fas fa-check"></i>已学习'
@@ -309,7 +309,7 @@
         document.getElementById('modalImg').src = w.img;
         document.getElementById('modalContent').innerHTML = `
             <h2 class="modal-title">${w.title}</h2>
-            <p class="modal-author">${w.subtitle} · by ${w.author}</p>
+            <p class="modal-author">${w.subtitle}</p>
             <div class="modal-section">
                 <h3>学生原文</h3>
                 <div class="modal-text">
