@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>学生作品展 · Student Travel Gallery - Travelling Around the World</title>
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" type="image/png" href="img/icons/favicon.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="stylesheet" href="css/style.css?v=4">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .gallery-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 56px 24px 48px;
+            text-align: center;
+        }
+        .gallery-hero h1 { font-size: 30px; font-weight: 600; margin: 0 0 8px; }
+        .gallery-hero p { font-size: 15px; opacity: .92; margin: 0; }
+        .gallery-hero .gallery-stats {
+            margin-top: 18px; display: inline-flex; gap: 18px; font-size: 13px; opacity: .9;
+        }
+        .gallery-hero .gallery-stats strong { font-weight: 600; }
+
+        .gallery-wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 64px; }
+
+        .gallery-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        .gallery-card {
+            background: #fff; border-radius: 16px; overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+            transition: transform .18s ease, box-shadow .18s ease;
+            cursor: pointer; display: flex; flex-direction: column;
+            border: 1px solid #eef0f4;
+        }
+        .gallery-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(102,126,234,.18);
+            border-color: #d6dcf2;
+        }
+        .gallery-card .thumb {
+            width: 100%; aspect-ratio: 3 / 4; object-fit: cover; background: #f1f3f9; display: block;
+        }
+        .gallery-card .card-body { padding: 16px 18px 18px; flex: 1; display: flex; flex-direction: column; }
+        .gallery-card .card-title { font-size: 18px; font-weight: 600; color: #1f2937; margin: 0 0 4px; }
+        .gallery-card .card-sub { font-size: 13px; color: #6b7280; margin: 0 0 10px; }
+        .gallery-card .card-snippet {
+            font-size: 13px; color: #4b5563; line-height: 1.55; flex: 1;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .gallery-card .card-meta {
+            margin-top: 14px; display: flex; justify-content: space-between; align-items: center;
+            font-size: 12px;
+        }
+        .gallery-card .card-author { color: #6b7280; }
+        .gallery-card .card-status {
+            padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 500;
+            background: #f3f4f6; color: #6b7280;
+        }
+        .gallery-card .card-status.done { background: #d1fae5; color: #047857; }
+        .gallery-card .card-status .fa-check { margin-right: 3px; }
+
+        /* modal */
+        .gallery-modal {
+            position: fixed; inset: 0; background: rgba(15,23,42,.72); z-index: 9999;
+            display: none; align-items: center; justify-content: center; padding: 20px;
+            overflow-y: auto;
+        }
+        .gallery-modal.open { display: flex; }
+        .gallery-modal .modal-card {
+            background: #fff; border-radius: 18px; max-width: 1080px; width: 100%;
+            display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+            overflow: hidden; max-height: 90vh;
+        }
+        .gallery-modal .modal-poster {
+            background: #f3f4f6; display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        .gallery-modal .modal-poster img { max-width: 100%; max-height: 90vh; object-fit: contain; }
+        .gallery-modal .modal-content {
+            padding: 28px 32px 32px; overflow-y: auto;
+        }
+        .gallery-modal .modal-title { font-size: 22px; font-weight: 600; color: #111827; margin: 0 0 4px; }
+        .gallery-modal .modal-author { font-size: 13px; color: #6b7280; margin: 0 0 18px; }
+        .gallery-modal .modal-section { margin-bottom: 20px; }
+        .gallery-modal .modal-section h3 {
+            font-size: 13px; text-transform: uppercase; letter-spacing: .05em;
+            color: #6366f1; margin: 0 0 8px; font-weight: 600;
+        }
+        .gallery-modal .modal-text {
+            font-size: 14px; line-height: 1.7; color: #374151;
+        }
+        .gallery-modal .modal-text p { margin: 0 0 10px; }
+        .gallery-modal .modal-close {
+            position: absolute; top: 20px; right: 20px;
+            width: 40px; height: 40px; border-radius: 50%; background: #fff;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            border: 0; font-size: 18px; color: #4b5563; box-shadow: 0 2px 8px rgba(0,0,0,.15);
+        }
+
+        /* quiz */
+        .quiz-box {
+            background: #f5f3ff; border-radius: 12px; padding: 16px 18px; margin-top: 4px;
+            border-left: 3px solid #6366f1;
+        }
+        .quiz-box .quiz-q { font-size: 14px; color: #1f2937; font-weight: 500; margin-bottom: 12px; }
+        .quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+        .quiz-opt {
+            text-align: left; background: #fff; border: 1px solid #d1d5db; border-radius: 8px;
+            padding: 9px 14px; font-size: 14px; color: #374151; cursor: pointer;
+            transition: all .15s ease;
+        }
+        .quiz-opt:hover:not(:disabled) { border-color: #6366f1; color: #4338ca; }
+        .quiz-opt.correct { background: #d1fae5; border-color: #059669; color: #047857; }
+        .quiz-opt.wrong { background: #fee2e2; border-color: #dc2626; color: #b91c1c; }
+        .quiz-opt:disabled { cursor: default; }
+        .quiz-feedback { margin-top: 12px; font-size: 13px; min-height: 18px; }
+        .quiz-feedback.correct { color: #047857; }
+        .quiz-feedback.wrong { color: #b91c1c; }
+
+        .gallery-back {
+            display: inline-flex; align-items: center; gap: 6px; color: #fff;
+            font-size: 14px; text-decoration: none; opacity: .9; margin-bottom: 14px;
+        }
+        .gallery-back:hover { opacity: 1; }
+
+        @media (max-width: 760px) {
+            .gallery-modal .modal-card { grid-template-columns: 1fr; max-height: 96vh; }
+            .gallery-modal .modal-poster img { max-height: 36vh; }
+            .gallery-modal .modal-content { padding: 22px; }
+            .gallery-hero h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <section class="gallery-hero">
+        <a href="index.html" class="gallery-back"><i class="fas fa-arrow-left"></i> 返回主页</a>
+        <h1>学生作品展</h1>
+        <p>Student Travel Gallery · 用英语讲中国 · 讲世界</p>
+        <div class="gallery-stats">
+            <span><strong id="statTotal">6</strong> 件作品</span>
+            <span>·</span>
+            <span><strong id="statDone">0</strong> 已学习</span>
+        </div>
+    </section>
+
+    <main class="gallery-wrap">
+        <div class="gallery-grid" id="galleryGrid"></div>
+    </main>
+
+    <div class="gallery-modal" id="modal" onclick="if(event.target===this) closeModal()">
+        <button class="modal-close" onclick="closeModal()" aria-label="关闭"><i class="fas fa-times"></i></button>
+        <div class="modal-card">
+            <div class="modal-poster"><img id="modalImg" alt="poster"></div>
+            <div class="modal-content" id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+    const WORKS = [
+        {
+            id: 'wuhan-1', title: 'Travel in Wuhan', subtitle: '武大 · 东湖之眼 · 热干面',
+            author: '范雅静 / 王雪菲 / 梅诗诗',
+            img: 'img/gallery/wuhan-1.jpg',
+            paragraphs: [
+                'Wuhan University, founded in 1993, is a prestigious "985 Project" university. Nested by East Lake and Luojia Mountain, it\'s known for China\'s most beautiful campus. Its motto: self-improvement, perseverance, truth-seeking, innovation.',
+                'The Eye of East Lake: cherry-blossom themed Ferris wheel, 49.9-meter diameter, 28-meter height, 28 pink cabins. A full rotation takes 15 minutes and 14 seconds.',
+                'Wuhan Hot Dry Noodles: a beloved local breakfast staple — delicate thin wrappers wrapped around glutinous rice fillings mixed with diced mushrooms, pork and dried shrimps. Often paired with black vinegar or chili oil, it\'s a go-to choice for Wuhan people.'
+            ],
+            quiz: {
+                q: '武汉大学的校训包含哪四个词？',
+                options: ['勤奋 · 求实 · 创新 · 奉献', '自强 · 弘毅 · 求是 · 拓新', '厚德 · 博学 · 砺志 · 笃行', '明德 · 至善 · 格物 · 致知'],
+                answer: 1,
+                explain: '武汉大学校训 = 自强 / 弘毅 / 求是 / 拓新，对应英文 self-improvement / perseverance / truth-seeking / innovation。'
+            }
+        },
+        {
+            id: 'sichuan', title: 'Travel in Sichuan', subtitle: '火锅 · 熊猫 · 三种景观',
+            author: '萧亦菲 等',
+            img: 'img/gallery/sichuan.jpg',
+            paragraphs: [
+                'Sichuan, a treasure trove of nature and delicacy for good reasons. The lovely China is world-famous for giant pandas, the lovely national treasures that live in bamboo forests. It also boasts breathtaking landscapes like the mist-shrouded mountains and lush bamboo groves.',
+                'In southwestern China, three of China\'s most famous snacks stand majestically by the morning River, at the Eastern Han. Sichuan hot pot — spicy, numbing. It\'s a flavorful feast.',
+                'Sichuan truly offers a place worth visiting and a flavor full of life.'
+            ],
+            quiz: {
+                q: '以下哪种动物是四川的代表？',
+                options: ['Panda 熊猫', 'Koala 考拉', 'Kangaroo 袋鼠', 'Polar bear 北极熊'],
+                answer: 0,
+                explain: 'Giant panda 大熊猫是四川的标志性动物，卧龙、九寨沟等都是著名栖息地。'
+            }
+        },
+        {
+            id: 'dunhuang', title: 'Travel in Dunhuang', subtitle: '莫高窟 · 玉门关 · 鸣沙山',
+            author: '祁与新 等',
+            img: 'img/gallery/dunhuang.jpg',
+            paragraphs: [
+                'Dunhuang is a cultural city in Gansu Province, known for Grottes, blend desert as the "Pearl" of the Silk Road.',
+                'Jiangling University is where the male protagonists had his first interaction with the female protagonists. Wuxi Mei Garden Hengshan Scenic Area is located on the southern slope of Dongshan and Hushan, in the western suburbs of Wuxi.',
+                'Chongbai Mountain is the "ecological root" of Northeast China and the sacred mountain of Manchu culture — dormant volcano and the source of three rivers. A natural treasure, world Biosphere Reserve and Geopark.'
+            ],
+            quiz: {
+                q: '敦煌位于中国哪个省？',
+                options: ['新疆 Xinjiang', '甘肃 Gansu', '青海 Qinghai', '宁夏 Ningxia'],
+                answer: 1,
+                explain: '敦煌位于甘肃省西北部，河西走廊西端，是丝绸之路上的重镇。'
+            }
+        },
+        {
+            id: 'xian', title: 'Travel in Xi\'an', subtitle: '钟楼 · 碑林 · 兵马俑',
+            author: '沈先念 等',
+            img: 'img/gallery/xian.jpg',
+            paragraphs: [
+                'Datong Never Sleeps City is Xi\'an Tang, the first of the three choices. Huashan, the first of the five mountains. The Bell Tower is the largest and best preserved bell tower in China.',
+                'Forest of Steles: the first batch of national key cultural relics protection units. The Museum of Qin Shi Huang\'s Terracotta Warriors and Horses is the first national museum, with a collection of about 50,000 pieces.'
+            ],
+            quiz: {
+                q: '秦始皇兵马俑博物馆的馆藏数量约为多少件？',
+                options: ['约 5,000 件', '约 20,000 件', '约 50,000 件', '约 100,000 件'],
+                answer: 2,
+                explain: '兵马俑博物馆馆藏文物约 50,000 件，被誉为"世界第八大奇迹"。'
+            }
+        },
+        {
+            id: 'wuhan-2', title: 'Travel in Wuhan', subtitle: '武大樱花 · 黄鹤楼 · 蔡林记',
+            author: '陈思静 等',
+            img: 'img/gallery/wuhan-2.jpg',
+            paragraphs: [
+                'Wuhan University is a top university in China, founded in 1893. It is especially famous for cherry blossom. The cherry blossom festival makes Wuhan stand out from Western cherry blossom festivals. Cherry trees are widely distributed, blanketing the whole campus, here making it a place both literary and famous.',
+                'Yellow Crane Tower — one of China\'s Three Famous Towers, located on Snake Hill in Wuhan. Today, it is a popular tourist attraction and a popular symbol of Wuhan.',
+                'Hot Dry Noodles: Wuhan\'s most famous breakfast. The dry noodles, one fragrant odor. Chewy noodles are tossed in fragrant sesame paste and seasonings, creating a uniquely savory and slightly chewy dish.'
+            ],
+            quiz: {
+                q: '武汉大学创办于哪一年？',
+                options: ['1893 年', '1913 年', '1928 年', '1949 年'],
+                answer: 0,
+                explain: '武汉大学前身"自强学堂"创办于 1893 年，1913 年更名为国立武昌高等师范学校。'
+            }
+        },
+        {
+            id: 'egypt', title: 'Travel in Egypt', subtitle: '金字塔 · 狮身人面像 · 尼罗河',
+            author: '宁嘉 等',
+            img: 'img/gallery/egypt.jpg',
+            paragraphs: [
+                'Egypt is a treasure trove of ancient wonders, and this is the perfect itinerary to soak up its most iconic sights.',
+                'Stop 1: Pyramids. Stop 2: The Sphinx. Finally, cruise along the Nile River, the lifeblood of ancient Egypt. This route blends history and natural beauty, and first stop is the Great Pyramids of Giza, the only surviving wonder of the ancient world. Next, head to the Great Sphinx, a mythical creature with a lion\'s body and a pharaoh\'s face.'
+            ],
+            quiz: {
+                q: '古世界七大奇迹中唯一保存至今的是？',
+                options: ['The Sphinx 狮身人面像', 'The Lighthouse of Alexandria 亚历山大灯塔', 'The Great Pyramid of Giza 吉萨大金字塔', 'The Hanging Gardens 空中花园'],
+                answer: 2,
+                explain: '吉萨大金字塔 (The Great Pyramid of Giza) 是古世界七大奇迹中唯一保存至今的建筑，约建于公元前 2560 年。'
+            }
+        }
+    ];
+
+    const STORAGE_KEY = 'gallery_v1_done';
+
+    function getDoneSet() {
+        try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')); }
+        catch { return new Set(); }
+    }
+    function setDone(id) {
+        const s = getDoneSet(); s.add(id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...s]));
+        document.getElementById('statDone').textContent = s.size;
+    }
+
+    function renderGrid() {
+        const done = getDoneSet();
+        const grid = document.getElementById('galleryGrid');
+        grid.innerHTML = WORKS.map(w => `
+            <article class="gallery-card" onclick="openModal('${w.id}')">
+                <img class="thumb" src="${w.img}" alt="${w.title}" loading="lazy">
+                <div class="card-body">
+                    <h2 class="card-title">${w.title}</h2>
+                    <p class="card-sub">${w.subtitle}</p>
+                    <p class="card-snippet">${w.paragraphs[0]}</p>
+                    <div class="card-meta">
+                        <span class="card-author"><i class="fas fa-user-edit"></i>&nbsp; by ${w.author}</span>
+                        <span class="card-status ${done.has(w.id) ? 'done' : ''}">
+                            ${done.has(w.id)
+                                ? '<i class="fas fa-check"></i>已学习'
+                                : '未学习'}
+                        </span>
+                    </div>
+                </div>
+            </article>
+        `).join('');
+        document.getElementById('statDone').textContent = done.size;
+    }
+
+    function openModal(id) {
+        const w = WORKS.find(x => x.id === id);
+        if (!w) return;
+        const done = getDoneSet();
+        document.getElementById('modal').dataset.workId = w.id;
+        document.getElementById('modalImg').src = w.img;
+        document.getElementById('modalContent').innerHTML = `
+            <h2 class="modal-title">${w.title}</h2>
+            <p class="modal-author">${w.subtitle} · by ${w.author}</p>
+            <div class="modal-section">
+                <h3>学生原文</h3>
+                <div class="modal-text">
+                    ${w.paragraphs.map(p => `<p>${p}</p>`).join('')}
+                </div>
+            </div>
+            <div class="modal-section">
+                <h3>看完测一测</h3>
+                <div class="quiz-box" id="quizBox">
+                    <p class="quiz-q">${w.quiz.q}</p>
+                    <div class="quiz-opts">
+                        ${w.quiz.options.map((o, i) => `
+                            <button class="quiz-opt" onclick="answer(${i})" ${done.has(w.id) ? 'disabled' : ''}>
+                                ${String.fromCharCode(65 + i)}. ${o}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <p class="quiz-feedback" id="quizFeedback">${done.has(w.id) ? '✅ 已答对，继续下一份吧～' : ''}</p>
+                </div>
+            </div>
+        `;
+        document.getElementById('modal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function answer(i) {
+        const id = document.getElementById('modal').dataset.workId;
+        const w = WORKS.find(x => x.id === id);
+        if (!w) return;
+        const modalContent = document.getElementById('modalContent');
+        const opts = modalContent.querySelectorAll('.quiz-opt');
+        const fb = document.getElementById('quizFeedback');
+        opts.forEach((b, idx) => {
+            b.disabled = true;
+            if (idx === w.quiz.answer) b.classList.add('correct');
+            if (idx === i && idx !== w.quiz.answer) b.classList.add('wrong');
+        });
+        if (i === w.quiz.answer) {
+            fb.className = 'quiz-feedback correct';
+            fb.textContent = '✅ 答对啦！' + w.quiz.explain;
+            setDone(w.id);
+            renderGrid();
+        } else {
+            fb.className = 'quiz-feedback wrong';
+            fb.textContent = '❌ 不对哦，再看看上面的英文段～（正确答案已标绿）';
+        }
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    renderGrid();
+    </script>
+</body>
+</html>
