@@ -1,1 +1,10 @@
 .vercel
+
+# Node / npm
+node_modules/
+npm-debug.log*
+
+# Supabase CLI 本地元数据（与项目无关，含本机路径信息）
+supabase/.temp/
+supabase/.branches/
+
