@@ -1,9 +1,14 @@
 /* ============================================
-   作文练习模块 — 通义千问 VL Max OCR + AI 智能评分
-   阿里云百炼平台（qwen-vl-max / qwen-plus），国内直连
-   API Key 存储：Supabase app_config 表 > localStorage 兜底
-   教师配置一次，所有学生自动共享
-   v9: 新增 AI 智能评分按钮 + WritingAI 模块联动
+   作文练习模块 — 手写 OCR + AI 智能评分
+   v10 (2026-09-16) 安全改造：前端不再持有任何模型厂商的 Key。
+     背景：Key 原先存在 Supabase app_config 表并下发到浏览器，
+           实测任何人用公开 anon key 就能读走，已造成实际盗刷。
+     现在统一经 Supabase Edge Function `ai-proxy` 转发，
+     真实密钥只存在于 Edge Function Secrets。
+     - API_URL 指向代理，不再直连阿里云
+     - 鉴权头：Authorization: Bearer sk-xxx  →  apikey: <publishable key>
+     - 移除教师端「粘贴 API Key」入口，杜绝密钥再次落库
+   历史优化：OCR max_tokens 2048→512；图片压缩 2048px→1024px
    ============================================ */
 
 const Writing = {
@@ -14,11 +19,9 @@ const Writing = {
     _apiKey: '',
     _apiKeyLoaded: false,
 
-    // 通义千问 VL Max 视觉 API 配置（兼容模式支持图片识别）
-    API_URL: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+    // 经 Supabase Edge Function 代理调用（代理内再转发到阿里云百炼）
+    API_URL: 'https://gqlwspxcyhjtzhikcexj.supabase.co/functions/v1/ai-proxy',
     API_MODEL: 'qwen-vl-max',
-    DB_KEY: 'qwen_api_key',
-    LS_KEY: 'qwen_api_key',
 
     async init() {
         this.essayText = '';
@@ -29,84 +32,44 @@ const Writing = {
         this.renderPrompt();
     },
 
+    /**
+     * 不再从 Supabase / localStorage 读取任何模型厂商 Key。
+     * 这里只确认「代理凭证」可用 —— 也就是公开的 publishable key，
+     * 它本身不是秘密，真正的大模型 Key 留在 Edge Function Secrets 里。
+     * 同时清理历史遗留：老版本曾把 sk- 密钥写进 localStorage。
+     */
     async _loadKeyFromCloud() {
         this._apiKeyLoaded = true;
-        console.log('[Writing] 开始加载 API Key...');
         try {
-            if (typeof db !== 'undefined') {
-                console.log('[Writing] db 可用，从 Supabase 读取...');
-                var resp = await db.from('app_config').select('value').eq('key', this.DB_KEY).single();
-                console.log('[Writing] Supabase 返回:', resp);
-                if (resp.data && resp.data.value) {
-                    this._apiKey = resp.data.value;
-                    localStorage.setItem(this.LS_KEY, resp.data.value);
-                    console.log('[Writing] 云 Key 已加载: ' + resp.data.value.substring(0, 12) + '...');
-                    return;
-                }
-            } else {
-                console.warn('[Writing] db 不可用，Supabase 未初始化');
-            }
+            localStorage.removeItem('qwen_api_key');
+            localStorage.removeItem('gemini_api_key');
         } catch (e) {
-            console.error('[Writing] 云加载失败：', e);
+            console.warn('[Writing] 清理本地残留 Key 失败：', e);
         }
-        // 兼容旧 key 名 + localStorage
-        this._apiKey = localStorage.getItem(this.LS_KEY)
-            || localStorage.getItem('gemini_api_key')
-            || '';
-        console.log('[Writing] 本地 Key 兜底: ' + (this._apiKey ? this._apiKey.substring(0, 12) + '...' : '(空)'));
+        this._apiKey = (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : '';
+        console.log('[Writing] 已切换到代理模式，凭证就绪: ' + (this._apiKey ? '是' : '否'));
     },
 
+    /** 返回代理凭证（publishable key），由 ai-proxy 校验 */
     getApiKey() {
+        if (!this._apiKey && typeof SUPABASE_ANON_KEY !== 'undefined') {
+            this._apiKey = SUPABASE_ANON_KEY;
+        }
         return this._apiKey || '';
     },
 
     renderPrompt() {
         var container = document.getElementById('writingContainer');
         var prompt = DATA.writingPrompt;
-        var hasKey = !!this._apiKey;
-        var user = SupabaseAuth.currentUser;
-        var isTeacher = user && user.role === 'teacher';
+        // v10：Key 已移至服务端，前端恒为「就绪」，不再暴露任何配置入口
+        var hasKey = true;
 
-        var keySectionHtml = '';
-
-        if (isTeacher) {
-            keySectionHtml = ''
-                + '<div class="writing-api-key" id="apiKeySection">'
-                + '  <details' + (hasKey ? '' : ' open') + '>'
-                + '    <summary style="cursor:pointer;color:var(--text-light);font-size:0.9rem;">'
-                + '      <i class="fas fa-key"></i> '
-                + (hasKey ? '云端 API Key 已配置 ✓（OCR识别 + AI评分 均可用）'
-                          : '首次使用请配置通义千问 API Key（保存后学生自动可用）')
-                + '    </summary>'
-                + '    <div style="margin-top:0.8rem;display:flex;gap:0.5rem;">'
-                + '      <input type="password" id="qwenKeyInput" placeholder="粘贴通义千问 API Key（sk- 开头）" '
-                + '        value="' + this._apiKey + '"'
-                + '        style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;">'
-                + '      <button onclick="Writing.saveApiKey()" style="padding:8px 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.85rem;">'
-                + '        保存到云端'
-                + '      </button>'
-                + '    </div>'
-                + '    <p style="margin-top:0.5rem;font-size:0.78rem;color:var(--text-light);">'
-                + '      获取方式：打开 <a href="https://bailian.console.aliyun.com/" target="_blank" style="color:var(--primary);">bailian.console.aliyun.com</a>'
-                + ' → 模型广场 → 搜索「qwen-plus」→ 获取Key，国内直连免翻墙'
-                + '    </p>'
-                + '  </details>'
-                + '</div>';
-        } else if (!hasKey) {
-            keySectionHtml = ''
-                + '<div class="writing-api-key" style="background:#fff8e1;border-color:#ffe082;">'
-                + '  <p style="margin:0;font-size:0.9rem;color:#e65100;">'
-                + '    <i class="fas fa-info-circle"></i> 手写识别与AI评分功能尚未配置，请联系老师开启。'
-                + '  </p>'
-                + '</div>';
-        } else {
-            keySectionHtml = ''
-                + '<div class="writing-api-key">'
-                + '  <p style="margin:0;font-size:0.85rem;color:#166534;">'
-                + '    <i class="fas fa-check-circle"></i> AI 手写识别 + 智能评分已就绪'
-                + '  </p>'
-                + '</div>';
-        }
+        var keySectionHtml = ''
+            + '<div class="writing-api-key">'
+            + '  <p style="margin:0;font-size:0.85rem;color:#166534;">'
+            + '    <i class="fas fa-check-circle"></i> AI 手写识别 + 智能评分已就绪'
+            + '  </p>'
+            + '</div>';
 
         container.innerHTML = ''
             + '<div class="writing-prompt">'
@@ -140,6 +103,14 @@ const Writing = {
             + '  placeholder="在此输入你的英语作文..."'
             + '  oninput="Writing.onTextInput()"></textarea>'
 
+            + '<div style="text-align:right;margin-top:0.5rem;">'
+            + '  <button class="btn-tts-read-essay" onclick="Writing.readEssayAloud()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 16px;cursor:pointer;color:var(--primary);font-size:0.85rem;transition:all 0.2s;"'
+            + '    onmouseover="this.style.background=\'rgba(99,102,241,0.06)\'"'
+            + '    onmouseout="this.style.background=\'none\'">'
+            + '    <i class="fas fa-volume-up"></i> 听我的作文'
+            + '  </button>'
+            + '</div>'
+
             + '<div class="writing-actions">'
             + '  <button class="btn-submit-writing" onclick="Writing.submitEssay()" id="btnSubmitWriting">'
             + '    <i class="fas fa-paper-plane"></i> 规则评分'
@@ -158,47 +129,13 @@ const Writing = {
             + '<div id="writingScoreResult"></div>';
     },
 
+    /**
+     * v10 起前端不再配置任何模型厂商 Key —— 密钥统一放在 Edge Function Secrets。
+     * 此方法保留仅为兼容旧页面里可能残留的调用，一律拒绝并提示。
+     */
     async saveApiKey() {
-        var input = document.getElementById('qwenKeyInput');
-        var key = (input && input.value) ? input.value.trim() : '';
-        if (!key) return;
-
-        var user = SupabaseAuth.currentUser;
-        if (!user || user.role !== 'teacher') {
-            App.toast('仅教师可配置 API Key', 'error');
-            return;
-        }
-
-        var saved = false;
-
-        try {
-            if (typeof db !== 'undefined') {
-                var resp = await db.from('app_config').upsert({
-                    key: this.DB_KEY,
-                    value: key,
-                    updated_at: new Date().toISOString()
-                }, { onConflict: 'key' });
-
-                if (!resp.error) {
-                    saved = true;
-                } else {
-                    console.warn('[Writing] Supabase 保存失败：', resp.error.message);
-                }
-            }
-        } catch (e) {
-            console.warn('[Writing] Supabase 保存异常：', e);
-        }
-
-        localStorage.setItem(this.LS_KEY, key);
-
-        if (saved) {
-            App.toast('API Key 已保存到云端，OCR识别 + AI评分均可使用', 'success');
-        } else {
-            App.toast('API Key 已保存到本地（云端同步失败，仅当前设备可用）', 'info');
-        }
-
-        this._apiKey = key;
-        this.renderPrompt();
+        console.warn('[Writing] 已禁用前端 Key 配置：密钥必须放在 Supabase Edge Function Secrets');
+        App.toast('出于安全考虑，API Key 已改为服务端统一配置，前端无需填写', 'info');
     },
 
     handleUpload(event) {
@@ -214,7 +151,7 @@ const Writing = {
         preview.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--text-light);"><i class="fas fa-spinner fa-spin"></i> 图片处理中...</p>';
 
         // 用 canvas 压缩图片，避免原图 base64 过大导致 API 解析异常
-        this._compressImage(file, 2048, 0.85, function(compressedDataUrl) {
+        this._compressImage(file, 1024, 0.8, function(compressedDataUrl) {
             self.uploadedBase64 = compressedDataUrl;
             console.log('[Writing] 图片压缩后 base64 长度:', compressedDataUrl.length);
 
@@ -271,17 +208,9 @@ const Writing = {
         }
 
         var apiKey = this.getApiKey();
-        console.log('[Writing] API Key 长度: ' + apiKey.length + ', 模型: ' + this.API_MODEL);
         if (!apiKey) {
-            console.error('[Writing] API Key 为空');
-            App.toast('请先配置通义千问 API Key', 'error');
-            var section = document.getElementById('apiKeySection');
-            if (section) {
-                var details = section.querySelector('details');
-                if (details) details.open = true;
-                var inp = document.getElementById('qwenKeyInput');
-                if (inp) inp.focus();
-            }
+            console.error('[Writing] 代理凭证缺失');
+            App.toast('服务未就绪，请稍后重试或联系老师', 'error');
             return;
         }
 
@@ -304,14 +233,14 @@ const Writing = {
                     ]
                 }],
                 temperature: 0,
-                max_tokens: 2048
+                max_tokens: 512
             };
 
             var response = await fetch(this.API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + apiKey
+                    'apikey': apiKey
                 },
                 body: JSON.stringify(requestBody)
             });
@@ -376,6 +305,19 @@ const Writing = {
         var textarea = document.getElementById('writingTextarea');
         if (textarea) {
             this.essayText = textarea.value;
+        }
+    },
+
+    // 朗读作文（调用 TTS 模块）
+    readEssayAloud() {
+        var textarea = document.getElementById('writingTextarea');
+        var text = textarea ? textarea.value.trim() : '';
+        if (!text) {
+            App.toast('请先输入或上传作文', 'info');
+            return;
+        }
+        if (typeof TTS !== 'undefined') {
+            TTS.speak(text, { lang: 'en-GB', rate: 0.9 });
         }
     },
 

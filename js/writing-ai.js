@@ -4,8 +4,9 @@
    ============================================ */
 
 const WritingAI = {
-    // 通义千问文本模型 API（复用 OCR 的 Key 和域名）
-    API_URL: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+    // v10 (2026-09-16)：不再直连阿里云，统一经 Supabase Edge Function 代理转发，
+    // 真实密钥只存在于 Edge Function Secrets，前端只带公开的 publishable key。
+    API_URL: 'https://gqlwspxcyhjtzhikcexj.supabase.co/functions/v1/ai-proxy',
     API_MODEL: 'qwen-plus',
 
     _scoring: false,
@@ -78,7 +79,7 @@ const WritingAI = {
     async scoreEssay(essayText, promptInfo) {
         var apiKey = this.getApiKey();
         if (!apiKey) {
-            App.toast('请先配置通义千问 API Key', 'error');
+            App.toast('服务未就绪，请稍后重试', 'error');
             return null;
         }
 
@@ -99,7 +100,7 @@ const WritingAI = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + apiKey
+                    'apikey': apiKey
                 },
                 body: JSON.stringify(requestBody)
             });
@@ -355,7 +356,7 @@ const WritingAI = {
 
         var apiKey = this.getApiKey();
         if (!apiKey) {
-            App.toast('请先配置通义千问 API Key', 'error');
+            App.toast('服务未就绪，请稍后重试', 'error');
             return;
         }
 
