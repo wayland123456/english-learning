@@ -326,7 +326,12 @@ const Resources = {
             </div>
             <div class="reading-card ${done ? 'reading-done' : ''}">
                 <div class="reading-passage">
-                    <h4>📖 ${reading.title}</h4>
+                    <div class="reading-passage-header">
+                        <h4>📖 ${reading.title}</h4>
+                        <button class="btn-tts-read" onclick="TTS.speak(${JSON.stringify(reading.passage).replace(/"/g, '&quot;')}, {lang:'en-GB', rate:0.9})">
+                            <i class="fas fa-volume-up"></i> 听这篇文章
+                        </button>
+                    </div>
                     <p>${reading.passage}</p>
                 </div>
                 <details class="reading-translation">

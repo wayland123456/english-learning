@@ -308,7 +308,7 @@ const Writing = {
         }
     },
 
-    // 朗读作文（调用 TTS 模块）
+    // 朗读作文（优先 TTS 模块，模块缺失时兜底原生 speechSynthesis）
     readEssayAloud() {
         var textarea = document.getElementById('writingTextarea');
         var text = textarea ? textarea.value.trim() : '';
@@ -316,8 +316,26 @@ const Writing = {
             App.toast('请先输入或上传作文', 'info');
             return;
         }
-        if (typeof TTS !== 'undefined') {
+        if (typeof TTS !== 'undefined' && TTS.speak) {
             TTS.speak(text, { lang: 'en-GB', rate: 0.9 });
+            App.toast('🔊 正在朗读你的作文...', 'info');
+        } else if ('speechSynthesis' in window) {
+            // 兜底：tts.js 未加载成功时直接用原生 API
+            try {
+                speechSynthesis.cancel();
+                var u = new SpeechSynthesisUtterance(text);
+                u.lang = 'en-GB';
+                u.rate = 0.9;
+                u.onend = function () { try { App.toast('朗读结束', 'info'); } catch (e) {} };
+                speechSynthesis.speak(u);
+                try { speechSynthesis.resume(); } catch (e) {}
+                App.toast('🔊 正在朗读你的作文...', 'info');
+            } catch (err) {
+                console.error('[Writing] 朗读失败:', err);
+                App.toast('朗读启动失败，请刷新页面重试', 'error');
+            }
+        } else {
+            App.toast('当前浏览器不支持语音朗读，建议使用 Chrome / Edge', 'error');
         }
     },
 
@@ -480,12 +498,18 @@ const Writing = {
             '    <button class="btn-ai-score-sm" onclick="WritingAI.handleScore()">',
             '      <i class="fas fa-robot"></i> 试试 AI 智能评分',
             '    </button>',
+            '    <button class="btn-ai-score-sm" onclick="EssayReport.downloadDocx()" style="border:1px solid var(--border);">',
+            '      <i class="fas fa-file-word"></i> 下载报告',
+            '    </button>',
             '    <button class="btn-primary" onclick="Writing.init()" style="padding:10px 28px;">',
             '      <i class="fas fa-redo"></i> 重新写作',
             '    </button>',
             '  </div>',
             '</div>'
         ].join('');
+
+        // 组装报告数据（规则评分模式，无 AI 结果）
+        EssayReport.build({ mode: 'rule', ai: null, rule: score });
 
         var progress = SupabaseAuth.getProgress();
         progress.writing = { score: score.total, time: new Date().toISOString() };

@@ -283,6 +283,12 @@ const WritingAI = {
             + suggestionsHtml
 
             + '  <div style="text-align:center;margin-top:2rem;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">'
+            + '    <button class="btn-retry-ai" onclick="EssayReport.downloadDocx()" style="border:1px solid var(--border);">'
+            + '      <i class="fas fa-file-word"></i> 下载报告'
+            + '    </button>'
+            + '    <button class="btn-retry-ai" id="btnShareReport" onclick="EssayReport.share()" style="border:1px solid var(--border);">'
+            + '      <i class="fas fa-share-alt"></i> 分享报告'
+            + '    </button>'
             + '    <button class="btn-retry-ai" onclick="WritingAI.retry()">'
             + '      <i class="fas fa-redo"></i> 重新评分'
             + '    </button>'
@@ -291,6 +297,9 @@ const WritingAI = {
             + '    </button>'
             + '  </div>'
             + '</div>';
+
+        // 组装报告数据，供下载 / 分享使用
+        EssayReport.build({ mode: 'ai', ai: aiResult, rule: this._ruleResult });
 
         // 保存进度
         var progress = SupabaseAuth.getProgress();

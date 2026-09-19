@@ -3374,3 +3374,46 @@ body {
         grid-template-columns: repeat(3, 1fr);
     }
 }
+
+/* ============================================
+   TTS 朗读按钮样式
+   ============================================ */
+.reading-passage-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+}
+.reading-passage-header h4 {
+    margin: 0;
+}
+.btn-tts-read {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.btn-tts-read:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 12px rgba(99, 102, 241, 0.3);
+}
+.btn-tts-read:active {
+    transform: translateY(0);
+}
+@media (max-width: 768px) {
+    .reading-passage-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
