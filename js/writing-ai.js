@@ -10,7 +10,7 @@ const WritingAI = {
     API_MODEL: 'qwen-plus',
 
     _scoring: false,
-    _ruleResult: null, // 保存规则评分结果用于对比
+    _ruleResult: null, // 已废弃：规则评分入口移除后不再使用
 
     getApiKey() {
         return Writing.getApiKey();
@@ -241,24 +241,7 @@ const WritingAI = {
                 + '</div>';
         }
 
-        // 对比规则评分（如果有）
-        var comparisonHtml = '';
-        if (this._ruleResult) {
-            var ruleTotal = this._ruleResult.total;
-            var aiTotal = aiResult.totalScore;
-            var diff = aiTotal - ruleTotal;
-            var diffText = diff > 0 ? 'AI 比规则评分高 ' + diff + ' 分' : diff < 0 ? 'AI 比规则评分低 ' + Math.abs(diff) + ' 分' : '两种评分一致';
-            var diffColor = diff > 0 ? '#10b981' : diff < 0 ? '#f59e0b' : '#6366f1';
-            comparisonHtml = ''
-                + '<div class="ai-comparison" style="border-color:' + diffColor + ';">'
-                + '  <div class="ai-comp-title"><i class="fas fa-balance-scale"></i> 对比参考</div>'
-                + '  <div class="ai-comp-scores">'
-                + '    <div><span>规则评分</span><strong>' + ruleTotal + '分</strong></div>'
-                + '    <div><span>AI 评分</span><strong style="color:' + totalColor + ';">' + aiTotal + '分</strong></div>'
-                + '    <div><span>差异</span><strong style="color:' + diffColor + ';">' + diffText + '</strong></div>'
-                + '  </div>'
-                + '</div>';
-        }
+        // 对比规则评分（v3：规则评分按钮已移除，不再展示对比块）
 
         resultDiv.innerHTML = ''
             + '<div class="writing-score-card ai-score-card">'
@@ -276,7 +259,6 @@ const WritingAI = {
             + dimRows
             + '  </div>'
 
-            + comparisonHtml
             + commentHtml
             + correctionsHtml
             + highlightsHtml
@@ -368,9 +350,6 @@ const WritingAI = {
             App.toast('服务未就绪，请稍后重试', 'error');
             return;
         }
-
-        // 先执行规则评分，保存结果用于对比
-        this._ruleResult = Writing.scoreEssay(essayText);
 
         // 显示 loading
         this.showLoading();

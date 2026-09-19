@@ -112,9 +112,6 @@ const Writing = {
             + '</div>'
 
             + '<div class="writing-actions">'
-            + '  <button class="btn-submit-writing" onclick="Writing.submitEssay()" id="btnSubmitWriting">'
-            + '    <i class="fas fa-paper-plane"></i> 规则评分'
-            + '  </button>'
             + '  <button class="btn-ai-score' + (hasKey ? '' : ' hidden') + '" id="btnAiScore" onclick="WritingAI.handleScore()">'
             + '    <i class="fas fa-robot"></i> AI 智能评分'
             + '  </button>'
