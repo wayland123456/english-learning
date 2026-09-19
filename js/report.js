@@ -51,8 +51,11 @@ const EssayReport = {
         if (typeof App !== 'undefined' && App.toast) App.toast('正在生成 Word 报告...', 'info');
 
         this._loadDocx(function () {
-            try {
-                var blob = self._buildDocxBlob(payload);
+            // 注意：_buildDocxBlob 内部 Packer.toBlob 返回 Promise，必须 then 展开
+            Promise.resolve(self._buildDocxBlob(payload)).then(function (blob) {
+                if (!blob || typeof URL.createObjectURL !== 'function') {
+                    throw new Error('Blob 生成失败');
+                }
                 var dateStr = payload.createdAt.substring(0, 10);
                 var name = (payload.student || '学生') + '_作文报告_' + payload.totalScoreForFile + '分_' + dateStr + '.docx';
                 var a = document.createElement('a');
@@ -62,10 +65,10 @@ const EssayReport = {
                 a.click();
                 setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
                 if (typeof App !== 'undefined' && App.toast) App.toast('✅ Word 报告已下载', 'success');
-            } catch (e) {
+            }).catch(function (e) {
                 console.error('[EssayReport] 生成 Word 失败:', e);
                 alert('生成 Word 失败：' + (e.message || e));
-            }
+            });
         });
     },
 
@@ -306,14 +309,17 @@ const EssayReport = {
 
         if (!link) return;
 
+        var longMode = link.indexOf('#d=') !== -1; // 降级通道 = 数据内嵌链接（长）
         // 链接过长提示（微信等场景可能截断，但现代浏览器一般可用）
         try {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(link);
                 if (typeof App !== 'undefined' && App.toast) {
-                    App.toast(link.length > 8000
-                        ? '✅ 报告链接已复制（较长，建议用浏览器打开）'
-                        : '✅ 报告链接已复制，发给同学/老师即可查看', 'success');
+                    if (longMode) {
+                        App.toast('✅ 链接已复制（较长）。老师在 Supabase 运行建表脚本后即为短链接', 'info');
+                    } else {
+                        App.toast('✅ 报告短链接已复制，发给同学/老师即可查看', 'success');
+                    }
                 }
             } else {
                 prompt('复制以下链接分享：', link);
