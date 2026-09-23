@@ -495,14 +495,6 @@ html[data-theme="light"] .slogan span{color:var(--amber)}
 @media (min-width:900px){
   #wrap.v-group,#wrap.v-name,#wrap.v-content{max-width:880px}
 }
-.notice{padding:18px 18px 8px;border-radius:18px;background:var(--card);border:1px solid var(--amber-b)}
-.notice .nt{margin:0 0 12px;font-size:14px;line-height:1.72;color:var(--ink2)}
-.notice .nt b{color:var(--ink)}
-.notice code{
-  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;
-  padding:2px 7px;border-radius:7px;background:var(--amber-l);color:var(--amber);
-  border:1px solid var(--amber-b);word-break:break-all;
-}
 </style>
 </head>
 <body>
@@ -544,15 +536,36 @@ html[data-theme="light"] .slogan span{color:var(--amber)}
    ========================================================== */
 const CONFIG = {
 
-  /* --- 1. 学生名单（不写在这里！）-----------------------------------
-     真实姓名放在 Supabase 的 students 表里。
-     原因：本仓库是公开的，96 个姓名写死在这儿等于对外公开。
-     建表 + 导入名单：跑一次老师手上的「建表_导入名单.sql」。
-     页面读不到名单时会给出可操作的提示，不会白屏。
+  /* --- 1. 学生名单 -------------------------------------------------
+     把 [] 换成真实姓名，一行一个，用英文逗号分隔，例如：
+       students: ['王梓涵','李思远','张雨欣', ...]
+     要不要学号？名字前加 "01 " 即可，页面会自动把学号单独显示。
   ------------------------------------------------------------------ */
   classes: {
-    '1':  { label: '高三(1)班'  },
-    '18': { label: '高三(18)班' }
+    '1':  { label: '高三(1)班',  students: [
+      '01 敖雪婷','02 杨夏添','03 梅思雅','04 廖雨欣','05 余紫涵',
+      '06 刘奥翔','07 方嘉瑞','08 肖睿馨','09 黄佳怡','10 陈湉湉',
+      '11 张靖宇','12 孙未汐','13 陈艺雯','14 刘鸿毅','15 曹思晨',
+      '16 谌子健','17 刘禹辰','18 刘梦瑶','19 陈红','20 王梓晗',
+      '21 骆锦同','22 涂学成','23 高姿','24 李嘉葉','25 柳耿瑞',
+      '26 贾洁茹','27 陶姝岑','28 高月','29 韩晨晨','30 刘宇哲',
+      '31 闻术哲','32 朱亚迪','33 姚语嫣','34 杨逍','35 江浩帆',
+      '36 魏宇霏','37 付宇轩','38 袁诗怡','39 詹紫琳','40 陈浩天',
+      '41 胡运睿','42 胡杰','43 李文杰','44 焦文哲','45 叶子涵',
+      '46 王君陈','47 谢子豪','48 曾辰','49 陈秉常'
+    ] },
+    '18': { label: '高三(18)班', students: [
+      '01 代湘语','02 周琳涵','03 喻文轩','04 沈馨蕾','05 王怡帆',
+      '06 涂盈盈','07 李瑞雪','08 雷文馨','09 陈阳昊希','10 余欣怡（大）',
+      '11 宋雪菲','12 李卓霖','13 梁紫禾','14 胡鹏涛','15 张家源',
+      '16 唐可欣','17 童诗韵','18 何思绮','19 王莉蓉','20 余欣怡（小）',
+      '21 肖淇尹','22 常雯婧','23 朱雨欣','24 刘梓涵','25 刘欣语',
+      '26 郑妮娜','27 易清希','28 全洁莹','29 朱羽韬','30 范成彘',
+      '31 张紫馨','32 鲁慧妍','33 陈曦曦','34 刘梦琦','35 张羽妍',
+      '36 倪瑞熙','37 祝子谦','38 吴宇畅','39 倪朝辉','40 彭梓荷',
+      '41 李君娴','42 周曦然','43 孙诗妍','44 方正原','45 彭博禹',
+      '46 屈文昊','47 熊裕涵'
+    ] }
   },
 
   /* --- 2. 背诵内容（total = 总组数，改这里就行） ------------------ */
@@ -573,6 +586,11 @@ const CONFIG = {
   /* --- 4. 教师入口口令 ------------------------------------------- */
   adminPin: '8888',
 
+  /* --- 5. 演示名单：真实名单没填时用它看效果，填了真实名单自动失效 */
+  demo: {
+    '1': ['王梓涵','李思远','张雨欣','刘子墨','陈嘉怡','杨博文','黄诗琪','赵一鸣','周欣然','吴俊杰','徐若彤','孙浩宇','马小雅','朱天磊','胡雨桐','郭子豪','何静怡','高文杰','林晓彤','罗宇轩','郑雅文','谢明轩','韩雪','唐子涵','曹思琪','邓浩','冯诗雨','曾俊豪','彭雨薇','蒋博','汪嘉怡','田思远','董雨欣','潘子健','袁梦琪','蔡宇航','余佳怡','杜文博','叶梓萱','程明','苏雨晨','卢俊宇','丁雅琪','倪嘉豪','姜文杰'],
+    '18': ['王浩然','李佳琪','张子轩','刘雨萱','陈志强','杨雅静','黄俊喆','赵梦洁','周天成','吴诗涵','徐子航','孙雨欣','马俊宇','朱雅琳','胡博文','郭晓雨','何子豪','高雨琪','林俊熙','罗雅雯','郑浩宇','谢雨欣','韩子涵','唐俊豪','曹雅静','邓雨晨','冯子轩','曾雅琪','彭浩然','蒋雨桐','汪俊杰','田雅欣','董子豪','潘雨琪','袁俊熙','蔡雅琳','余浩然','杜雨薇','叶俊豪','程雅静','苏子涵','卢雨欣','丁俊杰','沈雅琪','姜浩然','崔雨桐']
+  }
 };
 
 const CHEERS = [
@@ -609,55 +627,21 @@ const $ = id => document.getElementById(id);
 const SB = (CONFIG.supabase.url && CONFIG.supabase.key) ? CONFIG.supabase : null;
 let SB_OK = false;   /* 探测通过（表已建好且可读）后置真；未通过则全站降级为本机模式 */
 const cloudOn = () => !!(SB && SB_OK);
-/* 名单从 Supabase students 表加载；成功前 ROSTER_OK = false，页面会提示老师去建表 */
-let ROSTER = {};
-let ROSTER_OK = false;
-const LS_ROSTER = 'en_checkin_roster';
+const USE_DEMO = Object.keys(CONFIG.classes).some(k => !CONFIG.classes[k].students.length);
+const DEMO_CLS = Object.keys(CONFIG.classes).filter(k => !CONFIG.classes[k].students.length);
 
 function ds(dt){
   const d = dt || new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
-function roster(cls){ return ROSTER[cls] || []; }
-function setRoster(rows){
-  const out = {};
-  Object.keys(CONFIG.classes).forEach(k => { out[k] = []; });
-  (rows || []).forEach(r => {
-    const k = String(r.cls);
-    if (!out[k]) out[k] = [];
-    out[k].push({ no: String(r.no == null ? '' : r.no), name: String(r.name) });
+function roster(cls){
+  const raw = CONFIG.classes[cls].students.length
+    ? CONFIG.classes[cls].students
+    : (CONFIG.demo[cls] || []);
+  return raw.map(s => {
+    const m = String(s).match(/^\s*(\d+)[\s.、]+(.+)$/);
+    return m ? { no: m[1], name: m[2].trim() } : { no: '', name: String(s).trim() };
   });
-  Object.keys(out).forEach(k => out[k].sort((a, b) => {
-    const na = parseInt(a.no, 10), nb = parseInt(b.no, 10);
-    return (isNaN(na) || isNaN(nb)) ? String(a.no).localeCompare(String(b.no)) : na - nb;
-  }));
-  ROSTER = out;
-}
-/* 本机缓存：教室电脑断网、或云端临时抽风时，名单还能用上一次的 */
-function rosterCacheSave(rows){ try { localStorage.setItem(LS_ROSTER, JSON.stringify(rows)); } catch(e){} }
-function rosterCacheLoad(){
-  try {
-    const a = JSON.parse(localStorage.getItem(LS_ROSTER) || 'null');
-    return (Array.isArray(a) && a.length) ? a : null;
-  } catch(e){ return null; }
-}
-async function loadRoster(){
-  if (SB){
-    try {
-      const r = await fetch(SB.url + '/rest/v1/checkin_roster?select=cls,no,name&order=cls.asc,no.asc',
-        { headers: sbHeaders() });
-      if (r.ok){
-        const rows = await r.json();
-        if (Array.isArray(rows) && rows.length){
-          setRoster(rows); rosterCacheSave(rows); ROSTER_OK = true; return true;
-        }
-      }
-    } catch(e){}
-  }
-  const c = rosterCacheLoad();
-  if (c){ setRoster(c); ROSTER_OK = true; return true; }
-  ROSTER_OK = false;
-  return false;
 }
 /* 唯一键：优先「学号 姓名」。班里有人重名时（如 18 班两个余欣怡），靠学号才能把记录分开 */
 function sid(s){ return s.no ? s.no + ' ' + s.name : s.name; }
@@ -1032,38 +1016,11 @@ async function render(){
   $('wrap').className = 'v-' + st + (S.admin ? ' wide' : '');
   $('brand').textContent = S.admin ? '教师后台' : (S.cls ? CONFIG.classes[S.cls].label + ' · 背诵打卡' : '英语背诵打卡');
 
-  if (!ROSTER_OK) return viewRosterMissing();
   if (S.admin) return viewAdmin();
   if (!S.cls)  return viewClass();
   if (!S.name) return await viewName();
   if (!S.content) return viewContent();
   return await viewGroup();
-}
-
-/* ---------- 名单没加载出来：给老师可操作的提示 ---------- */
-function viewRosterMissing(){
-  setHead('名单还没同步到云端', '老师需要在 Supabase 建一张 students 表，把两个班名单导进去');
-  $('view').innerHTML =
-    '<div class="notice">'
-    + '<p class="nt">网页里<b>已经不再保存学生姓名</b>了（这个仓库是公开的），'
-    + '名单统一放在 Supabase 的 <code>checkin_roster</code> 表里，现在读不到。</p>'
-    + '<p class="nt">请老师：打开 Supabase → <b>SQL Editor</b> → 粘贴运行'
-    + '「<code>建表_导入名单.sql</code>」，跑完点下面按钮即可。</p>'
-    + '<button class="big" id="rosterRetry"><span class="ic">' + ICO.cls + '</span>'
-    + '<span class="tx"><b>重新加载名单</b><span class="sub">建好表 / 网络恢复后点这里</span></span>'
-    + '<span class="arr">&rsaquo;</span></button>'
-    + '</div>';
-  $('rosterRetry').onclick = async () => {
-    $('view').innerHTML = '<p class="hint">重新加载中…</p>';
-    await loadRoster();
-    render();
-    if (ROSTER_OK){
-      let n = 0; Object.keys(ROSTER).forEach(k => { n += ROSTER[k].length; });
-      toast('名单已加载，共 ' + n + ' 人');
-    } else {
-      toast('还是读不到，检查一下 students 表建好了没');
-    }
-  };
 }
 
 /* ---------- 第 1 步：选班级 ---------- */
@@ -1077,8 +1034,10 @@ function viewClass(){
       + '<span class="ic">' + ICO.cls + '</span>'
       + '<span class="tx"><b>' + esc(CONFIG.classes[k].label)
       + (lp && lp.cls === k ? '<span class="tag">上次</span>' : '') + '</b>'
-      + '<span class="sub">' + roster(k).length + ' 人</span></span>'
-      + '<span class="arr">&rsaquo;</span></button>').join('');
+      + '<span class="sub">' + (CONFIG.classes[k].students.length || (CONFIG.demo[k]||[]).length) + ' 人</span></span>'
+      + '<span class="arr">&rsaquo;</span></button>').join('')
+    + (DEMO_CLS.length ? '<p class="hint">' + DEMO_CLS.map(k => CONFIG.classes[k].label).join('、')
+        + ' 还在用<b>演示名单</b>。把代码顶部 <b>CONFIG.classes</b> 里这个班的 students 换成真实姓名即可。</p>' : '');
   $('view').querySelectorAll('[data-cls]').forEach(b => b.onclick = () => {
     S.cls = b.dataset.cls; S.mine = []; S.todaySet = new Set(); render();
   });
@@ -1358,10 +1317,9 @@ if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
   navigator.serviceWorker.register('/english-learning/sw.js').catch(function(){});
 }
 
-/* 先探测云端表、再拉名单，最后渲染 */
+/* 先探测云端表是否就绪，再渲染 */
 (async () => {
   SB_OK = await probeCloud();
-  await loadRoster();
   render();
 })();
 </script>
