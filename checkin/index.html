@@ -791,8 +791,25 @@ async function goBack(){
   if (S.cls){ S.cls = null; S.mine = []; return render(); }
 }
 
+/* 教室电脑全班轮流用：长时间无人操作就自动退回选姓名页，
+   避免下一个同学接到上一个人的账号里打卡（串了很难倒查） */
+const IDLE_MS = 180000;
+let idleTimer = null;
+function resetIdle(){
+  clearTimeout(idleTimer);
+  if (S.admin || !S.name) return;
+  idleTimer = setTimeout(() => {
+    S.name = null; S.uid = null; S.content = null; S.mine = [];
+    toast('一会儿没人操作，已自动返回姓名选择');
+    render();
+  }, IDLE_MS);
+}
+['click', 'touchstart', 'keydown', 'input'].forEach(ev =>
+  document.addEventListener(ev, resetIdle, { passive: true }));
+
 async function render(){
   renderSteps();
+  resetIdle();
   $('back').hidden = !(S.cls || S.admin);
   $('wrap').className = S.admin ? 'wide' : '';
   $('brand').textContent = S.admin ? '教师后台' : (S.cls ? CONFIG.classes[S.cls].label + ' · 背诵打卡' : '英语背诵打卡');
@@ -887,7 +904,10 @@ async function viewGroup(){
   const todayN = S.mine.filter(r => r.content === S.content && r.d === ds()).length;
 
   $('view').innerHTML =
-    '<div class="statline">'
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">'
+    + '<span class="hint" style="margin:0">当前打卡人：<b>' + esc(S.name) + '</b></span>'
+    + '<button class="chip" id="switchUser" style="flex:none">换个同学</button></div>'
+    + '<div class="statline">'
     + '<span><b>' + mineSet.size + '</b> / ' + c.total + ' 组</span>'
     + '<span>连续打卡 <b>' + streak + '</b> 天</span>'
     + (S.todaySet.has(S.uid)
@@ -902,6 +922,12 @@ async function viewGroup(){
           + '" data-g="' + n + '">' + n + '<span class="k">' + (done ? '已背' : '未背') + '</span></button>';
       }).join('') + '</div>'
     + '<p class="hint">点一下就打卡，再点一次取消。绿色是你已经背过的组，黄圈是今天刚打的。</p>';
+
+  $('switchUser').onclick = () => {
+    S.name = null; S.uid = null; S.content = null; S.mine = [];
+    clearTimeout(idleTimer);
+    render();
+  };
 
   $('view').querySelectorAll('[data-g]').forEach(b => b.onclick = async ev => {
     const n = +b.dataset.g;
