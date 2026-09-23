@@ -1,0 +1,23 @@
+{
+  "name": "英语背诵打卡",
+  "short_name": "背诵打卡",
+  "description": "高三英语背诵打卡 · 3500词乱序版 / 写作100句",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6F8FD",
+  "theme_color": "#4F46E5",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "education"
+  ]
+}
