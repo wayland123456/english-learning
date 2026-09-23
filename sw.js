@@ -1,5 +1,5 @@
 // Service Worker for 环游世界英语学习 PWA
-const CACHE_NAME = 'travelling-english-v12';
+const CACHE_NAME = 'travelling-english-v13';
 
 const CRITICAL_ASSETS = [
   '/english-learning/',
@@ -17,7 +17,7 @@ const CRITICAL_ASSETS = [
   '/english-learning/checkin/',
   '/english-learning/checkin/index.html',
   '/english-learning/checkin/manifest.json',
-  '/english-learning/checkin/icon-192.png'
+  '/english-learning/checkin/icon.svg'
 ];
 
 // Install: 预缓存关键资源
