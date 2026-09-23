@@ -23,10 +23,14 @@ alter table public.checkins enable row level security;
 drop policy if exists "checkins_read"   on public.checkins;
 drop policy if exists "checkins_insert" on public.checkins;
 drop policy if exists "checkins_delete" on public.checkins;
+drop policy if exists "checkins_update" on public.checkins;
 
 create policy "checkins_read"   on public.checkins for select using (true);
 create policy "checkins_insert" on public.checkins for insert with check (true);
 create policy "checkins_delete" on public.checkins for delete using (true);
+-- update 策略不能少：页面用 on_conflict + merge-duplicates 做幂等写入，
+-- 重复打卡时 PostgREST 走的是 UPDATE，缺这条会报 42501 被拒。
+create policy "checkins_update" on public.checkins for update using (true) with check (true);
 
 -- 让 PostgREST 立刻刷新 schema 缓存，避免页面报 PGRST205
 notify pgrst, 'reload schema';
