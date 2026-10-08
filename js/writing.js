@@ -21,7 +21,7 @@ const Writing = {
 
     // 经 Supabase Edge Function 代理调用（代理内再转发到阿里云百炼）
     API_URL: 'https://gqlwspxcyhjtzhikcexj.supabase.co/functions/v1/ai-proxy',
-    API_MODEL: 'qwen-vl-max',
+    API_MODEL: 'qwen3.7-plus',
 
     async init() {
         this.essayText = '';

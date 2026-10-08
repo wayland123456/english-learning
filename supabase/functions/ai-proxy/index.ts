@@ -17,15 +17,16 @@ const ZHIPU_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
 
 // 模型白名单：防止代理被拿去跑高价模型（qwen-max / 视频 / 图像生成等一律拒绝）
 const ALLOWED_MODELS = new Set<string>([
-  "qwen-vl-max",
-  "qwen-vl-plus",
-  "qwen-vl-ocr",
+  "qwen3.7-plus",
+  "qwen3.8-flash",
+  "qwen3.5-ocr",
   "qwen-plus",
-  "qwen-turbo",
   "qwen-flash",
-  "qwen3-vl-flash",
   "glm-4.6v-flash",
   "glm-4.7-flash",
+  // 智谱官方「永久免费」备选模型：主模型限流（1305）时前端可轮换过去
+  "glm-4-flash",
+  "glm-4v-flash",
 ]);
 
 // 单次请求输出上限：防止被拿去刷长文本
@@ -86,6 +87,8 @@ serve(async (req) => {
     top_p?: number;
     max_tokens?: number;
     response_format?: unknown;
+    thinking?: unknown;
+    enable_thinking?: unknown;
   };
   try {
     body = await req.json();
@@ -109,7 +112,9 @@ serve(async (req) => {
 
   // 归一化并封顶输出长度
   const maxTokens = Number(body.max_tokens);
-  const payload = {
+  // 按模型名前缀路由到对应厂商；密钥一律来自 Secrets，绝不硬编码
+  const isZhipu = model.startsWith("glm-");
+  const payload: Record<string, unknown> = {
     model,
     messages: body.messages,
     temperature: typeof body.temperature === "number" ? body.temperature : 0.2,
@@ -121,8 +126,23 @@ serve(async (req) => {
     ...(body.response_format ? { response_format: body.response_format } : {}),
   };
 
-  // 按模型名前缀路由到对应厂商；密钥一律来自 Secrets，绝不硬编码
-  const isZhipu = model.startsWith("glm-");
+  // 智谱 GLM-4.x-Flash 默认开启「思考」，思考 token 会把 max_tokens 吃光、正文变空串。
+  // 前端传 thinking:{"type":"disabled"} 关闭思考，这里必须原样透传，
+  // 否则免费档经代理不可用（实测：max_tokens=300 时思考占 129 字，正文 0 字）。
+  // 只对 glm-* 生效；通义千问不认识该字段，不要透传。
+  if (isZhipu && body.thinking && typeof body.thinking === "object") {
+    payload.thinking = body.thinking;
+  }
+
+  // 通义 Qwen3 及以上（qwen3*，如 qwen3.7-plus / qwen3.8-flash）默认开启「思考」，
+  // 思考 token 会先吃掉 max_tokens 额度，正文被截断（本代理上限 4096；
+  // 旧版 glm 免费档实测吃掉 3966、正文只剩 305 字 → JSON 直接断在末尾）。
+  // 代理侧默认关闭思考，前端若要思考须显式传 enable_thinking: true。
+  // 已实测：qwen3.7-plus / qwen3.8-flash / qwen3.5-ocr 均接受该字段。
+  if (!isZhipu && /^qwen3/.test(model)) {
+    payload.enable_thinking = body.enable_thinking === true;
+  }
+
   const upstreamUrl = isZhipu ? ZHIPU_URL : DASHSCOPE_URL;
   const envName = isZhipu ? "ZHIPU_API_KEY" : "DASHSCOPE_API_KEY";
   const upstreamKey = Deno.env.get(envName) || "";
