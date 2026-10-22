@@ -473,7 +473,7 @@
             <i class="fas fa-globe-americas"></i>
             <span>Travelling Around the World</span>
         </div>
-        <div class="nav-links" id="navLinks">
+        <div class="nav-links" id="navLinks" style="display:none">
             <a href="#" onclick="App.showPage('home');return false" class="nav-link active" data-page="home">
                 <i class="fas fa-home"></i> 首页
             </a>
@@ -534,7 +534,7 @@
                 <span class="nav-badge hidden" id="msgBadge">0</span>
             </a>
         </div>
-        <div class="nav-user" id="navUser">
+        <div class="nav-user" id="navUser" style="display:none">
             <span id="navUsername"></span>
             <button class="btn-changepwd" onclick="SupabaseAuth.showChangePassword()">
                 <i class="fas fa-key"></i>
@@ -543,7 +543,7 @@
                 <i class="fas fa-sign-out-alt"></i> 退出
             </button>
         </div>
-        <button class="nav-toggle" id="navToggle" onclick="App.toggleMobileNav()">
+        <button class="nav-toggle" id="navToggle" onclick="App.toggleMobileNav()" style="display:none">
             <i class="fas fa-bars"></i>
         </button>
     </nav>
@@ -562,6 +562,19 @@
                     <h1>Travelling Around the World</h1>
                     <p>高中英语自主学习平台</p>
                 </div>
+
+                <!-- 评审 / 首次体验入口（2026-10-22） -->
+                <div class="demo-entry">
+                    <div class="demo-entry-main">
+                        <i class="fas fa-circle-play"></i>
+                        <div>
+                            <strong>首次体验 · 评审入口</strong>
+                            <span>无需注册，一键进入演示账号</span>
+                        </div>
+                    </div>
+                    <button type="button" class="demo-entry-btn" onclick="SupabaseAuth.demoLogin(this)">立即体验</button>
+                </div>
+
                 <div class="auth-tabs">
                     <button class="auth-tab active" onclick="SupabaseAuth.switchTab('login')">登录</button>
                     <button class="auth-tab" onclick="SupabaseAuth.switchTab('register')">注册</button>

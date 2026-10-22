@@ -745,21 +745,41 @@
             }
 
             try {
-                const { data, error } = await supabaseClient
-                    .from('students')
-                    .select('username, display_name, role, password_hash')
-                    .eq('username', username)
-                    .single();
+                // 2026-10-22：改为调用 login_student 函数，密码不再离开数据库
+                let teacher = null;
+                const { data, error } = await supabaseClient.rpc('login_student', {
+                    p_username: username,
+                    p_password: password
+                });
 
-                if (error || !data) {
-                    errorDiv.textContent = '账号不存在';
+                if (!error) {
+                    if (!data) {
+                        errorDiv.textContent = '账号或密码错误';
+                        return;
+                    }
+                    teacher = data;
+                } else if (error.code === 'PGRST202' || /login_student/i.test(error.message || '')) {
+                    // 兜底：函数尚未部署时退回旧逻辑
+                    const { data: row, error: qErr } = await supabaseClient
+                        .from('students')
+                        .select('username, display_name, role, password_hash')
+                        .eq('username', username)
+                        .single();
+                    if (qErr || !row) {
+                        errorDiv.textContent = '账号不存在';
+                        return;
+                    }
+                    if (row.password_hash !== password) {
+                        errorDiv.textContent = '密码错误';
+                        return;
+                    }
+                    teacher = row;
+                } else {
+                    errorDiv.textContent = '登录失败：' + (error.message || '网络错误');
                     return;
                 }
-                if (data.password_hash !== password) {
-                    errorDiv.textContent = '密码错误';
-                    return;
-                }
-                if (data.role !== 'teacher') {
+
+                if (teacher.role !== 'teacher') {
                     errorDiv.textContent = '该账号不是教师账号';
                     return;
                 }

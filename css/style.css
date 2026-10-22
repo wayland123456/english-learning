@@ -115,6 +115,8 @@ body {
     font-size: 0.9rem;
     color: var(--text);
     font-weight: 500;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .btn-logout {
@@ -129,6 +131,34 @@ body {
 }
 
 .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+/* 用户名过长时省略，避免把导航栏撑破（2026-10-22） */
+#navUsername {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---- 窄屏导航压缩：1366 / 1280 笔记本上不再溢出竖排 ---- */
+@media (max-width: 1440px) {
+    .navbar { padding: 0 1.25rem; }
+    .nav-links { gap: 2px; }
+    .nav-link { padding: 8px 11px; font-size: 0.85rem; gap: 5px; }
+    .nav-user { gap: 8px; margin-left: 10px; font-size: 0.85rem; }
+    .btn-logout { padding: 6px 10px; font-size: 0.8rem; }
+}
+
+@media (max-width: 1240px) {
+    .nav-brand span { display: none; }
+    .nav-link { padding: 8px 9px; font-size: 0.82rem; }
+    #navUsername { max-width: 80px; }
+}
+
+/* 桌面端不显示汉堡菜单（原逻辑在登录后无条件设 display:block，会与横排导航重复） */
+@media (min-width: 769px) {
+    .nav-toggle { display: none !important; }
+}
 
 /* ---- 导航下拉菜单 ---- */
 .nav-dropdown {
@@ -385,6 +415,69 @@ body {
 }
 
 .auth-header p { color: var(--text-light); font-size: 0.9rem; }
+
+/* ---------- 评审 / 首次体验入口（2026-10-22） ---------- */
+.demo-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    background: linear-gradient(135deg, rgba(99,102,241,0.09), rgba(16,185,129,0.09));
+    border: 1px solid rgba(99,102,241,0.22);
+    border-radius: var(--radius);
+}
+
+.demo-entry-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.demo-entry-main > i {
+    font-size: 1.35rem;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.demo-entry-main strong {
+    display: block;
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.3;
+}
+
+.demo-entry-main span {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-top: 2px;
+    line-height: 1.3;
+}
+
+.demo-entry-btn {
+    flex-shrink: 0;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 999px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 2px 8px rgba(99,102,241,0.28);
+}
+
+.demo-entry-btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.demo-entry-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+@media (max-width: 480px) {
+    .demo-entry { flex-direction: column; align-items: stretch; text-align: left; }
+    .demo-entry-btn { width: 100%; }
+}
 
 .auth-tabs {
     display: flex;

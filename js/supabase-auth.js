@@ -40,33 +40,59 @@ const SupabaseAuth = {
     },
 
     /* ---------- 登录（核心方法） ---------- */
+    /* 2026-10-22 安全改造：密码比对改在数据库内部完成（登录走 login_student 函数），
+       前端再也拿不到 password_hash。若函数尚未部署，自动回退旧查询逻辑，保证学生能正常登录。 */
     async login(username, password) {
-        console.log('[Auth] 尝试登录：', username);
         if (typeof db === 'undefined') {
             console.error('[Auth] Supabase 客户端未初始化！');
             return { success: false, message: '系统未就绪，请刷新页面重试' };
         }
-        const { data, error } = await db
-            .from('students')
-            .select('username, display_name, role, password_hash')
-            .eq('username', username.trim())
-            .single();
 
-        console.log('[Auth] 查询结果：', { data: data ? '有数据' : '无数据', error: error ? error.message : '无错误' });
+        let user = null;
+        const { data, error } = await db.rpc('login_student', {
+            p_username: (username || '').trim(),
+            p_password: password
+        });
 
-        if (error || !data) {
-            return { success: false, message: '用户名不存在' };
+        if (!error) {
+            if (!data) {
+                return { success: false, message: '用户名或密码错误' };
+            }
+            user = data;
+        } else if (error.code === 'PGRST202' || /login_student/i.test(error.message || '')) {
+            // 兜底：函数未部署时退回旧逻辑
+            console.warn('[Auth] login_student 未部署，回退表查询');
+            const { data: row, error: qErr } = await db
+                .from('students')
+                .select('username, display_name, role, password_hash')
+                .eq('username', (username || '').trim())
+                .single();
+            if (qErr || !row || row.password_hash !== password) {
+                return { success: false, message: '用户名或密码错误' };
+            }
+            user = { username: row.username, display_name: row.display_name, role: row.role };
+        } else {
+            console.error('[Auth] 登录失败：', error.message);
+            return { success: false, message: '登录失败，请稍后重试' };
         }
-        if (data.password_hash !== password) {
-            return { success: false, message: '密码错误' };
-        }
 
-        this.currentUser = data;
-        this.currentUsername = data.username;
-        localStorage.setItem('travelEdu_currentUser', JSON.stringify(data));
+        this.currentUser = user;
+        this.currentUsername = user.username;
+        localStorage.setItem('travelEdu_currentUser', JSON.stringify(user));
         this.onLoginSuccess();
         this._recordLogin();
-        return { success: true, message: `欢迎回来，${data.display_name || username}！` };
+        return { success: true, message: `欢迎回来，${user.display_name || user.username}！` };
+    },
+
+    /* ---------- 演示 / 评审一键登录 ---------- */
+    /* 供参赛评审、首次访问者免注册体验，进入演示学生账号 */
+    async demoLogin(btn) {
+        if (btn) { btn.disabled = true; btn.textContent = '正在进入…'; }
+        const result = await this.login('demo', '1024');
+        if (!result.success) {
+            if (btn) { btn.disabled = false; btn.textContent = '立即体验'; }
+            App.toast('演示账号暂不可用：' + result.message, 'error');
+        }
     },
 
     /* ---------- 注册 ---------- */
@@ -77,31 +103,52 @@ const SupabaseAuth = {
             return { success: false, message: '用户名只能包含字母、数字和下划线' };
         }
 
-        const { data: existing } = await db
-            .from('students')
-            .select('username')
-            .eq('username', username.trim())
-            .single();
+        // 2026-10-22：改走 register_student 函数，注册只能生成 student 角色
+        const { data, error } = await db.rpc('register_student', {
+            p_username: username.trim(),
+            p_password: password,
+            p_display_name: displayName || username.trim(),
+            p_class_name: className
+        });
 
-        if (existing) {
-            return { success: false, message: '用户名已存在' };
+        if (!error) {
+            if (!data || data.ok !== true) {
+                return { success: false, message: (data && data.msg) || '注册失败' };
+            }
+            return await this.login(username, password);
         }
 
-        const { error } = await db
-            .from('students')
-            .insert([{
-                username: username.trim(),
-                password_hash: password,
-                display_name: displayName || username.trim(),
-                class_name: className,
-                role: 'student'
-            }]);
+        if (error.code === 'PGRST202' || /register_student/i.test(error.message || '')) {
+            // 兜底：函数未部署时退回旧逻辑
+            console.warn('[Auth] register_student 未部署，回退表写入');
+            const { data: existing } = await db
+                .from('students')
+                .select('username')
+                .eq('username', username.trim())
+                .single();
 
-        if (error) {
-            return { success: false, message: '注册失败：' + error.message };
+            if (existing) {
+                return { success: false, message: '用户名已存在' };
+            }
+
+            const { error: insErr } = await db
+                .from('students')
+                .insert([{
+                    username: username.trim(),
+                    password_hash: password,
+                    display_name: displayName || username.trim(),
+                    class_name: className,
+                    role: 'student'
+                }]);
+
+            if (insErr) {
+                return { success: false, message: '注册失败：' + insErr.message };
+            }
+
+            return await this.login(username, password);
         }
 
-        return await this.login(username, password);
+        return { success: false, message: '注册失败：' + error.message };
     },
 
     /* ---------- 退出 ---------- */
@@ -264,26 +311,43 @@ const SupabaseAuth = {
     },
 
     /* ---------- 批量注册学生账号 ---------- */
+    /* 2026-10-22：改走 register_student 函数（表已收回匿名写入权限） */
     async batchRegister(studentList) {
         let created = 0, skipped = 0;
         for (const s of studentList) {
-            const username = s.username.trim();
+            const username = (s.username || '').trim();
             const password = s.password || '123456';
             if (!username) continue;
 
-            const { error } = await db
-                .from('students')
-                .insert([{
-                    username: username,
-                    password_hash: password,
-                    display_name: s.name || username,
-                    role: 'student'
-                }]);
+            const { data, error } = await db.rpc('register_student', {
+                p_username: username,
+                p_password: password,
+                p_display_name: s.name || username,
+                p_class_name: s.className || null
+            });
 
-            if (error && error.code === '23505') {
-                skipped++;
-            } else if (!error) {
-                created++;
+            if (!error) {
+                if (data && data.ok === true) {
+                    created++;
+                } else {
+                    skipped++;
+                }
+            } else if (error.code === 'PGRST202' || /register_student/i.test(error.message || '')) {
+                // 兜底：函数未部署时退回旧逻辑
+                const { error: insErr } = await db
+                    .from('students')
+                    .insert([{
+                        username: username,
+                        password_hash: password,
+                        display_name: s.name || username,
+                        role: 'student'
+                    }]);
+                if (!insErr) {
+                    created++;
+                } else {
+                    console.warn('批量注册失败：', username, insErr.message);
+                    skipped++;
+                }
             } else {
                 console.warn('批量注册失败：', username, error.message);
                 skipped++;
@@ -316,29 +380,50 @@ const SupabaseAuth = {
             App.toast('新密码至少4位', 'error');
             return;
         }
-        // 验证旧密码
-        const { data, error } = await db
-            .from('students')
-            .select('password_hash')
-            .eq('username', this.currentUsername)
-            .single();
+        // 2026-10-22：改密码走 change_password 函数，旧密码在库内校验
+        const { data, error } = await db.rpc('change_password', {
+            p_username: this.currentUsername,
+            p_old: oldPwd,
+            p_new: newPwd
+        });
 
-        if (error || !data || data.password_hash !== oldPwd) {
-            App.toast('当前密码错误', 'error');
-            return;
-        }
-        // 更新密码
-        const { error: updateError } = await db
-            .from('students')
-            .update({ password_hash: newPwd })
-            .eq('username', this.currentUsername);
-
-        if (updateError) {
-            App.toast('修改失败，请重试', 'error');
-        } else {
+        if (!error) {
+            if (!data || data.ok !== true) {
+                App.toast((data && data.msg) || '当前密码错误', 'error');
+                return;
+            }
             App.toast('密码修改成功！', 'success');
             this.closeChangePassword();
+            return;
         }
+
+        if (error.code === 'PGRST202' || /change_password/i.test(error.message || '')) {
+            // 兜底：函数未部署时退回旧逻辑
+            const { data: row, error: qErr } = await db
+                .from('students')
+                .select('password_hash')
+                .eq('username', this.currentUsername)
+                .single();
+
+            if (qErr || !row || row.password_hash !== oldPwd) {
+                App.toast('当前密码错误', 'error');
+                return;
+            }
+            const { error: updateError } = await db
+                .from('students')
+                .update({ password_hash: newPwd })
+                .eq('username', this.currentUsername);
+
+            if (updateError) {
+                App.toast('修改失败，请重试', 'error');
+            } else {
+                App.toast('密码修改成功！', 'success');
+                this.closeChangePassword();
+            }
+            return;
+        }
+
+        App.toast('修改失败，请重试', 'error');
     },
 
     /* ========== 以下为 HTML 兼容方法 ========== */
