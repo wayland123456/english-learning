@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>单句语法填空 · 5分钟挑战</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ 首页 ============ -->
+<section class="screen active" id="screen-home">
+  <div class="wrap">
+    <header class="hero">
+      <div class="badge">高考语法填空 · 单句速练</div>
+      <h1>单句语法填空<span class="dot">·</span>限时挑战</h1>
+      <p class="sub">题库 <b id="bankCount">0</b> 道，全部取自高考真题语料。每题 <b id="hintPer">15</b> 秒，超时判错。</p>
+    </header>
+
+    <div class="setup">
+      <div class="setup-row">
+        <div class="setup-label">模式</div>
+        <div class="seg" id="segMode">
+          <button data-v="solo" class="on">单人挑战</button>
+          <button data-v="pk">双人 PK（左右分屏）</button>
+        </div>
+      </div>
+      <div class="setup-row">
+        <div class="setup-label">总时长</div>
+        <div class="seg" id="segTotal">
+          <button data-v="120">2 分钟</button>
+          <button data-v="180">3 分钟</button>
+          <button data-v="300" class="on">5 分钟</button>
+          <button data-v="600">10 分钟</button>
+        </div>
+      </div>
+      <div class="setup-row">
+        <div class="setup-label">每题限时</div>
+        <div class="seg" id="segPer">
+          <button data-v="10">10 秒</button>
+          <button data-v="15" class="on">15 秒</button>
+          <button data-v="20">20 秒</button>
+        </div>
+      </div>
+      <div class="setup-row">
+        <div class="setup-label">考点范围</div>
+        <div class="tags" id="tagPicker"></div>
+      </div>
+      <div class="setup-row">
+        <div class="setup-label">答题节奏</div>
+        <div class="seg" id="segAuto">
+          <button data-v="1" class="on">自动跳下一题</button>
+          <button data-v="0">答错后停住讲解</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-main" id="btnStart">开始挑战</button>
+
+    <div class="best" id="bestBox"></div>
+
+    <footer class="foot" id="footKeys">
+      快捷键：<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> 或 <kbd>A</kbd><kbd>B</kbd><kbd>C</kbd><kbd>D</kbd> 选择答案 ·
+      <kbd>空格</kbd> 下一题 · <kbd>Esc</kbd> 暂停
+    </footer>
+  </div>
+</section>
+
+<!-- ============ 答题页 ============ -->
+<section class="screen" id="screen-quiz">
+  <div class="topbar">
+    <div class="clock" id="clock">05:00</div>
+    <div class="stats">
+      <span class="stat ok"><i></i><b id="statRight">0</b> 对</span>
+      <span class="stat no"><i></i><b id="statWrong">0</b> 错</span>
+      <span class="stat q">第 <b id="statIdx">1</b> 题</span>
+    </div>
+    <div class="topbtns">
+      <button class="mini" id="btnPause">暂停</button>
+      <button class="mini ghost" id="btnQuit">结束</button>
+    </div>
+  </div>
+
+  <div class="progress-line"><i id="progFill"></i></div>
+
+  <main class="qstage">
+    <div class="qmeta">
+      <span class="tagchip" id="qTag">—</span>
+      <span class="srcchip" id="qSrc"></span>
+      <div class="timer-ring" id="ring">
+        <svg viewBox="0 0 44 44">
+          <circle class="track" cx="22" cy="22" r="19"></circle>
+          <circle class="bar" id="ringBar" cx="22" cy="22" r="19"></circle>
+        </svg>
+        <span id="ringNum">15</span>
+      </div>
+    </div>
+
+    <div class="qtext" id="qText"></div>
+
+    <div class="options" id="options"></div>
+
+    <div class="feedback" id="feedback">
+      <div class="fb-head"><span id="fbTitle"></span><span class="fb-next" id="fbNext">继续 →</span></div>
+      <div class="fb-body" id="fbBody"></div>
+    </div>
+  </main>
+</section>
+
+<!-- ============ 结算页 ============ -->
+<section class="screen" id="screen-result">
+  <div class="wrap">
+    <div class="score-card">
+      <div class="score-big" id="rRate">0<span>%</span></div>
+      <div class="score-line" id="rLine">答对 0 题</div>
+      <div class="score-meta" id="rMeta"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="panel">
+        <h3>考点掌握情况</h3>
+        <div class="tagbars" id="rTags"></div>
+      </div>
+      <div class="panel">
+        <h3>本次错题</h3>
+        <div class="misslist" id="rMiss"></div>
+      </div>
+    </div>
+
+    <div class="rowbtns">
+      <button class="btn-main" id="btnAgain">再来一局</button>
+      <button class="btn-ghost" id="btnRedoWrong">只练错题</button>
+      <button class="btn-ghost" id="btnHome">返回首页</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 双人 PK ============ -->
+<section class="screen" id="screen-pk">
+  <div class="pk-top">
+    <button class="mini ghost" id="pkBack">退出</button>
+    <div class="pk-clock" id="pkClock">03:00</div>
+    <div class="pk-tools">
+      <button class="mini" id="pkPause">暂停</button>
+      <button class="mini ghost" id="pkEnd">结束</button>
+    </div>
+  </div>
+
+  <div class="pk-arena">
+    <div class="pk-side left">
+      <div class="pk-head">
+        <input class="pk-name" id="pkNameL" value="左同学" maxlength="8" spellcheck="false">
+        <span class="pk-score" id="pkScoreL">0</span>
+      </div>
+      <div class="pk-timebar"><i id="pkBarL"></i></div>
+      <div class="pk-body">
+        <div class="pk-q" id="pkQL"></div>
+        <div class="pk-opts" id="pkOptsL"></div>
+        <div class="pk-msg" id="pkMsgL"></div>
+      </div>
+    </div>
+
+    <div class="pk-vs">VS</div>
+
+    <div class="pk-side right">
+      <div class="pk-head">
+        <input class="pk-name" id="pkNameR" value="右同学" maxlength="8" spellcheck="false">
+        <span class="pk-score" id="pkScoreR">0</span>
+      </div>
+      <div class="pk-timebar"><i id="pkBarR"></i></div>
+      <div class="pk-body">
+        <div class="pk-q" id="pkQR"></div>
+        <div class="pk-opts" id="pkOptsR"></div>
+        <div class="pk-msg" id="pkMsgR"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pk-keys">
+    <span>左边键盘 <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd>（或点左边选项）</span>
+    <span>右边键盘 <kbd>7</kbd><kbd>8</kbd><kbd>9</kbd><kbd>0</kbd>（或点右边选项）</span>
+  </div>
+</section>
+
+<!-- PK 结果 -->
+<div class="pk-result" id="pkResult">
+  <div class="pkr-box">
+    <h2 id="pkrTitle">左同学 胜！</h2>
+    <div class="pkr-cols">
+      <div class="pkr-col left">
+        <div class="pkr-name" id="pkrNameL">左同学</div>
+        <div class="pkr-score" id="pkrScoreL">0</div>
+        <div class="pkr-meta" id="pkrMetaL"></div>
+      </div>
+      <div class="pkr-mid">VS</div>
+      <div class="pkr-col right">
+        <div class="pkr-name" id="pkrNameR">右同学</div>
+        <div class="pkr-score" id="pkrScoreR">0</div>
+        <div class="pkr-meta" id="pkrMetaR"></div>
+      </div>
+    </div>
+    <div class="pkr-btns">
+      <button class="btn-main" id="pkAgain">再战一局</button>
+      <button class="btn-ghost" id="pkHome">返回首页</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3-2-1 开场 -->
+<div class="pk-ready" id="pkReady"><span id="pkReadyNum">3</span></div>
+
+<!-- 暂停遮罩 -->
+<div class="pause-mask" id="pauseMask">
+  <div class="pause-box">
+    <h2>已暂停</h2>
+    <p>计时已冻结，准备好后继续。</p>
+    <button class="btn-main" id="btnResume">继续答题</button>
+  </div>
+</div>
+
+<script src="data/q1.js"></script>
+<script src="data/q2.js"></script>
+<script src="data/q3.js"></script>
+<script src="data/q4.js"></script>
+<script src="data/q5.js"></script>
+<script src="data/q6.js"></script>
+<script src="data/q7.js"></script>
+<script src="pk.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
