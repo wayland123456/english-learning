@@ -71,3 +71,14 @@
 {id:"t69",tag:"时态语态",src:"高考真题",q:"The road ______ (repair) now, so we have to take another way.",o:["repairs","is being repaired","has repaired","repaired"],a:1,e:"now 表示正在被修，用现在进行时的被动语态。"},
 {id:"t70",tag:"时态语态",src:"高考真题",q:"How long ______ you ______ (have) this bike?",o:["did; buy","have; bought","have; had","do; have"],a:2,e:"how long 询问时间段，须用延续性动词 have（had 为其过去分词）。"}
 );
+
+(window.QB = window.QB || []).push(
+{id:"t71",tag:"时态语态",src:"高考真题",q:"The students ______ (prepare) for the exam when the lights suddenly went out.",o:["prepared","were preparing","have prepared","had prepared"],a:1,e:"when 从句为过去时，主句表示当时正在进行，用过去进行时。"},
+{id:"t72",tag:"时态语态",src:"高考真题",q:"By the time he graduated, he ______ (write) three papers.",o:["wrote","has written","had written","was writing"],a:2,e:"by the time + 过去时，主句动作更早完成，用过去完成时。"},
+{id:"t73",tag:"时态语态",src:"高考真题",q:"Our school ______ (build) a new lab since last year.",o:["builds","built","has built","had built"],a:2,e:"since + 过去时间点，主句用现在完成时。"},
+{id:"t74",tag:"时态语态",src:"高考真题",q:"A new library ______ (open) to the public next month.",o:["opens","is opened","will be opened","has been opened"],a:2,e:"next month 表将来，图书馆被开放，用一般将来时的被动语态。"},
+{id:"t75",tag:"时态语态",src:"高考真题",q:"She ______ (not finish) her homework yet, so she can't go out.",o:["doesn't finish","didn't finish","hasn't finished","hadn't finished"],a:2,e:"yet 常与现在完成时连用，表示“还没完成”。"},
+{id:"t76",tag:"时态语态",src:"高考真题",q:"Great changes ______ (take) place in the village over the past five years.",o:["take","took","have taken","had taken"],a:2,e:"over the past five years 表示延续到现在，用现在完成时。"},
+{id:"t77",tag:"时态语态",src:"高考真题",q:"He told me that he ______ (be) to Shanghai twice before.",o:["is","has been","had been","was"],a:2,e:"主句为过去时，宾语从句表示更早的经历，用过去完成时。"},
+{id:"t78",tag:"时态语态",src:"高考真题",q:"Listen! The birds ______ (sing) in the tree outside.",o:["sing","are singing","sang","have sung"],a:1,e:"Listen! 提示动作此刻正在进行，用现在进行时。"}
+);

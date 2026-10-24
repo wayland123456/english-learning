@@ -71,3 +71,16 @@
 {id:"w69",tag:"词形转换",src:"高考真题",q:"The ______ (introduce) of the new system took a long time.",o:["introduce","introduction","introductory","introduced"],a:1,e:"the ... of 结构中心词用名词 introduction。"},
 {id:"w70",tag:"词形转换",src:"高考真题",q:"We were ______ (amaze) at the beautiful view from the top.",o:["amaze","amazing","amazed","amazement"],a:2,e:"人作主语表示“感到惊叹”，用 -ed 形容词。"}
 );
+
+(window.QB = window.QB || []).push(
+{id:"w71",tag:"词形转换",src:"高考真题",q:"The ______ (develop) of technology has changed our lives greatly.",o:["develop","development","developed","developing"],a:1,e:"the ... of 结构中心词用名词 development。"},
+{id:"w72",tag:"词形转换",src:"高考真题",q:"It is ______ (possible) to finish so much work in such a short time.",o:["possible","possibly","impossible","impossibility"],a:2,e:"句意为“不可能”，用 impossible。"},
+{id:"w73",tag:"词形转换",src:"高考真题",q:"We were impressed by the ______ (warm) of the people there.",o:["warm","warmth","warmly","warmer"],a:1,e:"the ... of 结构中心词用名词 warmth。"},
+{id:"w74",tag:"词形转换",src:"高考真题",q:"The teacher spoke ______ (patient) to the students who were slow.",o:["patient","patience","patiently","impatience"],a:2,e:"修饰动词 spoke 需用副词 patiently。"},
+{id:"w75",tag:"词形转换",src:"高考真题",q:"______ (fail) is the mother of success, as the saying goes.",o:["Fail","Failure","Failed","Failing"],a:1,e:"句首作主语需名词，用 Failure。"},
+{id:"w76",tag:"词形转换",src:"高考真题",q:"She is a ______ (success) businesswoman in our city.",o:["succeed","success","successful","successfully"],a:2,e:"修饰名词 businesswoman 用形容词 successful。"},
+{id:"w77",tag:"词形转换",src:"高考真题",q:"His ______ (decide) to quit the job surprised everyone.",o:["decide","decision","decisive","decided"],a:1,e:"物主代词后作主语需名词 decision。"},
+{id:"w78",tag:"词形转换",src:"高考真题",q:"The room was filled with the ______ (laugh) of the children.",o:["laugh","laughter","laughing","laughs"],a:1,e:"the ... of 结构中心词用名词 laughter（笑声）。"},
+{id:"w79",tag:"词形转换",src:"高考真题",q:"It is ______ (health) to eat too much sugar every day.",o:["health","healthy","unhealthy","healthily"],a:2,e:"句意为“不健康”，用 unhealthy。"},
+{id:"w80",tag:"词形转换",src:"高考真题",q:"The film turned out to be a great ______ (succeed).",o:["succeed","success","successful","successfully"],a:1,e:"a great + 名词，用 success 表示“成功之作”。"}
+);

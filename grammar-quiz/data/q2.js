@@ -71,3 +71,16 @@
 {id:"n69",tag:"非谓语",src:"高考真题",q:"The new bridge ______ (complete) next year will connect the two towns.",o:["completed","being completed","to be completed","completing"],a:2,e:"next year 表将来且表被动，作定语用不定式的被动式。"},
 {id:"n70",tag:"非谓语",src:"高考真题",q:"He is used to ______ (get) up early in the morning.",o:["get","getting","got","be got"],a:1,e:"be used to 中的 to 是介词，后接动名词。"}
 );
+
+(window.QB = window.QB || []).push(
+{id:"n71",tag:"非谓语",src:"高考真题",q:"______ (encourage) by his teacher, he decided to try again.",o:["Encouraging","Encouraged","To encourage","Encourage"],a:1,e:"he 与 encourage 是被动关系，作状语用过去分词。"},
+{id:"n72",tag:"非谓语",src:"高考真题",q:"The girl ______ (wear) a red dress is my cousin.",o:["wears","wore","wearing","to wear"],a:2,e:"girl 与 wear 是主动关系且状态持续，作定语用现在分词。"},
+{id:"n73",tag:"非谓语",src:"高考真题",q:"He went out without ______ (say) a word to anybody.",o:["say","said","saying","to say"],a:2,e:"without 是介词，后接动名词。"},
+{id:"n74",tag:"非谓语",src:"高考真题",q:"______ (not finish) his homework, he was afraid to go to school.",o:["Not finishing","Not finished","Not having finished","Having not finished"],a:2,e:"动作先于谓语且为否定，用现在分词完成式的否定形式。"},
+{id:"n75",tag:"非谓语",src:"高考真题",q:"The teacher asked us to keep the windows ______ (close) all day.",o:["closing","closed","to close","close"],a:1,e:"keep sth done 表示“使某物保持被……的状态”，用过去分词。"},
+{id:"n76",tag:"非谓语",src:"高考真题",q:"She was the last ______ (leave) the classroom last night.",o:["leaving","left","to leave","leave"],a:2,e:"the last 后作定语用不定式。"},
+{id:"n77",tag:"非谓语",src:"高考真题",q:"I couldn't help ______ (laugh) when I heard the funny story.",o:["laugh","to laugh","laughing","laughed"],a:2,e:"can't help doing sth 表示“忍不住做某事”。"},
+{id:"n78",tag:"非谓语",src:"高考真题",q:"The problem ______ (solve), we all felt relaxed.",o:["solving","solved","to solve","solve"],a:1,e:"独立主格结构，problem 与 solve 是被动关系，用过去分词。"},
+{id:"n79",tag:"非谓语",src:"高考真题",q:"He spent two hours ______ (finish) the report yesterday.",o:["finish","finished","finishing","to finish"],a:2,e:"spend time doing sth 是固定搭配。"},
+{id:"n80",tag:"非谓语",src:"高考真题",q:"He stood up ______ (offer) his seat to the old man.",o:["offering","offered","to offer","offer"],a:2,e:"作目的状语，用不定式。"}
+);

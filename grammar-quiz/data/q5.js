@@ -73,3 +73,13 @@
 {id:"d19",tag:"状语从句",src:"高考真题",q:"He spoke loudly ______ everyone in the hall could hear him.",o:["so that","as though","now that","in order"],a:0,e:"so that 引导目的状语从句，表示“以便”。"},
 {id:"d20",tag:"状语从句",src:"高考真题",q:"______ she was reading, her brother was playing the piano.",o:["While","Until","Unless","Before"],a:0,e:"while 表示两个动作同时进行，从句常用进行时。"}
 );
+
+(window.QB = window.QB || []).push(
+{id:"r26",tag:"定语从句",src:"高考真题",q:"This is the book ______ I told you about last week.",o:["which","where","when","who"],a:0,e:"about 后缺宾语，先行词是物，用关系代词 which。"},
+{id:"r27",tag:"定语从句",src:"高考真题",q:"I'll never forget the teacher ______ helped me a lot in my studies.",o:["which","who","whom","whose"],a:1,e:"先行词指人且在从句中作主语，用 who。"},
+{id:"r28",tag:"定语从句",src:"高考真题",q:"Do you know the reason ______ she was so angry with us?",o:["which","why","when","where"],a:1,e:"先行词是 reason，从句成分完整，用关系副词 why。"},
+{id:"c26",tag:"名词性从句",src:"高考真题",q:"______ we need most right now is more time.",o:["That","What","Which","It"],a:1,e:"主语从句中 need 缺宾语，用连接代词 What。"},
+{id:"c27",tag:"名词性从句",src:"高考真题",q:"I don't know ______ he will agree with our plan.",o:["that","whether","what","which"],a:1,e:"宾语从句表示“是否”，用 whether。"},
+{id:"d21",tag:"状语从句",src:"高考真题",q:"______ you are free tomorrow, let's go hiking together.",o:["If","Although","Because","Unless"],a:0,e:"表示条件“如果”，用 If。"},
+{id:"d22",tag:"状语从句",src:"高考真题",q:"He kept working on the project ______ he was very tired.",o:["though","because","so","unless"],a:0,e:"前后为让步关系，用 though 引导让步状语从句。"}
+);
