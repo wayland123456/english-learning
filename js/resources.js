@@ -235,7 +235,7 @@ const Resources = {
         // 使用 Web Speech API 朗读
         const utter = new SpeechSynthesisUtterance(fullText);
         utter.lang = 'en-US';
-        utter.rate = 0.9; // 稍微慢一点，方便学生听清
+        utter.rate = (window.TTS && typeof TTS.getRate === 'function') ? TTS.getRate() : 1.0; // 跟随全站统一语速
         utter.pitch = 1;
         utter.volume = 1;
 
@@ -328,7 +328,7 @@ const Resources = {
                 <div class="reading-passage">
                     <div class="reading-passage-header">
                         <h4>📖 ${reading.title}</h4>
-                        <button class="btn-tts-read" onclick="TTS.speak(${JSON.stringify(reading.passage).replace(/"/g, '&quot;')}, {lang:'en-GB', rate:0.9})">
+                        <button class="btn-tts-read" onclick="TTS.speak(${JSON.stringify(reading.passage).replace(/"/g, '&quot;')}, {lang:'en-GB'})">
                             <i class="fas fa-volume-up"></i> 听这篇文章
                         </button>
                     </div>

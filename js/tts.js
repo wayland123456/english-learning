@@ -11,7 +11,7 @@ const TTS = {
     _isPlaying: false,
     _isPaused: false,
     _currentText: '',
-    _rate: 0.9,
+    _rate: 1.0,
     _voiceLang: 'en-GB',
     _bar: null,
 
@@ -21,6 +21,10 @@ const TTS = {
             console.warn('[TTS] 浏览器不支持 Web Speech API');
             return;
         }
+        try {
+            var saved = parseFloat(localStorage.getItem('el_speech_rate'));
+            if (!isNaN(saved) && saved >= 0.5 && saved <= 1.5) this._rate = saved;
+        } catch (e) {}
         this._loadVoices();
         // Chrome 异步加载语音
         if (typeof speechSynthesis !== 'undefined') {
@@ -228,8 +232,11 @@ const TTS = {
             + '    </select>'
             + '    <div class="tts-bar-speed">'
             + '      <span class="tts-speed-label">语速</span>'
-            + '      <input type="range" min="0.5" max="1.5" step="0.05" value="0.9" class="tts-speed-slider" oninput="TTS.setRate(parseFloat(this.value))">'
-            + '      <span class="tts-speed-value">0.9x</span>'
+            + '      <select class="tts-bar-speed-sel" onchange="TTS.setRate(parseFloat(this.value))">'
+            + '        <option value="0.75">0.75× 慢</option>'
+            + '        <option value="1">1.0× 标准</option>'
+            + '        <option value="1.25">1.25× 快</option>'
+            + '      </select>'
             + '    </div>'
             + '    <button class="tts-bar-btn tts-btn-pause" onclick="TTS.togglePause()"><i class="fas fa-pause"></i></button>'
             + '    <button class="tts-bar-btn tts-btn-stop" onclick="TTS.stop()"><i class="fas fa-stop"></i></button>'
@@ -252,14 +259,13 @@ const TTS = {
                 + '.tts-bar-lang{padding:5px 10px;border:1px solid #ddd;border-radius:6px;font-size:0.82rem;background:#f8f8f8;cursor:pointer;}'
                 + '.tts-bar-speed{display:flex;align-items:center;gap:6px;}'
                 + '.tts-speed-label{font-size:0.78rem;color:#666;}'
-                + '.tts-speed-slider{width:80px;accent-color:#6366f1;}'
-                + '.tts-speed-value{font-size:0.78rem;color:#6366f1;font-weight:600;min-width:32px;}'
+                + '.tts-bar-speed-sel{padding:3px 7px;border:1px solid #ddd;border-radius:6px;font-size:0.78rem;background:#f8f8f8;cursor:pointer;color:#333;}'
                 + '.tts-bar-btn{border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;transition:all 0.2s;}'
                 + '.tts-btn-pause{background:#f0f0f0;color:#333;}'
                 + '.tts-btn-pause:hover{background:#e0e0e0;}'
                 + '.tts-btn-stop{background:#fee2e2;color:#dc2626;}'
                 + '.tts-btn-stop:hover{background:#fecaca;}'
-                + '@media(max-width:768px){.tts-bar-speed{display:none;}.tts-bar-lang{font-size:0.75rem;}}';
+                + '@media(max-width:768px){.tts-bar-speed-sel{font-size:0.72rem;}.tts-bar-lang{font-size:0.75rem;}}';
             document.head.appendChild(style);
         }
 
@@ -319,19 +325,27 @@ const TTS = {
     // 更新速度显示
     _updateSpeedDisplay() {
         if (!this._bar) return;
-        var slider = this._bar.querySelector('.tts-speed-slider');
-        var val = this._bar.querySelector('.tts-speed-value');
-        if (slider) slider.value = this._rate;
-        if (val) val.textContent = this._rate.toFixed(1) + 'x';
+        var sel = this._bar.querySelector('.tts-bar-speed-sel');
+        if (sel) sel.value = String(this._rate);
     },
 
     // 重写 setRate 以更新显示
     setRate(rate) {
         this._rate = rate;
+        try { localStorage.setItem('el_speech_rate', String(rate)); } catch (e) {}
         this._updateSpeedDisplay();
         if (this._isPlaying) {
             this.speak();
         }
+    },
+
+    // 读取全站统一语速（听力、对话朗读、口语示范共用）
+    getRate() {
+        try {
+            var r = parseFloat(localStorage.getItem('el_speech_rate'));
+            if (!isNaN(r) && r >= 0.5 && r <= 1.5) return r;
+        } catch (e) {}
+        return this._rate;
     },
 
     // 重写 setLang 以更新选择框

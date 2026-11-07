@@ -8,10 +8,10 @@ const Listening = {
     score: 0,
     answered: [],
     audioPlaying: false,
-    rate: 0.9,
+    rate: 1.0,
 
     _storageKey: 'el_listening_progress',
-    _rateKey: 'el_listening_rate',
+    _rateKey: 'el_speech_rate',
 
     _saveProgress() {
         try {
@@ -124,9 +124,9 @@ const Listening = {
                         <label class="listening-speed" title="调整朗读速度">
                             <span>语速</span>
                             <select onchange="Listening.setRate(this.value)">
-                                <option value="0.7"${Math.abs(this.rate - 0.7) < 0.01 ? ' selected' : ''}>0.7× 慢</option>
-                                <option value="0.9"${Math.abs(this.rate - 0.9) < 0.01 ? ' selected' : ''}>0.9× 标准</option>
-                                <option value="1.1"${Math.abs(this.rate - 1.1) < 0.01 ? ' selected' : ''}>1.1× 快</option>
+                                <option value="0.75"${Math.abs(this.rate - 0.75) < 0.01 ? ' selected' : ''}>0.75× 慢</option>
+                                <option value="1"${Math.abs(this.rate - 1) < 0.01 ? ' selected' : ''}>1.0× 标准</option>
+                                <option value="1.25"${Math.abs(this.rate - 1.25) < 0.01 ? ' selected' : ''}>1.25× 快</option>
                             </select>
                         </label>
                     </div>

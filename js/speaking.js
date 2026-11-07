@@ -781,7 +781,7 @@ const Speaking = {
         // 语音合成可用 → 正常播放
         var utterance = new window.SpeechSynthesisUtterance(sentence.english);
         utterance.lang = 'en-US';
-        utterance.rate = 0.9;
+        utterance.rate = (window.TTS && typeof TTS.getRate === 'function') ? TTS.getRate() : 1.0;
         utterance.pitch = 1;
 
         var voices = window.speechSynthesis.getVoices();
