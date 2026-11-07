@@ -467,6 +467,46 @@ const DATA = {
             english: "If you plan to travel during peak season, you'd better book your tickets in advance.",
             chinese: "如果你打算在旺季出行，最好提前订票。",
             phonetic: "/ɪf juː plæn tuː ˈtrævl ˈdjʊrɪŋ piːk ˈsiːzn, juːd ˈbetər bʊk jɔːr ˈtɪkɪts ɪn ədˈvæns/"
+        },
+        {
+            english: "The Houses of Parliament stand right next to Big Ben along the Thames.",
+            chinese: "英国议会大厦就坐落在泰晤士河畔、大本钟旁边。",
+            phonetic: "/ðə ˈhaʊzɪz əv ˈpɑːrləmənt stænd raɪt nekst tuː bɪɡ ben əˈlɔːŋ ðə temz/"
+        },
+        {
+            english: "The clock tower of Big Ben is over 96 metres tall.",
+            chinese: "大本钟的钟楼高逾96米。",
+            phonetic: "/ðə klɒk ˈtaʊər əv bɪɡ ben ɪz ˈəʊvər ˈnaɪnti sɪks ˈmiːtərz tɔːl/"
+        },
+        {
+            english: "Edinburgh is a historic city with a castle on the hill.",
+            chinese: "爱丁堡是一座历史悠久的城市，山丘上还矗立着一座城堡。",
+            phonetic: "/ˈedɪnbərə ɪz ə hɪˈstɒrɪk ˈsɪti wɪð ə ˈkæsl ɒn ðə hɪl/"
+        },
+        {
+            english: "We walked up to the castle and looked down at the whole city.",
+            chinese: "我们走上城堡，俯瞰整座城市。",
+            phonetic: "/wiː wɔːkt ʌp tuː ðə ˈkæsl ænd lʊkt daʊn ət ðə həʊl ˈsɪti/"
+        },
+        {
+            english: "The Tower of London once served as a palace and a prison.",
+            chinese: "伦敦塔曾先后作为宫殿和监狱使用。",
+            phonetic: "/ðə ˈtaʊər əv ˈlʌndən wʌns sɜːrvd æz ə ˈpælɪs ænd ə ˈprɪzn/"
+        },
+        {
+            english: "Buckingham Palace is where the King lives in London.",
+            chinese: "白金汉宫是国王在伦敦的居所。",
+            phonetic: "/ˈbʌkɪŋəm ˈpælɪs ɪz weər ðə kɪŋ lɪvz ɪn ˈlʌndən/"
+        },
+        {
+            english: "Many tourists wait outside the palace hoping to see the Queen's Guard.",
+            chinese: "许多游客在宫殿外等候，想看看女王卫队。",
+            phonetic: "/ˈmeni ˈtʊərɪsts weɪt aʊtˈsaɪd ðə ˈpælɪs ˈhəʊpɪŋ tuː siː ðə kwiːnz ɡɑːrd/"
+        },
+        {
+            english: "Stonehenge is a ring of huge stones that is over 4,000 years old.",
+            chinese: "巨石阵是一圈巨大的石头，已有四千多年历史。",
+            phonetic: "/ˈstəʊnhendʒ ɪz ə rɪŋ əv hjuːdʒ stəʊnz ðət ɪz ˈəʊvər fɔːr ˈθaʊzənd jɪərz əʊld/"
         }
     ],
 

@@ -8,8 +8,10 @@ const Listening = {
     score: 0,
     answered: [],
     audioPlaying: false,
+    rate: 0.9,
 
     _storageKey: 'el_listening_progress',
+    _rateKey: 'el_listening_rate',
 
     _saveProgress() {
         try {
@@ -35,6 +37,10 @@ const Listening = {
 
     init() {
         this.exercises = DATA.listeningExercises || [];
+        try {
+            const savedRate = parseFloat(localStorage.getItem(this._rateKey));
+            if (!isNaN(savedRate) && savedRate >= 0.5 && savedRate <= 1.5) this.rate = savedRate;
+        } catch(e) {}
         const saved = this._loadProgress();
         if (saved && saved.currentIndex > 0 && saved.answered && saved.answered.length === this.exercises.length) {
             this.currentIndex = saved.currentIndex;
@@ -110,10 +116,20 @@ const Listening = {
 
             <div class="listening-card">
                 <div class="listening-audio-section">
-                    <button class="btn-play-audio ${this.audioPlaying ? 'playing' : ''}" onclick="Listening.playAudio()">
-                        <i class="fas ${this.audioPlaying ? 'fa-pause' : 'fa-play'}"></i>
-                        <span>${this.audioPlaying ? '播放中...' : '播放对话'}</span>
-                    </button>
+                    <div class="listening-audio-row">
+                        <button class="btn-play-audio ${this.audioPlaying ? 'playing' : ''}" onclick="Listening.playAudio()">
+                            <i class="fas ${this.audioPlaying ? 'fa-pause' : 'fa-play'}"></i>
+                            <span>${this.audioPlaying ? '播放中...' : '播放对话'}</span>
+                        </button>
+                        <label class="listening-speed" title="调整朗读速度">
+                            <span>语速</span>
+                            <select onchange="Listening.setRate(this.value)">
+                                <option value="0.7"${Math.abs(this.rate - 0.7) < 0.01 ? ' selected' : ''}>0.7× 慢</option>
+                                <option value="0.9"${Math.abs(this.rate - 0.9) < 0.01 ? ' selected' : ''}>0.9× 标准</option>
+                                <option value="1.1"${Math.abs(this.rate - 1.1) < 0.01 ? ' selected' : ''}>1.1× 快</option>
+                            </select>
+                        </label>
+                    </div>
                     <div class="listening-script" id="listeningScript" style="display:none;">
                         <h4><i class="fas fa-file-alt"></i> 听力原文</h4>
                         <div class="script-dialogue">${ex.script.split('\n').map(line => `<p>${this.escapeHtml(line.trim())}</p>`).join('')}</div>
@@ -160,7 +176,7 @@ const Listening = {
 
         const utter = new SpeechSynthesisUtterance(ex.audio_text);
         utter.lang = 'en-US';
-        utter.rate = 0.9;
+        utter.rate = this.rate;
         utter.onend = () => {
             this.audioPlaying = false;
             this.render();
@@ -172,6 +188,22 @@ const Listening = {
         const scriptEl = document.getElementById('listeningScript');
         if (scriptEl) {
             scriptEl.style.display = scriptEl.style.display === 'none' ? 'block' : 'none';
+        }
+    },
+
+    setRate(value) {
+        const r = parseFloat(value);
+        if (isNaN(r)) return;
+        this.rate = r;
+        try { localStorage.setItem(this._rateKey, String(r)); } catch(e) {}
+        const wasPlaying = this.audioPlaying;
+        if (wasPlaying) {
+            speechSynthesis.cancel();
+            this.audioPlaying = false;
+        }
+        this.render();
+        if (wasPlaying) {
+            setTimeout(() => this.playAudio(), 150);
         }
     },
 
