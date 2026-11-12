@@ -15,7 +15,7 @@ const TTS = {
     _voiceLang: 'en-GB',
     _bar: null,
     _dlgToken: 0,   // 对话朗读令牌：停止/重开时作废旧队列
-    TURN_GAP_MS: 80, // 换人说话的间隙（毫秒）。考试听力是"一人说完另一人立刻接上"，
+    TURN_GAP_MS: 60, // 换人说话的间隙（毫秒）。考试听力是"一人说完另一人立刻接上"，
                      // 浏览器本身还有几十毫秒自然间隙，这里只补一点点，别调大
 
     // 初始化：加载可用语音列表
@@ -29,9 +29,14 @@ const TTS = {
             if (!isNaN(saved) && saved >= 0.5 && saved <= 1.5) this._rate = saved;
         } catch (e) {}
         this._loadVoices();
-        // Chrome 异步加载语音
+        // Chrome / Edge 的语音列表是异步加载的：第一次点播放往往只有系统自带的
+        // 一两个音色，过一会儿才补齐在线语音。补齐前后选中的音色不一样，
+        // 换人时的停顿也就不一样（第一次紧凑、后面反而变慢）。这里多催几次。
         if (typeof speechSynthesis !== 'undefined') {
             speechSynthesis.onvoiceschanged = () => this._loadVoices();
+            setTimeout(() => this._loadVoices(), 400);
+            setTimeout(() => this._loadVoices(), 1200);
+            setTimeout(() => this._loadVoices(), 3000);
         }
     },
 
