@@ -2643,6 +2643,8 @@ body {
 
 .btn-play-audio:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(245,158,11,0.4); }
 .btn-play-audio.playing { background: linear-gradient(135deg, var(--danger), #dc2626); animation: pulse 1.5s infinite; }
+/* 已暂停：换成蓝色并停止闪烁，提示可以点"继续播放" */
+.btn-play-audio.paused { background: linear-gradient(135deg, #6366f1, #4f46e5); animation: none; }
 
 /* 听力语速调节 */
 .listening-audio-row {

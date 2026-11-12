@@ -8,6 +8,7 @@ const Listening = {
     score: 0,
     answered: [],
     audioPlaying: false,
+    audioPaused: false,
     rate: 1.0,
 
     _storageKey: 'el_listening_progress',
@@ -117,9 +118,9 @@ const Listening = {
             <div class="listening-card">
                 <div class="listening-audio-section">
                     <div class="listening-audio-row">
-                        <button class="btn-play-audio ${this.audioPlaying ? 'playing' : ''}" onclick="Listening.playAudio()">
-                            <i class="fas ${this.audioPlaying ? 'fa-pause' : 'fa-play'}"></i>
-                            <span>${this.audioPlaying ? '播放中...' : '播放对话'}</span>
+                        <button class="btn-play-audio ${this.audioPlaying ? (this.audioPaused ? 'paused' : 'playing') : ''}" onclick="Listening.toggleAudio()">
+                            <i class="fas ${this.audioPlaying && !this.audioPaused ? 'fa-pause' : 'fa-play'}"></i>
+                            <span>${this.audioPlaying ? (this.audioPaused ? '继续播放' : '暂停') : '播放对话'}</span>
                         </button>
                         <label class="listening-speed" title="调整朗读速度">
                             <span>语速</span>
@@ -161,22 +162,43 @@ const Listening = {
         `;
     },
 
-    playAudio() {
-        // 两人对话，逐句分角色朗读（男/女不同音色）
-        if (this.audioPlaying) {
-            speechSynthesis.cancel();
-            if (typeof TTS !== 'undefined' && TTS.stop) TTS.stop();
-            this.audioPlaying = false;
-            this.render();
+    // 停掉朗读并复位按钮（切题、重做时用）
+    stopAudio() {
+        if (typeof TTS !== 'undefined' && TTS.stop) TTS.stop();
+        else if (window.speechSynthesis) speechSynthesis.cancel();
+        this.audioPlaying = false;
+        this.audioPaused = false;
+    },
+
+    // 三态按钮：播放 → 暂停 → 继续
+    toggleAudio() {
+        if (this.audioPlaying && !this.audioPaused) {
+            if (typeof TTS !== 'undefined' && TTS.pauseDialogue && TTS.pauseDialogue()) {
+                this.audioPaused = true;
+                this.render();
+            }
             return;
         }
+        if (this.audioPlaying && this.audioPaused) {
+            if (typeof TTS !== 'undefined' && TTS.resumeDialogue && TTS.resumeDialogue()) {
+                this.audioPaused = false;
+                this.render();
+            }
+            return;
+        }
+        this.playAudio();
+    },
 
+    playAudio() {
+        // 两人对话，逐句分角色朗读（男/女不同音色）
         const ex = this.exercises[this.currentIndex];
         this.audioPlaying = true;
+        this.audioPaused = false;
         this.render();
 
         const onDone = () => {
             this.audioPlaying = false;
+            this.audioPaused = false;
             this.render();
         };
 
@@ -212,13 +234,10 @@ const Listening = {
         this.rate = r;
         try { localStorage.setItem(this._rateKey, String(r)); } catch(e) {}
         const wasPlaying = this.audioPlaying;
-        if (wasPlaying) {
-            speechSynthesis.cancel();
-            if (typeof TTS !== 'undefined' && TTS.stop) TTS.stop();
-            this.audioPlaying = false;
-        }
+        const wasPaused = this.audioPaused;
+        if (wasPlaying) this.stopAudio();
         this.render();
-        if (wasPlaying) {
+        if (wasPlaying && !wasPaused) {
             setTimeout(() => this.playAudio(), 150);
         }
     },
@@ -251,6 +270,7 @@ const Listening = {
     },
 
     next() {
+        this.stopAudio();          // 切题时停掉上一题的朗读
         this.currentIndex++;
         if (this.currentIndex >= this.exercises.length) this._clearProgress();
         else this._saveProgress();
@@ -280,6 +300,7 @@ const Listening = {
     },
 
     retry() {
+        this.stopAudio();
         this.currentIndex = 0;
         this.score = 0;
         this.answered = new Array(this.exercises.length).fill(null);

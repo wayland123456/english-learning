@@ -135,6 +135,7 @@ const TTS = {
         // 3) 停掉正在读的，稍等再开口（cancel 后立刻 speak 会被 Chrome 吞掉）
         speechSynthesis.cancel();
         this._isPaused = false;
+        this._dlgState = null;
         this._loadVoices();
         var voices = this._pickDialogueVoices();
         var token = ++this._dlgToken;
@@ -146,71 +147,122 @@ const TTS = {
     },
 
     // 逐句排队朗读；每句用自己的音色/音高
+    // 支持暂停/继续：暂停时直接 cancel 静音（比原生 pause 可靠），继续时从当前这句重播
     _speakQueue(queue, voices, rate, token, onEnd) {
+        this._dlgState = {
+            queue: queue,
+            voices: voices,
+            rate: rate,
+            token: token,
+            i: 0,
+            lastIdx: -1,
+            paused: false,
+            onEnd: onEnd
+        };
+        this._playNextTurn();
+    },
+
+    _playNextTurn() {
         var self = this;
-        var i = 0;
-        var lastIdx = -1;
+        var st = this._dlgState;
+        if (!st || st.paused || st.token !== this._dlgToken) return;
 
-        function next() {
-            if (token !== self._dlgToken) return;       // 已被停止/重开
-            if (i >= queue.length) { onEnd(); return; }
-
-            var item = queue[i++];
-            // 换人说话时留一点间隙，听感上才像两个人轮着说
-            var gap = (lastIdx !== -1 && lastIdx !== item.idx) ? 280 : 0;
-            lastIdx = item.idx;
-
-            if (gap) {
-                setTimeout(function () {
-                    if (token === self._dlgToken) playItem(item);
-                }, gap);
-            } else {
-                playItem(item);
-            }
+        if (st.i >= st.queue.length) {
+            this._dlgState = null;
+            st.onEnd();
+            return;
         }
 
-        function playItem(item) {
-            var cfg = voices[item.idx % voices.length];
+        var item = st.queue[st.i];
+        // 换人说话时留一点间隙，听感上才像两个人轮着说
+        var gap = (st.lastIdx !== -1 && st.lastIdx !== item.idx) ? 280 : 0;
+        st.lastIdx = item.idx;
 
-            var u = new SpeechSynthesisUtterance(item.text);
-            u.lang = cfg.lang || 'en-US';
-            if (cfg.voice) u.voice = cfg.voice;
-            u.rate = rate;
-            u.pitch = cfg.pitch || 1;
-            u.volume = 1;
+        if (gap) {
+            setTimeout(function () {
+                if (!st.paused && st.token === self._dlgToken) self._playTurn(st, item);
+            }, gap);
+        } else {
+            this._playTurn(st, item);
+        }
+    },
 
-            var settled = false;
-            var guard = null;
-            var finish = function () {
-                if (settled) return;
-                settled = true;
+    _playTurn(st, item) {
+        var self = this;
+        var cfg = st.voices[item.idx % st.voices.length];
+
+        var u = new SpeechSynthesisUtterance(item.text);
+        u.lang = cfg.lang || 'en-US';
+        if (cfg.voice) u.voice = cfg.voice;
+        u.rate = st.rate;
+        u.pitch = cfg.pitch || 1;
+        u.volume = 1;
+
+        var settled = false;
+        var guard = null;
+        var finish = function () {
+            if (settled) return;
+            settled = true;
+            if (guard) clearTimeout(guard);
+            if (st.paused) return;              // 暂停中不往下推进
+            if (st.token !== self._dlgToken) return;
+            st.i++;                             // 这一句播完了，指向下一句
+            self._playNextTurn();
+        };
+
+        u.onend = finish;
+        u.onerror = function (e) {
+            var et = e && e.error;
+            if (et === 'interrupted' || et === 'canceled') {
+                settled = true;                 // 主动打断：保持当前句索引，便于继续/重播
                 if (guard) clearTimeout(guard);
-                next();
-            };
+                return;
+            }
+            finish();
+        };
 
-            u.onend = finish;
-            u.onerror = function (e) {
-                var et = e && e.error;
-                if (et === 'interrupted' || et === 'canceled') {
-                    settled = true;
-                    if (guard) clearTimeout(guard);
-                    return;
-                }
-                finish();
-            };
+        // 看门狗：Chrome 偶发不触发 onend，按字数估个上限，超时就往下走
+        guard = setTimeout(function () {
+            finish();
+        }, Math.max(6000, item.text.length * 140 + 5000));
 
-            // 看门狗：Chrome 偶发不触发 onend，按字数估个上限，超时就往下走
-            guard = setTimeout(function () {
-                finish();
-            }, Math.max(6000, item.text.length * 140 + 5000));
+        self._utterance = u;
+        self._isPlaying = true;
+        speechSynthesis.speak(u);
+        try { speechSynthesis.resume(); } catch (e) { /* ignore */ }
+    },
 
-            self._utterance = u;
-            self._isPlaying = true;
-            speechSynthesis.speak(u);
-            try { speechSynthesis.resume(); } catch (e) { /* ignore */ }
-        }
+    // 是否有对话正在播/可继续
+    isDialogueActive() {
+        return !!(this._dlgState && !this._dlgState.paused);
+    },
 
-        next();
+    isDialoguePaused() {
+        return !!(this._dlgState && this._dlgState.paused);
+    },
+
+    // 暂停：立即静音，保留播放位置
+    pauseDialogue() {
+        var st = this._dlgState;
+        if (!st || st.paused) return false;
+        st.paused = true;
+        try { speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+        this._isPlaying = false;
+        return true;
+    },
+
+    // 继续：从暂停的那一句重新读（半句被打断，重听一遍更实用）
+    resumeDialogue() {
+        var self = this;
+        var st = this._dlgState;
+        if (!st || !st.paused) return false;
+        st.paused = false;
+        st.token = ++this._dlgToken;            // 换新令牌，旧回调自动作废
+        setTimeout(function () {
+            if (st.token !== self._dlgToken) return;
+            self._playNextTurn();
+        }, 60);
+        return true;
     },
 
     // 判断音色性别（按音色名猜，猜不出返回空串）
@@ -415,6 +467,7 @@ const TTS = {
     // 停止
     stop() {
         this._dlgToken++;
+        this._dlgState = null;
         this._chunks = [];
         speechSynthesis.cancel();
         this._isPlaying = false;

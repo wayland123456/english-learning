@@ -181,7 +181,7 @@ const Resources = {
             <div class="dialogue-card ${done ? 'dialogue-done' : ''}" id="dialogue-card-${di}">
                 <div class="dialogue-title">
                     💬 ${dlg.title}
-                    <button class="btn-audio" onclick="Resources.playDialogue(${di}, '${country.id}')" title="听对话音频">🔊 听对话</button>
+                    <button class="btn-audio" onclick="Resources.toggleDialogue(${di}, '${country.id}', this)" title="听对话（可暂停）">🔊 听对话</button>
                     ${done ? '<span class="learned-badge" style="font-size:0.75rem;"><i class="fas fa-check"></i> 已完成</span>' : ''}
                 </div>
                 <div class="dialogue-scene">📍 ${dlg.scene}</div>
@@ -208,18 +208,69 @@ const Resources = {
         </div>`;
     },
 
-    // 播放对话音频（Web Speech API，A/B 两个说话人用不同音色）
-    playDialogue(dlgIdx, countryId) {
+    // ---- 对话朗读：状态（哪一段在播、是否暂停）----
+    _audioState: { di: null, countryId: null, paused: false },
+
+    // 按钮三态：听对话 / 暂停 / 继续
+    _setAudioBtn(btn, state) {
+        if (!btn) return;
+        btn.disabled = false;
+        btn.classList.remove('playing', 'paused');
+        if (state === 'playing') {
+            btn.classList.add('playing');
+            btn.innerHTML = '⏸ 暂停';
+        } else if (state === 'paused') {
+            btn.classList.add('paused');
+            btn.innerHTML = '▶ 继续';
+        } else {
+            btn.innerHTML = '🔊 听对话';
+        }
+    },
+
+    _resetAudioBtns() {
+        document.querySelectorAll('.btn-audio').forEach(b => {
+            b.disabled = false;
+            b.classList.remove('playing', 'paused');
+            b.innerHTML = '🔊 听对话';
+        });
+    },
+
+    // 点按钮：没在播就从头播；正在播就暂停；已暂停就继续
+    toggleDialogue(dlgIdx, countryId, btn) {
+        const st = this._audioState;
+        const same = (st.di === dlgIdx && st.countryId === countryId);
+        const btnEl = btn || document.querySelector(`#dialogue-card-${dlgIdx} .btn-audio`);
+
+        if (same && !st.paused) {
+            if (typeof TTS !== 'undefined' && TTS.pauseDialogue && TTS.pauseDialogue()) {
+                st.paused = true;
+                this._setAudioBtn(btnEl, 'paused');
+            }
+            return;
+        }
+
+        if (same && st.paused) {
+            if (typeof TTS !== 'undefined' && TTS.resumeDialogue && TTS.resumeDialogue()) {
+                st.paused = false;
+                this._setAudioBtn(btnEl, 'playing');
+            }
+            return;
+        }
+
+        this.startDialogue(dlgIdx, countryId, btnEl);
+    },
+
+    // 开始朗读一段对话（A/B 用不同音色）
+    startDialogue(dlgIdx, countryId, btn) {
         const country = DATA.resources.find(c => c.id === countryId);
         if (!country || !country.dialogues) return;
         const dlg = country.dialogues[dlgIdx];
         if (!dlg) return;
 
-        // 停止正在播放的语音
-        window.speechSynthesis.cancel();
-        if (typeof TTS !== 'undefined' && TTS.stop) TTS.stop();
+        // 换卡片前把所有按钮复位，避免多张卡片同时显示"暂停"
+        this._resetAudioBtns();
 
-        // 逐句构建文本（空白处读答案，不读横线），保留 speaker 以便换音色
+        // 逐句构建文本（空白处读答案，不读横线）；speaker 只用于配音色，不会读出来
         const turns = dlg.lines.map(line => {
             let text = line.text;
             if (line.blanks && line.blanks.length > 0) {
@@ -230,34 +281,31 @@ const Resources = {
             return { text, speaker: line.speaker || '' };
         });
 
-        const ev = window.event;
-        const btn = ev && ev.target && ev.target.closest ? ev.target.closest('.btn-audio') : null;
+        const rate = (typeof TTS !== 'undefined' && TTS.getRate) ? TTS.getRate() : 1.0;
+        this._audioState = { di: dlgIdx, countryId: countryId, paused: false };
+
         const onEnd = () => {
-            if (btn) {
-                btn.innerHTML = '🔊 听对话';
-                btn.disabled = false;
+            const st = this._audioState;
+            if (st.di === dlgIdx && st.countryId === countryId) {
+                this._audioState = { di: null, countryId: null, paused: false };
             }
+            this._resetAudioBtns();
         };
-        // 语速跟随全站统一设置
-        const rate = (typeof TTS !== 'undefined' && typeof TTS.getRate === 'function') ? TTS.getRate() : 1.0;
 
         if (typeof TTS !== 'undefined' && typeof TTS.speakDialogue === 'function') {
             TTS.speakDialogue(turns, { rate, onEnd });
-        } else {
-            const utter = new SpeechSynthesisUtterance(turns.map(t => t.text).join(' '));
-            utter.lang = 'en-US';
-            utter.rate = rate;
-            utter.pitch = 1;
-            utter.volume = 1;
-            utter.onend = onEnd;
-            window.speechSynthesis.speak(utter);
+            this._setAudioBtn(btn, 'playing');
+            return;
         }
 
-        // 按钮反馈
-        if (btn) {
-            btn.innerHTML = '🔊 播放中...';
-            btn.disabled = true;
-        }
+        // 兜底：TTS 模块缺失时退化为单音色（无暂停功能）
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(turns.map(t => t.text).join(' '));
+        utter.lang = 'en-US';
+        utter.rate = rate;
+        utter.pitch = 1;
+        utter.onend = onEnd;
+        window.speechSynthesis.speak(utter);
     },
 
     checkDialogue(dlgIdx, countryId, dlgId) {
