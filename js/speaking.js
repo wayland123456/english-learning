@@ -11,6 +11,10 @@ const Speaking = {
     currentDialogue: 1,
     userSpeechResult: '',
 
+    // 对话朗读状态（第 3 步「对话填空」的听对话按钮）
+    _dlgPlaying: false,
+    _dlgPaused: false,
+
     // 运行模式：'asr' (语音识别) | 'record' (录音回放)
     speakMode: 'asr',
 
@@ -226,6 +230,7 @@ const Speaking = {
 
     renderSentence() {
         const container = document.getElementById('speakingContainer');
+        this.stopDialogueAudio();     // 从对话页回到句子页时停掉朗读
         const progress = SupabaseAuth.getProgress();
         const total = DATA.speakingSentences.length;
 
@@ -924,11 +929,93 @@ const Speaking = {
                         '<div class="dialogue-text">' + textHtml + '</div>' +
                     '</div>';
                 }).join('') +
-                '<button class="btn-check-dialogue" onclick="Speaking.checkDialogue()">' +
-                    '<i class="fas fa-check-circle"></i> 检查答案' +
-                '</button>' +
+                '<div class="dialogue-actions" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;margin-top:1rem;">' +
+                    '<button class="btn-audio" id="btnDialogueAudio" onclick="Speaking.toggleDialogueAudio(this)" title="听对话（可暂停）">🔊 听对话</button>' +
+                    '<button class="btn-check-dialogue" onclick="Speaking.checkDialogue()" style="margin:0;">' +
+                        '<i class="fas fa-check-circle"></i> 检查答案' +
+                    '</button>' +
+                '</div>' +
                 '<div id="dialogueResult"></div>' +
             '</div>';
+    },
+
+    /* ==========================================
+       对话朗读（A/B 分角色，男/女不同音色）
+       ========================================== */
+
+    // 把当前对话整理成 [{text, speaker}]，空格处读答案、不读横线
+    _dialogueTurns() {
+        var dialogues = [DATA.dialogueExercise, DATA.dialogueExercise2];
+        var dlg = dialogues[this.currentDialogue - 1] || DATA.dialogueExercise;
+        return (dlg.lines || []).map(function (line) {
+            var text = line.text;
+            (line.blanks || []).slice().sort(function (a, b) { return a.index - b.index; })
+                .forEach(function (blank) {
+                    text = text.replace('{' + blank.index + '}', blank.answer);
+                });
+            return { text: text, speaker: line.speaker || '' };
+        });
+    },
+
+    _setDlgBtn(btn, state) {
+        var b = btn || document.getElementById('btnDialogueAudio');
+        if (!b) return;
+        b.classList.remove('playing', 'paused');
+        b.disabled = false;
+        if (state === 'playing') {
+            b.classList.add('playing');
+            b.textContent = '⏸ 暂停';
+        } else if (state === 'paused') {
+            b.classList.add('paused');
+            b.textContent = '▶ 继续';
+        } else {
+            b.textContent = '🔊 听对话';
+        }
+    },
+
+    stopDialogueAudio() {
+        if (typeof TTS !== 'undefined' && TTS.stop) TTS.stop();
+        this._dlgPlaying = false;
+        this._dlgPaused = false;
+        this._setDlgBtn(null, 'idle');
+    },
+
+    toggleDialogueAudio(btn) {
+        if (this._dlgPlaying && !this._dlgPaused) {
+            if (typeof TTS !== 'undefined' && TTS.pauseDialogue && TTS.pauseDialogue()) {
+                this._dlgPaused = true;
+                this._setDlgBtn(btn, 'paused');
+            }
+            return;
+        }
+        if (this._dlgPlaying && this._dlgPaused) {
+            if (typeof TTS !== 'undefined' && TTS.resumeDialogue && TTS.resumeDialogue()) {
+                this._dlgPaused = false;
+                this._setDlgBtn(btn, 'playing');
+            }
+            return;
+        }
+        this.playDialogueAudio(btn);
+    },
+
+    playDialogueAudio(btn) {
+        if (typeof TTS === 'undefined' || typeof TTS.speakDialogue !== 'function') {
+            App.toast('当前浏览器不支持对话朗读', 'info');
+            return;
+        }
+        var self = this;
+        var rate = (typeof TTS.getRate === 'function') ? TTS.getRate() : 1.0;
+        this._dlgPlaying = true;
+        this._dlgPaused = false;
+        this._setDlgBtn(btn, 'playing');
+        TTS.speakDialogue(this._dialogueTurns(), {
+            rate: rate,
+            onEnd: function () {
+                self._dlgPlaying = false;
+                self._dlgPaused = false;
+                self._setDlgBtn(null, 'idle');
+            }
+        });
     },
 
     checkDialogue() {
@@ -990,6 +1077,7 @@ const Speaking = {
     },
 
     goNextDialogue() {
+        this.stopDialogueAudio();     // 切组时停掉上一组朗读
         this.currentDialogue = 2;
         this.renderDialogue();
     },
