@@ -181,7 +181,7 @@ const Resources = {
             <div class="dialogue-card ${done ? 'dialogue-done' : ''}" id="dialogue-card-${di}">
                 <div class="dialogue-title">
                     💬 ${dlg.title}
-                    <button class="btn-audio" onclick="Resources.toggleDialogue(${di}, '${country.id}', this)" title="听对话（可暂停）">🔊 听对话</button>
+                    <button class="btn-audio" onclick="Resources.toggleDialogue(${di}, '${country.id}', this)" onmouseenter="Resources.preloadDialogue(${di}, '${country.id}')" title="听对话（可暂停）">🔊 听对话</button>
                     ${done ? '<span class="learned-badge" style="font-size:0.75rem;"><i class="fas fa-check"></i> 已完成</span>' : ''}
                 </div>
                 <div class="dialogue-scene">📍 ${dlg.scene}</div>
@@ -258,6 +258,12 @@ const Resources = {
         }
 
         this.startDialogue(dlgIdx, countryId, btnEl);
+    },
+
+    // 鼠标移到按钮上就先拉音频，点了马上能播
+    preloadDialogue(dlgIdx, countryId) {
+        if (typeof DialoguePlayer === 'undefined' || !DialoguePlayer.preload) return;
+        DialoguePlayer.preload('audio/dialogues/' + countryId + '-' + dlgIdx + '.mp3');
     },
 
     // 开始朗读一段对话（A/B 用不同音色）

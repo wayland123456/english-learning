@@ -160,6 +160,11 @@ const Listening = {
                 ` : '<div class="listening-actions"><button class="btn-primary" disabled style="opacity:0.5;cursor:not-allowed;">请选择一个答案</button></div>'}
             </div>
         `;
+
+        // 提前把本题音频拉进缓存，点"播放对话"时不用等下载
+        if (typeof DialoguePlayer !== 'undefined' && DialoguePlayer.preload) {
+            DialoguePlayer.preload('audio/listening/q' + (this.currentIndex + 1) + '.mp3');
+        }
     },
 
     // 停掉朗读并复位按钮（切题、重做时用）

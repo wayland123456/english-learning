@@ -156,6 +156,17 @@ const DialoguePlayer = {
         }
     },
 
+    // 预取音频到浏览器缓存。国内访问 GitHub Pages 首字节常有 1~3 秒延迟，
+    // 进页面/悬停时先拉下来，点播放就能立刻出声。
+    preload(src) {
+        if (!src || this._preloaded === src) return;
+        this._preloaded = src;
+        if (typeof fetch !== 'function') return;
+        try {
+            fetch(src, { cache: 'force-cache' }).catch(function () {});
+        } catch (e) { /* 忽略 */ }
+    },
+
     isPlaying() {
         return !!this._mode && !this._paused;
     },

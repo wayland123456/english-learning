@@ -930,7 +930,7 @@ const Speaking = {
                     '</div>';
                 }).join('') +
                 '<div class="dialogue-actions" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;margin-top:1rem;">' +
-                    '<button class="btn-audio" id="btnDialogueAudio" onclick="Speaking.toggleDialogueAudio(this)" title="听对话（可暂停）">🔊 听对话</button>' +
+                    '<button class="btn-audio" id="btnDialogueAudio" onclick="Speaking.toggleDialogueAudio(this)" onmouseenter="Speaking.preloadDialogueAudio()" title="听对话（可暂停）">🔊 听对话</button>' +
                     '<button class="btn-check-dialogue" onclick="Speaking.checkDialogue()" style="margin:0;">' +
                         '<i class="fas fa-check-circle"></i> 检查答案' +
                     '</button>' +
@@ -997,6 +997,11 @@ const Speaking = {
             return;
         }
         this.playDialogueAudio(btn);
+    },
+
+    preloadDialogueAudio() {
+        if (typeof DialoguePlayer === 'undefined' || !DialoguePlayer.preload) return;
+        DialoguePlayer.preload('audio/speaking/dlg' + this.currentDialogue + '.mp3');
     },
 
     playDialogueAudio(btn) {
