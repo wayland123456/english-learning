@@ -974,7 +974,8 @@ const Speaking = {
     },
 
     stopDialogueAudio() {
-        if (typeof TTS !== 'undefined' && TTS.stop) TTS.stop();
+        if (typeof DialoguePlayer !== 'undefined' && DialoguePlayer.stop) DialoguePlayer.stop();
+        else if (typeof TTS !== 'undefined' && TTS.stop) TTS.stop();
         this._dlgPlaying = false;
         this._dlgPaused = false;
         this._setDlgBtn(null, 'idle');
@@ -982,14 +983,14 @@ const Speaking = {
 
     toggleDialogueAudio(btn) {
         if (this._dlgPlaying && !this._dlgPaused) {
-            if (typeof TTS !== 'undefined' && TTS.pauseDialogue && TTS.pauseDialogue()) {
+            if (typeof DialoguePlayer !== 'undefined' && DialoguePlayer.pause()) {
                 this._dlgPaused = true;
                 this._setDlgBtn(btn, 'paused');
             }
             return;
         }
         if (this._dlgPlaying && this._dlgPaused) {
-            if (typeof TTS !== 'undefined' && TTS.resumeDialogue && TTS.resumeDialogue()) {
+            if (typeof DialoguePlayer !== 'undefined' && DialoguePlayer.resume()) {
                 this._dlgPaused = false;
                 this._setDlgBtn(btn, 'playing');
             }
@@ -999,23 +1000,35 @@ const Speaking = {
     },
 
     playDialogueAudio(btn) {
-        if (typeof TTS === 'undefined' || typeof TTS.speakDialogue !== 'function') {
-            App.toast('当前浏览器不支持对话朗读', 'info');
-            return;
-        }
         var self = this;
-        var rate = (typeof TTS.getRate === 'function') ? TTS.getRate() : 1.0;
+        var rate = (typeof TTS !== 'undefined' && typeof TTS.getRate === 'function') ? TTS.getRate() : 1.0;
         this._dlgPlaying = true;
         this._dlgPaused = false;
         this._setDlgBtn(btn, 'playing');
-        TTS.speakDialogue(this._dialogueTurns(), {
-            rate: rate,
-            onEnd: function () {
-                self._dlgPlaying = false;
-                self._dlgPaused = false;
-                self._setDlgBtn(null, 'idle');
-            }
-        });
+
+        var onEnd = function () {
+            self._dlgPlaying = false;
+            self._dlgPaused = false;
+            self._setDlgBtn(null, 'idle');
+        };
+
+        if (typeof DialoguePlayer !== 'undefined') {
+            DialoguePlayer.play({
+                src: 'audio/speaking/dlg' + this.currentDialogue + '.mp3',
+                turns: this._dialogueTurns(),
+                rate: rate,
+                onEnd: onEnd
+            });
+            return;
+        }
+
+        if (typeof TTS === 'undefined' || typeof TTS.speakDialogue !== 'function') {
+            App.toast('当前浏览器不支持对话朗读', 'info');
+            this._dlgPlaying = false;
+            this._setDlgBtn(null, 'idle');
+            return;
+        }
+        TTS.speakDialogue(this._dialogueTurns(), { rate: rate, onEnd: onEnd });
     },
 
     checkDialogue() {

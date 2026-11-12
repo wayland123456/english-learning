@@ -164,7 +164,8 @@ const Listening = {
 
     // 停掉朗读并复位按钮（切题、重做时用）
     stopAudio() {
-        if (typeof TTS !== 'undefined' && TTS.stop) TTS.stop();
+        if (typeof DialoguePlayer !== 'undefined' && DialoguePlayer.stop) DialoguePlayer.stop();
+        else if (typeof TTS !== 'undefined' && TTS.stop) TTS.stop();
         else if (window.speechSynthesis) speechSynthesis.cancel();
         this.audioPlaying = false;
         this.audioPaused = false;
@@ -173,14 +174,14 @@ const Listening = {
     // 三态按钮：播放 → 暂停 → 继续
     toggleAudio() {
         if (this.audioPlaying && !this.audioPaused) {
-            if (typeof TTS !== 'undefined' && TTS.pauseDialogue && TTS.pauseDialogue()) {
+            if (typeof DialoguePlayer !== 'undefined' && DialoguePlayer.pause()) {
                 this.audioPaused = true;
                 this.render();
             }
             return;
         }
         if (this.audioPlaying && this.audioPaused) {
-            if (typeof TTS !== 'undefined' && TTS.resumeDialogue && TTS.resumeDialogue()) {
+            if (typeof DialoguePlayer !== 'undefined' && DialoguePlayer.resume()) {
                 this.audioPaused = false;
                 this.render();
             }
@@ -208,12 +209,23 @@ const Listening = {
             .map(s => s.trim())
             .filter(Boolean);
 
+        // 优先播预合成音频（男女声已混好、停顿精确），没有则回落到语音合成
+        if (typeof DialoguePlayer !== 'undefined') {
+            DialoguePlayer.play({
+                src: 'audio/listening/q' + (this.currentIndex + 1) + '.mp3',
+                turns: lines,
+                rate: this.rate,
+                onEnd: onDone
+            });
+            return;
+        }
+
         if (typeof TTS !== 'undefined' && typeof TTS.speakDialogue === 'function') {
             TTS.speakDialogue(lines, { rate: this.rate, onEnd: onDone });
             return;
         }
 
-        // 兜底：TTS 模块未加载时退化为单音色
+        // 兜底：都没有时用单音色
         const utter = new SpeechSynthesisUtterance(ex.audio_text);
         utter.lang = 'en-US';
         utter.rate = this.rate;
@@ -261,7 +273,15 @@ const Listening = {
         const r = parseFloat(value);
         if (isNaN(r)) return;
         this.rate = r;
-        try { localStorage.setItem(this._rateKey, String(r)); } catch(e) {}
+        try { localStorage.setItem(this._rateKey, String(r)) } catch(e) {}
+
+        // 播 mp3 时直接变速，不用中断重播
+        if (this.audioPlaying && !this.audioPaused &&
+            typeof DialoguePlayer !== 'undefined' && DialoguePlayer.setRate(r)) {
+            this.render();
+            return;
+        }
+
         const wasPlaying = this.audioPlaying;
         const wasPaused = this.audioPaused;
         if (wasPlaying) this.stopAudio();

@@ -242,7 +242,7 @@ const Resources = {
         const btnEl = btn || document.querySelector(`#dialogue-card-${dlgIdx} .btn-audio`);
 
         if (same && !st.paused) {
-            if (typeof TTS !== 'undefined' && TTS.pauseDialogue && TTS.pauseDialogue()) {
+            if (typeof DialoguePlayer !== 'undefined' && DialoguePlayer.pause()) {
                 st.paused = true;
                 this._setAudioBtn(btnEl, 'paused');
             }
@@ -250,7 +250,7 @@ const Resources = {
         }
 
         if (same && st.paused) {
-            if (typeof TTS !== 'undefined' && TTS.resumeDialogue && TTS.resumeDialogue()) {
+            if (typeof DialoguePlayer !== 'undefined' && DialoguePlayer.resume()) {
                 st.paused = false;
                 this._setAudioBtn(btnEl, 'playing');
             }
@@ -291,6 +291,18 @@ const Resources = {
             }
             this._resetAudioBtns();
         };
+
+        // 优先播预合成音频（男女声已混好、停顿精确），缺文件时回落到语音合成
+        if (typeof DialoguePlayer !== 'undefined') {
+            DialoguePlayer.play({
+                src: 'audio/dialogues/' + countryId + '-' + dlgIdx + '.mp3',
+                turns: turns,
+                rate: rate,
+                onEnd: onEnd
+            });
+            this._setAudioBtn(btn, 'playing');
+            return;
+        }
 
         if (typeof TTS !== 'undefined' && typeof TTS.speakDialogue === 'function') {
             TTS.speakDialogue(turns, { rate, onEnd });
