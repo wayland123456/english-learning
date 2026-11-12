@@ -133,7 +133,7 @@ const Listening = {
                     </div>
                     <div class="listening-script" id="listeningScript" style="display:none;">
                         <h4><i class="fas fa-file-alt"></i> 听力原文</h4>
-                        <div class="script-dialogue">${ex.script.split('\n').map(line => `<p>${this.escapeHtml(line.trim())}</p>`).join('')}</div>
+                        ${this.renderScript(ex)}
                     </div>
                     <button class="btn-show-script" onclick="Listening.toggleScript()">
                         <i class="fas fa-eye"></i> 查看原文
@@ -219,6 +219,35 @@ const Listening = {
         utter.rate = this.rate;
         utter.onend = onDone;
         speechSynthesis.speak(utter);
+    },
+
+    // 原文：英文台词（W/M 标出说话人）+ 可折叠的中文参考译文
+    // 原来直接显示中文翻译，学生看原文看到的全是中文，没有对照价值
+    renderScript(ex) {
+        const enLines = String(ex.audio_text || '')
+            .split('\n')
+            .map(s => s.trim())
+            .filter(Boolean);
+
+        // A 用女声、B 用男声，所以按 W（woman）/ M（man）标注，和听到的声音对得上
+        const enHtml = enLines.map((line, i) => {
+            const tag = i % 2 === 0 ? 'W' : 'M';
+            return `<p><span class="script-speaker ${tag === 'W' ? 'w' : 'm'}">${tag}</span>${this.escapeHtml(line)}</p>`;
+        }).join('');
+
+        const zhLines = String(ex.script || '')
+            .split('\n')
+            .map(s => s.trim())
+            .filter(Boolean);
+
+        const zhHtml = zhLines.length
+            ? `<details class="script-translation">
+                   <summary>中文参考译文</summary>
+                   <div>${zhLines.map(l => `<p>${this.escapeHtml(l)}</p>`).join('')}</div>
+               </details>`
+            : '';
+
+        return `<div class="script-dialogue">${enHtml}</div>${zhHtml}`;
     },
 
     toggleScript() {

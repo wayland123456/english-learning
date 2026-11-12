@@ -950,7 +950,7 @@ const DATA = {
     // ---- 听力练习（30 题，每题一段对话 + 问题） ----
     listeningExercises: [
         {
-            audio_text: "Excuse me, could you tell me how to get to the nerest underground station?\nSure! Go straight ahead and turn left at the second corner. It's just across from the post office.",
+            audio_text: "Excuse me, could you tell me how to get to the nearest underground station?\nSure! Go straight ahead and turn left at the second corner. It's just across from the post office.",
             question: 'Where is the underground station?',
             options: ['Next to the post office', 'Opposite the post office', 'Behind the post office', 'Inside the post office'],
             answer: 1,
@@ -964,7 +964,7 @@ const DATA = {
             script: '你订酒店了吗？\n订了，我在龙酒店订了一个双人间，住三晚，周一入住。'
         },
         {
-            audio_text: "Would you like to go to the art exhibition with me tomorow?\nI\'d love to, but I have to see my cousin off at the airport. He\'s flying to Sydney.",
+            audio_text: "Would you like to go to the art exhibition with me tomorrow?\nI\'d love to, but I have to see my cousin off at the airport. He\'s flying to Sydney.",
             question: 'What will the man do tomorrow?',
             options: ['Go to the art exhibition', 'Meet his cousin at the airport', 'See his cousin off at the airport', 'Pick up his cousin'],
             answer: 2,

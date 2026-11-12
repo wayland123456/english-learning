@@ -2706,6 +2706,41 @@ body {
 }
 .script-dialogue p:last-child { margin-bottom: 0; }
 
+/* 原文里的说话人标记：W 女声、M 男声，和实际听到的音色对应 */
+.script-speaker {
+    display: inline-block;
+    min-width: 18px;
+    margin-right: 8px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-align: center;
+    vertical-align: 1px;
+}
+.script-speaker.w { background: rgba(236,72,153,0.12); color: #db2777; }
+.script-speaker.m { background: rgba(59,130,246,0.12); color: #2563eb; }
+
+/* 中文参考译文默认收起，需要时再展开 */
+.script-translation {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(0,0,0,0.12);
+}
+.script-translation summary {
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--text-light);
+    outline: none;
+}
+.script-translation div {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    line-height: 1.6;
+}
+.script-translation p { margin: 0 0 4px; }
+
 .btn-show-script {
     display: inline-block;
     margin-top: 10px;
