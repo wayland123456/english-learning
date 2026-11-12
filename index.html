@@ -1067,12 +1067,13 @@
     <script src="js/data_countries_extra.js?v=1"></script>
     <script src="js/supabase-config.js?v=5"></script>
     <script src="js/supabase-auth.js?v=6"></script>
-    <script src="js/resources.js?v=10"></script>
+    <script src="js/tts.js?v=4"></script>
+    <script src="js/resources.js?v=11"></script>
     <script src="js/speaking.js?v=17"></script>
     <script src="js/sentences.js?v=5"></script>
     <script src="js/vocabulary.js?v=5"></script>
     <script src="js/grammar.js?v=7"></script>
-    <script src="js/listening.js?v=9"></script>
+    <script src="js/listening.js?v=10"></script>
     <script src="js/writing.js?v=12"></script>
     <script src="js/writing-ai.js?v=3"></script>
     <script src="js/report.js?v=2"></script>
@@ -1080,12 +1081,11 @@
     <script src="js/study-tracker.js?v=1"></script>
     <script src="js/messages.js?v=2"></script>
     <script src="js/portfolio.js?v=3"></script>
-    <script src="js/tts.js?v=3"></script>
     <script src="js/app.js?v=14"></script>
     <!-- PWA Service Worker -->
     <script>
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/english-learning/sw.js?v=8', { updateViaCache: 'none' })
+        navigator.serviceWorker.register('/english-learning/sw.js?v=9', { updateViaCache: 'none' })
             .then(function(reg) { console.log('SW registered:', reg.scope); reg.update(); })
             .catch(function(err) { console.log('SW failed:', err); });
     }

@@ -208,7 +208,7 @@ const Resources = {
         </div>`;
     },
 
-    // 播放对话音频（Web Speech API）
+    // 播放对话音频（Web Speech API，A/B 两个说话人用不同音色）
     playDialogue(dlgIdx, countryId) {
         const country = DATA.resources.find(c => c.id === countryId);
         if (!country || !country.dialogues) return;
@@ -217,40 +217,46 @@ const Resources = {
 
         // 停止正在播放的语音
         window.speechSynthesis.cancel();
+        if (typeof TTS !== 'undefined' && TTS.stop) TTS.stop();
 
-        // 构建对话文本（空白处读答案，不读横线）
-        let fullText = '';
-        dlg.lines.forEach(line => {
+        // 逐句构建文本（空白处读答案，不读横线），保留 speaker 以便换音色
+        const turns = dlg.lines.map(line => {
             let text = line.text;
             if (line.blanks && line.blanks.length > 0) {
-                // 按 blanks 顺序替换 {0} 为实际答案
-                line.blanks.sort((a, b) => a.index - b.index);
-                line.blanks.forEach(blank => {
+                [...line.blanks].sort((a, b) => a.index - b.index).forEach(blank => {
                     text = text.replace('{0}', blank.answer);
                 });
             }
-            fullText += `${line.speaker}: ${text}  `;
+            return { text, speaker: line.speaker || '' };
         });
 
-        // 使用 Web Speech API 朗读
-        const utter = new SpeechSynthesisUtterance(fullText);
-        utter.lang = 'en-US';
-        utter.rate = (window.TTS && typeof TTS.getRate === 'function') ? TTS.getRate() : 1.0; // 跟随全站统一语速
-        utter.pitch = 1;
-        utter.volume = 1;
+        const ev = window.event;
+        const btn = ev && ev.target && ev.target.closest ? ev.target.closest('.btn-audio') : null;
+        const onEnd = () => {
+            if (btn) {
+                btn.innerHTML = '🔊 听对话';
+                btn.disabled = false;
+            }
+        };
+        // 语速跟随全站统一设置
+        const rate = (typeof TTS !== 'undefined' && typeof TTS.getRate === 'function') ? TTS.getRate() : 1.0;
 
-        // 可选：如果是 A 说话用稍微不同的音调
-        window.speechSynthesis.speak(utter);
+        if (typeof TTS !== 'undefined' && typeof TTS.speakDialogue === 'function') {
+            TTS.speakDialogue(turns, { rate, onEnd });
+        } else {
+            const utter = new SpeechSynthesisUtterance(turns.map(t => t.text).join(' '));
+            utter.lang = 'en-US';
+            utter.rate = rate;
+            utter.pitch = 1;
+            utter.volume = 1;
+            utter.onend = onEnd;
+            window.speechSynthesis.speak(utter);
+        }
 
         // 按钮反馈
-        const btn = event.target.closest('.btn-audio');
         if (btn) {
             btn.innerHTML = '🔊 播放中...';
             btn.disabled = true;
-            utter.onend = () => {
-                btn.innerHTML = '🔊 听对话';
-                btn.disabled = false;
-            };
         }
     },
 

@@ -14,6 +14,7 @@ const TTS = {
     _rate: 1.0,
     _voiceLang: 'en-GB',
     _bar: null,
+    _dlgToken: 0,   // 对话朗读令牌：停止/重开时作废旧队列
 
     // 初始化：加载可用语音列表
     init() {
@@ -74,6 +75,236 @@ const TTS = {
         setTimeout(function () {
             self._speakNext(lang, rate, true);
         }, 80);
+    },
+
+    // ============ 双人对话朗读（男/女分声） ============
+    // v3 新增：原来整段对话交给同一个音色，两个说话人听起来完全一样。
+    // 现在按「行 / speaker」逐句朗读，说话人 A 用女声、B 用男声（找不到男女对时用音高区分）。
+    //
+    // turns 支持两种写法：
+    //   ['第一句', '第二句']            —— 按顺序交替 A/B
+    //   [{ text: '...', speaker: 'A' }] —— 按 speaker 固定音色
+    // opts: { rate, onEnd }
+    speakDialogue(turns, opts) {
+        if (!('speechSynthesis' in window)) {
+            alert('您的浏览器不支持语音朗读功能');
+            return;
+        }
+
+        opts = opts || {};
+        var self = this;
+        var rate = opts.rate || (typeof this.getRate === 'function' ? this.getRate() : this._rate);
+        var onEnd = opts.onEnd || function () {};
+
+        // 1) 规整成 [{text, who}]
+        var list = [];
+        (turns || []).forEach(function (t) {
+            var text = (typeof t === 'string') ? t : ((t && t.text) || '');
+            text = String(text).replace(/\s+/g, ' ').trim();
+            if (!text) return;
+            var who = (t && typeof t === 'object' && t.speaker) ? String(t.speaker).trim() : '';
+            list.push({ text: text, who: who });
+        });
+        if (!list.length) { onEnd(); return; }
+
+        // 2) 说话人 → 音色序号 0/1（没标 speaker 就按出现顺序交替）
+        var hasSpeaker = false;
+        for (var k = 0; k < list.length; k++) { if (list[k].who) { hasSpeaker = true; break; } }
+
+        var map = {};
+        var order = 0;
+        var queue = [];
+        list.forEach(function (item, i) {
+            var idx;
+            if (hasSpeaker && item.who) {
+                if (!(item.who in map)) {
+                    // A/B 这类单字母角色固定分配，避免同一角色在不同对话里换声
+                    var letter = String(item.who).toUpperCase();
+                    map[item.who] = /^[A-Z]$/.test(letter) ? (letter.charCodeAt(0) - 65) % 2 : (order++) % 2;
+                }
+                idx = map[item.who];
+            } else {
+                idx = i % 2;
+            }
+            // 单句过长再切块，规避 Chrome 长文本自动停止
+            self._splitChunks(item.text).forEach(function (p) {
+                queue.push({ text: p, idx: idx });
+            });
+        });
+
+        // 3) 停掉正在读的，稍等再开口（cancel 后立刻 speak 会被 Chrome 吞掉）
+        speechSynthesis.cancel();
+        this._isPaused = false;
+        this._loadVoices();
+        var voices = this._pickDialogueVoices();
+        var token = ++this._dlgToken;
+
+        setTimeout(function () {
+            if (token !== self._dlgToken) return;
+            self._speakQueue(queue, voices, rate, token, onEnd);
+        }, 80);
+    },
+
+    // 逐句排队朗读；每句用自己的音色/音高
+    _speakQueue(queue, voices, rate, token, onEnd) {
+        var self = this;
+        var i = 0;
+        var lastIdx = -1;
+
+        function next() {
+            if (token !== self._dlgToken) return;       // 已被停止/重开
+            if (i >= queue.length) { onEnd(); return; }
+
+            var item = queue[i++];
+            // 换人说话时留一点间隙，听感上才像两个人轮着说
+            var gap = (lastIdx !== -1 && lastIdx !== item.idx) ? 280 : 0;
+            lastIdx = item.idx;
+
+            if (gap) {
+                setTimeout(function () {
+                    if (token === self._dlgToken) playItem(item);
+                }, gap);
+            } else {
+                playItem(item);
+            }
+        }
+
+        function playItem(item) {
+            var cfg = voices[item.idx % voices.length];
+
+            var u = new SpeechSynthesisUtterance(item.text);
+            u.lang = cfg.lang || 'en-US';
+            if (cfg.voice) u.voice = cfg.voice;
+            u.rate = rate;
+            u.pitch = cfg.pitch || 1;
+            u.volume = 1;
+
+            var settled = false;
+            var guard = null;
+            var finish = function () {
+                if (settled) return;
+                settled = true;
+                if (guard) clearTimeout(guard);
+                next();
+            };
+
+            u.onend = finish;
+            u.onerror = function (e) {
+                var et = e && e.error;
+                if (et === 'interrupted' || et === 'canceled') {
+                    settled = true;
+                    if (guard) clearTimeout(guard);
+                    return;
+                }
+                finish();
+            };
+
+            // 看门狗：Chrome 偶发不触发 onend，按字数估个上限，超时就往下走
+            guard = setTimeout(function () {
+                finish();
+            }, Math.max(6000, item.text.length * 140 + 5000));
+
+            self._utterance = u;
+            self._isPlaying = true;
+            speechSynthesis.speak(u);
+            try { speechSynthesis.resume(); } catch (e) { /* ignore */ }
+        }
+
+        next();
+    },
+
+    // 判断音色性别（按音色名猜，猜不出返回空串）
+    _guessGender(v) {
+        var n = String((v && v.name) || '').toLowerCase();
+        var FEMALE = ['zira', 'hazel', 'susan', 'samantha', 'karen', 'victoria', 'serena', 'aria',
+            'jenny', 'michelle', 'monica', 'fiona', 'tessa', 'moira', 'anna', 'allison', 'ava',
+            'female', 'woman', 'kate', 'nicky', 'sonia', 'libby', 'natasha', 'clara', 'emily',
+            'olivia', 'sara', 'linda', 'eva', 'catherine', 'salli', 'joanna', 'kendra', 'kimberly'];
+        var MALE = ['david', 'mark', 'guy', 'alex', 'daniel', 'fred', 'tom', 'thomas', 'james',
+            'george', 'oliver', 'arthur', 'rishi', 'ryan', 'eric', 'steffan', 'roger', 'aaron',
+            'richard', 'sean', 'male', 'matthew', 'brian', 'christopher', 'liam', 'william',
+            'andrew', 'joey', 'justin', 'stephen'];
+        var i;
+        for (i = 0; i < FEMALE.length; i++) { if (n.indexOf(FEMALE[i]) >= 0) return 'female'; }
+        for (i = 0; i < MALE.length; i++) { if (n.indexOf(MALE[i]) >= 0) return 'male'; }
+        return '';
+    },
+
+    // 挑一对音色：优先同一口音的 女 + 男
+    _pickDialogueVoices() {
+        var self = this;
+        var all = (speechSynthesis.getVoices() || []).filter(function (v) {
+            return v.lang && /^en(-|_)/i.test(String(v.lang));
+        });
+
+        if (!all.length) {
+            // 一个英语音色都没有：只能靠音高区分
+            return [
+                { voice: null, lang: 'en-US', pitch: 0.8 },
+                { voice: null, lang: 'en-US', pitch: 1.25 }
+            ];
+        }
+
+        // 国内网络下 Google 的在线语音基本连不上，本地音色优先
+        var localOnly = all.filter(function (v) { return !/google/i.test(v.name || ''); });
+        var pool = localOnly.length ? localOnly : all;
+
+        var rank = function (v) {
+            var l = String(v.lang || '').toLowerCase().replace('_', '-');
+            if (l === 'en-us') return 0;
+            if (l === 'en-gb') return 1;
+            if (l === 'en-au' || l === 'en-ca' || l === 'en-ie' || l === 'en-nz') return 2;
+            return 3;
+        };
+        pool.sort(function (a, b) { return rank(a) - rank(b); });
+
+        // 按口音分组，优先在同一口音里凑「一女一男」
+        var groups = {};
+        var orderKeys = [];
+        pool.forEach(function (v) {
+            var l = String(v.lang || '').toLowerCase().replace('_', '-');
+            if (!groups[l]) { groups[l] = []; orderKeys.push(l); }
+            groups[l].push(v);
+        });
+
+        for (var g = 0; g < orderKeys.length; g++) {
+            var arr = groups[orderKeys[g]];
+            var female = null, male = null;
+            for (var i = 0; i < arr.length; i++) {
+                var gd = self._guessGender(arr[i]);
+                if (gd === 'female' && !female) female = arr[i];
+                if (gd === 'male' && !male) male = arr[i];
+                if (female && male) break;
+            }
+            if (female && male) {
+                console.log('[TTS] 对话双音色：A=' + female.name + ' / B=' + male.name);
+                return [
+                    { voice: female, lang: female.lang, pitch: 1 },
+                    { voice: male, lang: male.lang, pitch: 1 }
+                ];
+            }
+        }
+
+        // 凑不出男女对 → 用两个不同音色 + 轻微音高差
+        var first = pool[0];
+        var second = null;
+        for (var j = 0; j < pool.length; j++) {
+            if (pool[j].name !== first.name) { second = pool[j]; break; }
+        }
+        if (second) {
+            console.log('[TTS] 对话双音色（同类）：A=' + first.name + ' / B=' + second.name);
+            return [
+                { voice: first, lang: first.lang, pitch: 0.92 },
+                { voice: second, lang: second.lang, pitch: 1.08 }
+            ];
+        }
+
+        // 只有一种音色 → 纯靠音高分开（0.8 低沉当男声，1.25 明亮当女声）
+        console.log('[TTS] 仅一种英语音色，改用音高区分：' + first.name);
+        return [
+            { voice: first, lang: first.lang, pitch: 0.8 },
+            { voice: first, lang: first.lang, pitch: 1.25 }
+        ];
     },
 
     // 把文本按句子切成 <=180 字符的块，规避 Chrome 长文本 15 秒自动停止
@@ -183,6 +414,7 @@ const TTS = {
 
     // 停止
     stop() {
+        this._dlgToken++;
         this._chunks = [];
         speechSynthesis.cancel();
         this._isPlaying = false;

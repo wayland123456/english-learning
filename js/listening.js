@@ -162,9 +162,10 @@ const Listening = {
     },
 
     playAudio() {
-        // 使用 Web Speech API 朗读听力原文
+        // 两人对话，逐句分角色朗读（男/女不同音色）
         if (this.audioPlaying) {
             speechSynthesis.cancel();
+            if (typeof TTS !== 'undefined' && TTS.stop) TTS.stop();
             this.audioPlaying = false;
             this.render();
             return;
@@ -174,13 +175,27 @@ const Listening = {
         this.audioPlaying = true;
         this.render();
 
-        const utter = new SpeechSynthesisUtterance(ex.audio_text);
-        utter.lang = 'en-US';
-        utter.rate = this.rate;
-        utter.onend = () => {
+        const onDone = () => {
             this.audioPlaying = false;
             this.render();
         };
+
+        // audio_text 每行是一个人的话，行与行交替换音色
+        const lines = String(ex.audio_text || '')
+            .split('\n')
+            .map(s => s.trim())
+            .filter(Boolean);
+
+        if (typeof TTS !== 'undefined' && typeof TTS.speakDialogue === 'function') {
+            TTS.speakDialogue(lines, { rate: this.rate, onEnd: onDone });
+            return;
+        }
+
+        // 兜底：TTS 模块未加载时退化为单音色
+        const utter = new SpeechSynthesisUtterance(ex.audio_text);
+        utter.lang = 'en-US';
+        utter.rate = this.rate;
+        utter.onend = onDone;
         speechSynthesis.speak(utter);
     },
 
@@ -199,6 +214,7 @@ const Listening = {
         const wasPlaying = this.audioPlaying;
         if (wasPlaying) {
             speechSynthesis.cancel();
+            if (typeof TTS !== 'undefined' && TTS.stop) TTS.stop();
             this.audioPlaying = false;
         }
         this.render();
