@@ -15,6 +15,8 @@ const TTS = {
     _voiceLang: 'en-GB',
     _bar: null,
     _dlgToken: 0,   // 对话朗读令牌：停止/重开时作废旧队列
+    TURN_GAP_MS: 80, // 换人说话的间隙（毫秒）。考试听力是"一人说完另一人立刻接上"，
+                     // 浏览器本身还有几十毫秒自然间隙，这里只补一点点，别调大
 
     // 初始化：加载可用语音列表
     init() {
@@ -174,8 +176,9 @@ const TTS = {
         }
 
         var item = st.queue[st.i];
-        // 换人说话时留一点间隙，听感上才像两个人轮着说
-        var gap = (st.lastIdx !== -1 && st.lastIdx !== item.idx) ? 280 : 0;
+        // 换人时几乎不留白，模拟考试听力：一人说完另一人立刻接上
+        // （浏览器在两条语音之间本来就有几十毫秒的自然间隙，这里补得越少越紧凑）
+        var gap = (st.lastIdx !== -1 && st.lastIdx !== item.idx) ? this.TURN_GAP_MS : 0;
         st.lastIdx = item.idx;
 
         if (gap) {
