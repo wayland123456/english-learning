@@ -12,10 +12,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="stylesheet" href="css/style.css?v=4">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- 字体异步加载：不再阻塞首屏渲染（国内 fonts.googleapis.com 偶发卡死会导致整页白屏） -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet"></noscript>
     <style>
         .gallery-hero {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -69,13 +71,16 @@
             margin-top: 14px; display: flex; justify-content: space-between; align-items: center;
             font-size: 12px;
         }
-        .gallery-card .card-author { color: #6b7280; }
+        .gallery-card .card-author {
+            color: #6b7280; display: inline-flex; align-items: center; gap: 5px;
+        }
+        .gallery-card .card-author svg { flex: none; opacity: .75; }
         .gallery-card .card-status {
             padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 500;
             background: #f3f4f6; color: #6b7280;
         }
         .gallery-card .card-status.done { background: #d1fae5; color: #047857; }
-        .gallery-card .card-status .fa-check { margin-right: 3px; }
+        .gallery-card .card-status .ico-check { margin-right: 3px; font-weight: 700; }
 
         /* modal */
         .gallery-modal {
@@ -151,7 +156,7 @@
 </head>
 <body>
     <section class="gallery-hero">
-        <a href="index.html" class="gallery-back"><i class="fas fa-arrow-left"></i> 返回主页</a>
+        <a href="index.html" class="gallery-back"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> 返回主页</a>
         <h1>学生作品展</h1>
         <p>Student Travel Gallery · 用英语讲中国 · 讲世界</p>
         <div class="gallery-stats">
@@ -166,7 +171,7 @@
     </main>
 
     <div class="gallery-modal" id="modal" onclick="if(event.target===this) closeModal()">
-        <button class="modal-close" onclick="closeModal()" aria-label="关闭"><i class="fas fa-times"></i></button>
+        <button class="modal-close" onclick="closeModal()" aria-label="关闭"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
         <div class="modal-card">
             <div class="modal-poster"><img id="modalImg" alt="poster"></div>
             <div class="modal-content" id="modalContent"></div>
@@ -337,10 +342,10 @@
                     <p class="card-sub">${w.subtitle}</p>
                     <p class="card-snippet">${w.paragraphs[0]}</p>
                     <div class="card-meta">
-                        <span class="card-author"><i class="fas fa-user-edit"></i>&nbsp; ${w.author}</span>
+                        <span class="card-author"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg> ${w.author}</span>
                         <span class="card-status ${done.has(w.id) ? 'done' : ''}">
                             ${done.has(w.id)
-                                ? '<i class="fas fa-check"></i>已学习'
+                                ? '<span class="ico-check">✓</span>已学习'
                                 : '未学习'}
                         </span>
                     </div>
