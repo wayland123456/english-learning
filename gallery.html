@@ -50,6 +50,12 @@
         }
         .gallery-card .thumb {
             width: 100%; aspect-ratio: 3 / 4; object-fit: cover; background: #f1f3f9; display: block;
+            transition: opacity .25s ease;
+        }
+        .gallery-card .thumb:not([data-loaded]) { opacity: 0; }
+        .gallery-card .thumb.img-failed {
+            opacity: 1;
+            background: #eef0f4 url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%23b9c0d4' stroke-width='1.5'%3E%3Crect x='3' y='3' width='18' height='18' rx='3'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.6'/%3E%3Cpath d='M21 15l-5-5L5 21'/%3E%3C/svg%3E") center/48px no-repeat;
         }
         .gallery-card .card-body { padding: 16px 18px 18px; flex: 1; display: flex; flex-direction: column; }
         .gallery-card .card-title { font-size: 18px; font-weight: 600; color: #1f2937; margin: 0 0 4px; }
@@ -267,6 +273,42 @@
 
     const STORAGE_KEY = 'gallery_v1_done';
 
+    /* ── 图片多源加载 ──────────────────────────────────────────
+       GitHub Pages 在国内间歇性限速（实测同一文件有时 1s、有时 20s 只下 1/3），
+       所以图片走 jsDelivr 的 GitHub 镜像优先，失败再回退到本站。
+       图片同时转成了 webp（卡片 440w / 详情 900w），体积只有原 jpg 的 1/4。 */
+    const CDN = 'https://cdn.jsdelivr.net/gh/wayland123456/english-learning@main/';
+
+    function stemOf(path) {
+        return path.replace(/^.*\//, '').replace(/\.[^.]+$/, '');
+    }
+    // 依次尝试：CDN 大图/缩略图 → 本站同名 webp → 本站原 jpg
+    function srcChain(stem, kind, fallbackJpg) {
+        const file = kind + '/' + stem + '.webp';
+        return [CDN + 'img/gallery/' + file, 'img/gallery/' + file, fallbackJpg];
+    }
+    // 逐级降级的 onerror 处理器（挂成全局，供内联 onerror 调用）
+    window.imgFallback = function (el) {
+        const chain = (el.dataset.chain || '').split('|').filter(Boolean);
+        const idx = Number(el.dataset.idx || 0) + 1;
+        if (idx < chain.length) {
+            el.dataset.idx = idx;
+            el.src = chain[idx];
+        } else {
+            el.onerror = null;
+            el.classList.add('img-failed');
+        }
+    };
+    window.imgLoaded = function (el) {
+        el.dataset.loaded = '1';
+    };
+
+    function makeImg(stem, kind, fallbackJpg, extra) {
+        const chain = srcChain(stem, kind, fallbackJpg);
+        return `<img src="${chain[0]}" data-chain="${chain.join('|')}" data-idx="0"
+            onload="imgLoaded(this)" onerror="imgFallback(this)" ${extra}>`;
+    }
+
     function getDoneSet() {
         try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')); }
         catch { return new Set(); }
@@ -280,9 +322,16 @@
     function renderGrid() {
         const done = getDoneSet();
         const grid = document.getElementById('galleryGrid');
-        grid.innerHTML = WORKS.map(w => `
+        grid.innerHTML = WORKS.map((w, i) => {
+            const stem = stemOf(w.img);
+            // 首屏前 3 张优先加载，其余懒加载
+            const extra = (i < 3
+                ? 'loading="eager" fetchpriority="high"'
+                : 'loading="lazy"') +
+                ' decoding="async" width="440" height="586"';
+            return `
             <article class="gallery-card" onclick="openModal('${w.id}')">
-                <img class="thumb" src="${w.img}" alt="${w.title}" loading="lazy">
+                ${makeImg(stem, 'thumb', w.img, `class="thumb" alt="${w.title}" ${extra}`)}
                 <div class="card-body">
                     <h2 class="card-title">${w.title}</h2>
                     <p class="card-sub">${w.subtitle}</p>
@@ -297,7 +346,8 @@
                     </div>
                 </div>
             </article>
-        `).join('');
+        `;
+        }).join('');
         document.getElementById('statDone').textContent = done.size;
     }
 
@@ -305,8 +355,27 @@
         const w = WORKS.find(x => x.id === id);
         if (!w) return;
         const done = getDoneSet();
+        const stem = stemOf(w.img);
         document.getElementById('modal').dataset.workId = w.id;
-        document.getElementById('modalImg').src = w.img;
+
+        // 详情图用 900w 大图，同样 CDN → 本站 webp → 本站 jpg 逐级回退
+        const mi = document.getElementById('modalImg');
+        const chain = srcChain(stem, 'large', w.img);
+        mi.dataset.chain = chain.join('|');
+        mi.dataset.idx = '0';
+        mi.removeAttribute('data-loaded');
+        mi.onerror = function () {
+            const idx = Number(mi.dataset.idx || 0) + 1;
+            if (idx < chain.length) {
+                mi.dataset.idx = idx;
+                mi.src = chain[idx];
+            } else {
+                mi.onerror = null;
+                mi.alt = '图片加载失败，请检查网络后重试';
+            }
+        };
+        mi.src = chain[0];
+
         document.getElementById('modalContent').innerHTML = `
             <h2 class="modal-title">${w.title}</h2>
             <p class="modal-author">${w.subtitle}</p>
@@ -368,6 +437,12 @@
     });
 
     renderGrid();
+
+    // 注册 Service Worker：图片与页面缓存，弱网秒开（从首页进过才生效，这里再兜一次）
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/english-learning/sw.js?v=16', { updateViaCache: 'none' })
+            .catch(() => {});
+    }
     </script>
 </body>
 </html>
