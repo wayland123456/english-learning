@@ -280,17 +280,23 @@
 
     /* ── 图片多源加载 ──────────────────────────────────────────
        GitHub Pages 在国内间歇性限速（实测同一文件有时 1s、有时 20s 只下 1/3），
-       所以图片走 jsDelivr 的 GitHub 镜像优先，失败再回退到本站。
-       图片同时转成了 webp（卡片 440w / 详情 900w），体积只有原 jpg 的 1/4。 */
-    const CDN = 'https://cdn.jsdelivr.net/gh/wayland123456/english-learning@main/';
+       所以只在 github.io 域名上才绕 jsDelivr 镜像，其他域名（如 EdgeOne）直接用本站，
+       少一跳、更快。图片都转成了 webp（卡片 440w / 详情 900w），体积只有原 jpg 的 1/4。 */
+    const ON_GITHUB_PAGES = location.hostname.endsWith('github.io');
+    const CDN = ON_GITHUB_PAGES
+        ? 'https://cdn.jsdelivr.net/gh/wayland123456/english-learning@main/'
+        : '';
 
     function stemOf(path) {
         return path.replace(/^.*\//, '').replace(/\.[^.]+$/, '');
     }
-    // 依次尝试：CDN 大图/缩略图 → 本站同名 webp → 本站原 jpg
+    // 依次尝试：CDN（仅 GitHub Pages）→ 本站 webp → 本站原 jpg
     function srcChain(stem, kind, fallbackJpg) {
-        const file = kind + '/' + stem + '.webp';
-        return [CDN + 'img/gallery/' + file, 'img/gallery/' + file, fallbackJpg];
+        const rel = 'img/gallery/' + kind + '/' + stem + '.webp';
+        const chain = [];
+        if (CDN) chain.push(CDN + rel);
+        chain.push(rel, fallbackJpg);
+        return chain;
     }
     // 逐级降级的 onerror 处理器（挂成全局，供内联 onerror 调用）
     window.imgFallback = function (el) {
@@ -445,7 +451,7 @@
 
     // 注册 Service Worker：图片与页面缓存，弱网秒开（从首页进过才生效，这里再兜一次）
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/english-learning/sw.js?v=16', { updateViaCache: 'none' })
+        navigator.serviceWorker.register('sw.js?v=17', { updateViaCache: 'none' })
             .catch(() => {});
     }
     </script>

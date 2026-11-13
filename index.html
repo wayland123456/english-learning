@@ -9,9 +9,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="英语学习">
-    <link rel="apple-touch-icon" href="/english-learning/img/icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" href="/english-learning/img/icons/favicon.png">
-    <link rel="manifest" href="/english-learning/manifest.json">
+    <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="img/icons/favicon.png">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/style.css?v=17">
     <link rel="stylesheet" href="css/ai-styles.css?v=1">
     <link rel="stylesheet" href="css/learning-flow.css?v=2">
@@ -1088,7 +1088,7 @@
     <!-- PWA Service Worker -->
     <script>
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/english-learning/sw.js?v=16', { updateViaCache: 'none' })
+        navigator.serviceWorker.register('sw.js?v=17', { updateViaCache: 'none' })
             .then(function(reg) { console.log('SW registered:', reg.scope); reg.update(); })
             .catch(function(err) { console.log('SW failed:', err); });
     }

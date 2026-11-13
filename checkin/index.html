@@ -1314,7 +1314,7 @@ applyTheme(document.documentElement.dataset.theme || 'dark');
 
 /* 注册整站 Service Worker：打卡页可"添加到手机桌面"并离线打开 */
 if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
-  navigator.serviceWorker.register('/english-learning/sw.js').catch(function(){});
+  navigator.serviceWorker.register('../sw.js?v=17').catch(function(){});
 }
 
 /* 先探测云端表是否就绪，再渲染 */

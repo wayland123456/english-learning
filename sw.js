@@ -1,28 +1,31 @@
 // Service Worker for 环游世界英语学习 PWA
 // v16：HTML/CSS/JS 改 stale-while-revalidate（弱网先给缓存，秒开），
 //      图片走 cache-first（含 jsDelivr 跨域 opaque 响应），第二次访问 0 网络。
-const CACHE_NAME = 'travelling-english-v16';
+const CACHE_NAME = 'travelling-english-v17';
 const IMG_CACHE = 'te-images-v1';
 const IMG_CACHE_LIMIT = 120;
 
+// 全部用相对 SW 脚本自身位置的路径：
+// GitHub Pages 部署在 /english-learning/ 下 → ./index.html = /english-learning/index.html
+// EdgeOne Pages 部署在根              → ./index.html = /index.html
 const CRITICAL_ASSETS = [
-  '/english-learning/',
-  '/english-learning/index.html',
-  '/english-learning/feedback.html',
-  '/english-learning/teacher.html',
-  '/english-learning/gallery.html',
-  '/english-learning/css/style.css',
-  '/english-learning/js/app.js',
-  '/english-learning/js/data.js',
-  '/english-learning/js/supabase-auth.js',
-  '/english-learning/js/speaking.js',
-  '/english-learning/js/writing.js',
-  '/english-learning/js/portfolio.js',
-  '/english-learning/manifest.json',
-  '/english-learning/checkin/',
-  '/english-learning/checkin/index.html',
-  '/english-learning/checkin/manifest.json',
-  '/english-learning/checkin/icon.svg'
+  './',
+  './index.html',
+  './feedback.html',
+  './teacher.html',
+  './gallery.html',
+  './css/style.css',
+  './js/app.js',
+  './js/data.js',
+  './js/supabase-auth.js',
+  './js/speaking.js',
+  './js/writing.js',
+  './js/portfolio.js',
+  './manifest.json',
+  './checkin/',
+  './checkin/index.html',
+  './checkin/manifest.json',
+  './checkin/icon.svg'
 ];
 
 // Install: 预缓存关键资源
@@ -108,7 +111,7 @@ self.addEventListener('fetch', (event) => {
         const res = await network;
         if (res) return res;
         if (isDoc) {
-          const fallback = await cache.match('/english-learning/index.html');
+          const fallback = await cache.match('./index.html');
           if (fallback) return fallback;
         }
         return Response.error();
