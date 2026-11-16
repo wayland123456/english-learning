@@ -1,7 +1,7 @@
 // Service Worker for 环游世界英语学习 PWA
 // v16：HTML/CSS/JS 改 stale-while-revalidate（弱网先给缓存，秒开），
 //      图片走 cache-first（含 jsDelivr 跨域 opaque 响应），第二次访问 0 网络。
-const CACHE_NAME = 'travelling-english-v18';
+const CACHE_NAME = 'travelling-english-v19';
 const IMG_CACHE = 'te-images-v1';
 const IMG_CACHE_LIMIT = 120;
 
@@ -88,10 +88,38 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // ② 页面 / 脚本 / 样式 / 字体：先给缓存（秒开），同时后台更新
+  // ② 页面：网络优先（最多等 1.5 秒），保证改版后学生下次打开就是新版；
+  //    网络慢/断网立刻回退缓存，不牺牲弱网体验
   const isDoc = req.destination === 'document';
   const isAsset = ['script', 'style', 'font'].includes(req.destination);
-  if (isDoc || isAsset) {
+  if (isDoc) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(async (cache) => {
+        const hit = await cache.match(req);
+        const network = fetch(req)
+          .then((res) => {
+            if (res && res.ok) cache.put(req, res.clone());
+            return res;
+          })
+          .catch(() => null);
+        const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 1500));
+        const res = await Promise.race([network, timeout]);
+        if (res && res.ok) return res;
+        if (hit) {
+          event.waitUntil(network);
+          return hit;
+        }
+        const late = await network;
+        if (late) return late;
+        const fallback = await cache.match('/english-learning/index.html');
+        return fallback || Response.error();
+      })
+    );
+    return;
+  }
+
+  // ③ 脚本 / 样式 / 字体：先给缓存（秒开），同时后台更新
+  if (isAsset) {
     event.respondWith(
       caches.open(CACHE_NAME).then(async (cache) => {
         const hit = await cache.match(req);
@@ -107,17 +135,13 @@ self.addEventListener('fetch', (event) => {
         }
         const res = await network;
         if (res) return res;
-        if (isDoc) {
-          const fallback = await cache.match('/english-learning/index.html');
-          if (fallback) return fallback;
-        }
         return Response.error();
       })
     );
     return;
   }
 
-  // ③ 其余：网络优先，失败回退缓存
+  // ④ 其余：网络优先，失败回退缓存
   event.respondWith(
     fetch(req)
       .then((response) => response)
