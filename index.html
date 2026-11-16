@@ -40,11 +40,12 @@
 
         .messages-container {
             max-width: 800px;
-            margin: 0 auto;
-            padding: 1.5rem;
+            /* 顶部让开固定导航栏（64px），避免标题被遮住 */
+            margin: 64px auto 0;
+            padding: 1.25rem 1.5rem 1rem;
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 80px);
+            height: calc(100vh - 64px);
         }
         .messages-header {
             text-align: center;
@@ -195,8 +196,11 @@
 
         @media (max-width: 768px) {
             .messages-container {
-                padding: 1rem 0.8rem;
-                height: calc(100vh - 130px);
+                /* 手机端导航栏 56px + 底部导航约 64px 都让开 */
+                margin: 56px auto 0;
+                padding: 0.9rem 0.8rem 0.8rem;
+                height: calc(100vh - 120px);
+                height: calc(100dvh - 120px);
             }
             .msg-bubble {
                 max-width: 90%;

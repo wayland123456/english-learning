@@ -1,7 +1,7 @@
 // Service Worker for 环游世界英语学习 PWA
 // v16：HTML/CSS/JS 改 stale-while-revalidate（弱网先给缓存，秒开），
 //      图片走 cache-first（含 jsDelivr 跨域 opaque 响应），第二次访问 0 网络。
-const CACHE_NAME = 'travelling-english-v16';
+const CACHE_NAME = 'travelling-english-v17';
 const IMG_CACHE = 'te-images-v1';
 const IMG_CACHE_LIMIT = 120;
 
