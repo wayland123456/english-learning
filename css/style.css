@@ -107,6 +107,15 @@ body {
     background: rgba(99,102,241,0.08);
 }
 
+/* 反馈问卷入口：用次级色突出，方便学生一眼看到 */
+.nav-link-accent {
+    color: var(--secondary);
+}
+.nav-link-accent:hover {
+    color: var(--secondary);
+    background: rgba(245,158,11,0.12);
+}
+
 .nav-user {
     display: flex;
     align-items: center;
