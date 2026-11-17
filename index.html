@@ -529,9 +529,11 @@
                 </div>
             </div>
 
+            <!-- [暂隐藏 2026-11-17] 成绩查询入口，评审暂不需要展示；恢复时取消注释即可
             <a href="#" onclick="App.showPage('exam');return false" class="nav-link" data-page="exam">
                 <i class="fas fa-chart-bar"></i> 成绩查询
             </a>
+            -->
             <a href="gallery.html" class="nav-link" target="_self">
                 <i class="fas fa-images"></i> 学生作品展
             </a>
@@ -949,12 +951,14 @@
             <button class="mp-close" onclick="App.closePanel()"><i class="fas fa-times"></i></button>
         </div>
         <div class="mp-list">
+            <!-- [暂隐藏 2026-11-17] 成绩查询入口，评审暂不需要展示；恢复时取消注释即可
             <button class="mp-list-item" onclick="App.fromPanel('exam')">
                 <i class="fas fa-chart-bar"></i>
                 <span>成绩查询</span>
                 <small>查看考试分数与排名</small>
                 <i class="fas fa-chevron-right mp-arrow"></i>
             </button>
+            -->
             <button class="mp-list-item" onclick="App.fromPanel('messages')">
                 <i class="fas fa-comments"></i>
                 <span>师生消息</span>
@@ -1095,7 +1099,7 @@
     <!-- PWA Service Worker -->
     <script>
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/english-learning/sw.js?v=16', { updateViaCache: 'none' })
+        navigator.serviceWorker.register('/english-learning/sw.js?v=17', { updateViaCache: 'none' })
             .then(function(reg) { console.log('SW registered:', reg.scope); reg.update(); })
             .catch(function(err) { console.log('SW failed:', err); });
     }
