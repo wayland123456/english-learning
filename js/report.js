@@ -13,6 +13,19 @@ const EssayReport = {
 
     DOCX_CDN: 'https://unpkg.com/docx@8.5.0/build/index.umd.js',
 
+    /* Word 组件加载源，按顺序尝试：本地文件优先（无网络也能用、不受墙影响），
+       其次国内镜像 npmmirror，再用 jsDelivr / unpkg 兜底。
+       2026-11-20 修复：原来只用 unpkg，国内网络加载失败导致「Word 组件加载失败」 */
+    DOCX_SOURCES: [
+        'js/vendor/docx.umd.js',
+        'https://registry.npmmirror.com/docx/8.5.0/files/build/index.umd.js',
+        'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js',
+        'https://unpkg.com/docx@8.5.0/build/index.umd.js'
+    ],
+
+    _docxLoading: false,
+    _docxQueue: [],
+
     /** 组装报告数据（writing 页面调用） */
     build(opts) {
         var essayText = (document.getElementById('writingTextarea') || {}).value || '';
@@ -72,13 +85,69 @@ const EssayReport = {
         });
     },
 
+    /**
+     * 懒加载 docx 组件，多源自动回退
+     * - 本地 js/vendor/docx.umd.js 优先，离线 / 被墙都能用
+     * - 单个源 8 秒无响应即切下一个，不让学生干等
+     * - 并发调用只加载一次，成功后统一回调
+     */
     _loadDocx(cb) {
+        var self = this;
         if (window.docx) return cb();
-        var s = document.createElement('script');
-        s.src = this.DOCX_CDN;
-        s.onload = function () { cb(); };
-        s.onerror = function () { alert('Word 组件加载失败，请检查网络后重试'); };
-        document.head.appendChild(s);
+
+        // 已在加载中：排队等结果
+        if (this._docxLoading) { this._docxQueue.push(cb); return; }
+        this._docxLoading = true;
+        this._docxQueue = [cb];
+
+        var list = this.DOCX_SOURCES.slice();
+
+        function finish(ok) {
+            self._docxLoading = false;
+            var queue = self._docxQueue;
+            self._docxQueue = [];
+            if (ok) {
+                queue.forEach(function (fn) { try { fn(); } catch (e) { console.error(e); } });
+            } else {
+                alert('Word 组件加载失败，请检查网络后重试');
+            }
+        }
+
+        function next() {
+            if (window.docx) return finish(true);
+            var src = list.shift();
+            if (!src) return finish(false);
+
+            var s = document.createElement('script');
+            var settled = false;
+            var timer = setTimeout(function () {
+                if (settled) return;
+                settled = true;
+                s.parentNode && s.parentNode.removeChild(s);
+                console.warn('[EssayReport] Word 组件超时，换源：' + src);
+                next();
+            }, 8000);
+
+            s.async = true;
+            s.src = src;
+            s.onload = function () {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timer);
+                if (window.docx) { finish(true); } else { s.remove(); next(); }
+            };
+            s.onerror = function () {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timer);
+                s.remove();
+                console.warn('[EssayReport] Word 组件加载失败，换源：' + src);
+                next();
+            };
+            document.head.appendChild(s);
+        }
+
+        next();
     },
 
     _buildDocxBlob(payload) {
