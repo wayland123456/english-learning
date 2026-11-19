@@ -103,13 +103,6 @@ const Writing = {
             + '  placeholder="在此输入你的英语作文..."'
             + '  oninput="Writing.onTextInput()"></textarea>'
 
-            + '<div style="text-align:right;margin-top:0.5rem;">'
-            + '  <button class="btn-tts-read-essay" onclick="Writing.readEssayAloud()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 16px;cursor:pointer;color:var(--primary);font-size:0.85rem;transition:all 0.2s;"'
-            + '    onmouseover="this.style.background=\'rgba(99,102,241,0.06)\'"'
-            + '    onmouseout="this.style.background=\'none\'">'
-            + '    <i class="fas fa-volume-up"></i> 听我的作文'
-            + '  </button>'
-            + '</div>'
 
             + '<div class="writing-actions">'
             + '  <button class="btn-ai-score' + (hasKey ? '' : ' hidden') + '" id="btnAiScore" onclick="WritingAI.handleScore()">'
@@ -302,37 +295,6 @@ const Writing = {
         var textarea = document.getElementById('writingTextarea');
         if (textarea) {
             this.essayText = textarea.value;
-        }
-    },
-
-    // 朗读作文（优先 TTS 模块，模块缺失时兜底原生 speechSynthesis）
-    readEssayAloud() {
-        var textarea = document.getElementById('writingTextarea');
-        var text = textarea ? textarea.value.trim() : '';
-        if (!text) {
-            App.toast('请先输入或上传作文', 'info');
-            return;
-        }
-        if (typeof TTS !== 'undefined' && TTS.speak) {
-            TTS.speak(text, { lang: 'en-GB', rate: 0.9 });
-            App.toast('🔊 正在朗读你的作文...', 'info');
-        } else if ('speechSynthesis' in window) {
-            // 兜底：tts.js 未加载成功时直接用原生 API
-            try {
-                speechSynthesis.cancel();
-                var u = new SpeechSynthesisUtterance(text);
-                u.lang = 'en-GB';
-                u.rate = 0.9;
-                u.onend = function () { try { App.toast('朗读结束', 'info'); } catch (e) {} };
-                speechSynthesis.speak(u);
-                try { speechSynthesis.resume(); } catch (e) {}
-                App.toast('🔊 正在朗读你的作文...', 'info');
-            } catch (err) {
-                console.error('[Writing] 朗读失败:', err);
-                App.toast('朗读启动失败，请刷新页面重试', 'error');
-            }
-        } else {
-            App.toast('当前浏览器不支持语音朗读，建议使用 Chrome / Edge', 'error');
         }
     },
 
