@@ -34,51 +34,48 @@
 
         .gallery-wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 64px; }
 
+        /* 瀑布流：作品有横有竖（横版手抄报 1066x800、竖版 800x1066），
+           不统一裁切、不统一拉伸，每张按自己的原始比例完整呈现，
+           横的横着占位、竖的竖着占位，交错排列最自然。 */
         .gallery-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-            gap: 18px;
+            column-width: 320px;
+            column-gap: 20px;
         }
-        /* 卡片改为「左图右文」横向布局：
-           学生作品都是 3:4 竖版手抄报，原来整幅竖着铺满卡片，一屏只能看两三张，
-           视觉上又细又长很别扭。现在缩略图收窄到 148px 宽放左侧，右侧留给标题和摘要，
-           卡片高度从 ~500px 降到 ~220px，一屏能看 4-6 件作品。 */
         .gallery-card {
-            background: #fff; border-radius: 14px; overflow: hidden;
+            display: block; width: 100%;
+            break-inside: avoid; -webkit-column-break-inside: avoid; page-break-inside: avoid;
+            margin: 0 0 20px;
+            background: #fff; border-radius: 16px; overflow: hidden;
             box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
             transition: transform .18s ease, box-shadow .18s ease;
-            cursor: pointer; display: flex; flex-direction: row; align-items: stretch;
-            border: 1px solid #eef0f4;
+            cursor: pointer; border: 1px solid #eef0f4;
         }
         .gallery-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
             box-shadow: 0 8px 24px rgba(102,126,234,.18);
             border-color: #d6dcf2;
         }
+        /* 关键：height:auto + 不设缩放，图片按原始比例铺满卡片宽度 */
         .gallery-card .thumb {
-            flex: 0 0 148px; width: 148px; height: auto; align-self: center;
-            aspect-ratio: 3 / 4; object-fit: cover; object-position: center top;
-            background: #f1f3f9; display: block;
-            margin: 12px 0 12px 12px; border-radius: 10px;
+            width: 100%; height: auto; display: block;
+            background: #f1f3f9;
             transition: opacity .25s ease;
         }
         .gallery-card .thumb:not([data-loaded]) { opacity: 0; }
         .gallery-card .thumb.img-failed {
-            opacity: 1;
-            background: #eef0f4 url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%23b9c0d4' stroke-width='1.5'%3E%3Crect x='3' y='3' width='18' height='18' rx='3'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.6'/%3E%3Cpath d='M21 15l-5-5L5 21'/%3E%3C/svg%3E") center/40px no-repeat;
+            opacity: 1; aspect-ratio: 4 / 3;
+            background: #eef0f4 url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%23b9c0d4' stroke-width='1.5'%3E%3Crect x='3' y='3' width='18' height='18' rx='3'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.6'/%3E%3Cpath d='M21 15l-5-5L5 21'/%3E%3C/svg%3E") center/48px no-repeat;
         }
-        .gallery-card .card-body {
-            padding: 14px 16px 14px 14px; flex: 1; min-width: 0;
-            display: flex; flex-direction: column;
-        }
-        .gallery-card .card-title { font-size: 16px; font-weight: 600; color: #1f2937; margin: 0 0 3px; }
+        .gallery-card .card-body { padding: 15px 18px 17px; }
+        .gallery-card .card-title { font-size: 17px; font-weight: 600; color: #1f2937; margin: 0 0 3px; }
         .gallery-card .card-sub { font-size: 12.5px; color: #6b7280; margin: 0 0 8px; }
         .gallery-card .card-snippet {
-            font-size: 12.5px; color: #4b5563; line-height: 1.55; flex: 1; margin: 0;
+            font-size: 12.5px; color: #4b5563; line-height: 1.55; margin: 0;
             display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
             overflow: hidden;
         }
         .gallery-card .card-meta {
-            margin-top: auto; padding-top: 10px;
+            margin-top: 12px;
             display: flex; justify-content: space-between; align-items: center;
             font-size: 12px;
         }
@@ -105,11 +102,18 @@
             display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
             overflow: hidden; max-height: 90vh;
         }
+        /* 海报区：横版作品横着铺开、竖版作品限制高度，都完整显示不裁切 */
         .gallery-modal .modal-poster {
-            background: #f3f4f6; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(160deg, #f5f6fa 0%, #eceef6 100%);
+            padding: 18px;
+            display: flex; align-items: center; justify-content: center;
             overflow: hidden;
         }
-        .gallery-modal .modal-poster img { max-width: 100%; max-height: 90vh; object-fit: contain; }
+        .gallery-modal .modal-poster img {
+            max-width: 100%; max-height: 70vh;
+            object-fit: contain; display: block;
+            border-radius: 8px; box-shadow: 0 4px 16px rgba(30,41,59,.12);
+        }
         .gallery-modal .modal-content {
             padding: 28px 32px 32px; overflow-y: auto;
         }
@@ -157,20 +161,18 @@
         }
         .gallery-back:hover { opacity: 1; }
 
-        @media (max-width: 900px) {
-            .gallery-grid { grid-template-columns: 1fr; gap: 14px; }
-        }
+        /* 瀑布流靠 column-width 自动分列：1180px 容器约 3 列，窄屏自然降到 1 列 */
         @media (max-width: 760px) {
             .gallery-modal .modal-card { grid-template-columns: 1fr; max-height: 96vh; }
-            .gallery-modal .modal-poster img { max-height: 36vh; }
+            .gallery-modal .modal-poster img { max-height: 40vh; }
             .gallery-modal .modal-content { padding: 22px; }
             .gallery-hero h1 { font-size: 24px; }
         }
         @media (max-width: 560px) {
             .gallery-wrap { padding: 20px 14px 48px; }
-            /* 手机上缩略图再收窄，标题摘要仍有足够宽度 */
-            .gallery-card .thumb { flex: 0 0 108px; width: 108px; margin: 10px 0 10px 10px; }
-            .gallery-card .card-body { padding: 12px 12px 12px 12px; }
+            .gallery-grid { column-gap: 14px; }
+            .gallery-card { margin-bottom: 14px; }
+            .gallery-card .card-body { padding: 13px 14px 15px; }
             .gallery-card .card-title { font-size: 15px; }
             .gallery-card .card-snippet { -webkit-line-clamp: 2; }
         }
@@ -205,7 +207,7 @@
         {
             id: 'wuhan-1', title: 'Travel in Wuhan', subtitle: '武大 · 东湖之眼 · 热干面',
             author: '学生原创',
-            img: 'img/gallery/wuhan-1.jpg',
+            img: 'img/gallery/wuhan-1.jpg', iw: 800, ih: 1066,
             paragraphs: [
                 'Wuhan University, founded in 1993, is a prestigious "985 Project" university. Nested by East Lake and Luojia Mountain, it\'s known for China\'s most beautiful campus. Its motto: self-improvement, perseverance, truth-seeking, innovation.',
                 'The Eye of East Lake: cherry-blossom themed Ferris wheel, 49.9-meter diameter, 28-meter height, 28 pink cabins. A full rotation takes 15 minutes and 14 seconds.',
@@ -221,7 +223,7 @@
         {
             id: 'sichuan', title: 'Travel in Sichuan', subtitle: '火锅 · 熊猫 · 三种景观',
             author: '学生原创',
-            img: 'img/gallery/sichuan.jpg',
+            img: 'img/gallery/sichuan-h.jpg', iw: 1066, ih: 800,
             paragraphs: [
                 'Sichuan, a treasure trove of nature and delicacy for good reasons. The lovely China is world-famous for giant pandas, the lovely national treasures that live in bamboo forests. It also boasts breathtaking landscapes like the mist-shrouded mountains and lush bamboo groves.',
                 'In southwestern China, three of China\'s most famous snacks stand majestically by the morning River, at the Eastern Han. Sichuan hot pot — spicy, numbing. It\'s a flavorful feast.',
@@ -237,7 +239,7 @@
         {
             id: 'dunhuang', title: 'Travel in Dunhuang', subtitle: '莫高窟 · 玉门关 · 鸣沙山',
             author: '学生原创',
-            img: 'img/gallery/dunhuang.jpg',
+            img: 'img/gallery/dunhuang.jpg', iw: 800, ih: 1066,
             paragraphs: [
                 'Dunhuang is a cultural city in Gansu Province, known for Grottes, blend desert as the "Pearl" of the Silk Road.',
                 'Jiangling University is where the male protagonists had his first interaction with the female protagonists. Wuxi Mei Garden Hengshan Scenic Area is located on the southern slope of Dongshan and Hushan, in the western suburbs of Wuxi.',
@@ -253,7 +255,7 @@
         {
             id: 'xian', title: 'Travel in Xi\'an', subtitle: '钟楼 · 碑林 · 兵马俑',
             author: '学生原创',
-            img: 'img/gallery/xian.jpg',
+            img: 'img/gallery/xian-h.jpg', iw: 1066, ih: 800,
             paragraphs: [
                 'Datong Never Sleeps City is Xi\'an Tang, the first of the three choices. Huashan, the first of the five mountains. The Bell Tower is the largest and best preserved bell tower in China.',
                 'Forest of Steles: the first batch of national key cultural relics protection units. The Museum of Qin Shi Huang\'s Terracotta Warriors and Horses is the first national museum, with a collection of about 50,000 pieces.'
@@ -268,7 +270,7 @@
         {
             id: 'wuhan-2', title: 'Travel in Wuhan', subtitle: '武大樱花 · 黄鹤楼 · 蔡林记',
             author: '学生原创',
-            img: 'img/gallery/wuhan-2.jpg',
+            img: 'img/gallery/wuhan-2-h.jpg', iw: 1066, ih: 800,
             paragraphs: [
                 'Wuhan University is a top university in China, founded in 1893. It is especially famous for cherry blossom. The cherry blossom festival makes Wuhan stand out from Western cherry blossom festivals. Cherry trees are widely distributed, blanketing the whole campus, here making it a place both literary and famous.',
                 'Yellow Crane Tower — one of China\'s Three Famous Towers, located on Snake Hill in Wuhan. Today, it is a popular tourist attraction and a popular symbol of Wuhan.',
@@ -284,7 +286,7 @@
         {
             id: 'egypt', title: 'Travel in Egypt', subtitle: '金字塔 · 狮身人面像 · 尼罗河',
             author: '学生原创',
-            img: 'img/gallery/egypt.jpg',
+            img: 'img/gallery/egypt-h.jpg', iw: 1066, ih: 800,
             paragraphs: [
                 'Egypt is a treasure trove of ancient wonders, and this is the perfect itinerary to soak up its most iconic sights.',
                 'Stop 1: Pyramids. Stop 2: The Sphinx. Finally, cruise along the Nile River, the lifeblood of ancient Egypt. This route blends history and natural beauty, and first stop is the Great Pyramids of Giza, the only surviving wonder of the ancient world. Next, head to the Great Sphinx, a mythical creature with a lion\'s body and a pharaoh\'s face.'
@@ -352,10 +354,11 @@
         grid.innerHTML = WORKS.map((w, i) => {
             const stem = stemOf(w.img);
             // 首屏前 3 张优先加载，其余懒加载
+            // 按每张图的真实宽高出占位属性，横图/竖图都不会在加载完成后跳版
             const extra = (i < 3
                 ? 'loading="eager" fetchpriority="high"'
                 : 'loading="lazy"') +
-                ' decoding="async" width="148" height="197"';
+                ' decoding="async" width="' + (w.iw || 800) + '" height="' + (w.ih || 1066) + '"';
             return `
             <article class="gallery-card" onclick="openModal('${w.id}')">
                 ${makeImg(stem, 'thumb', w.img, `class="thumb" alt="${w.title}" ${extra}`)}
