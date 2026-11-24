@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#050A1E">
-<meta name="description" content="高三英语背诵打卡 · 3500词乱序版 / 写作100句">
+<meta name="description" content="高三英语背诵打卡 · 3500词乱序版 / 写作100句 / 应用文16篇">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="背诵打卡">
@@ -277,7 +277,8 @@ h1::after{
 }
 .gp:hover{transform:translateY(-3px) scale(1.02);box-shadow:var(--sh);border-color:var(--brand-b)}
 .gp:active{transform:scale(.92)}
-.gp .k{font-size:11px;font-weight:600;color:var(--ink3);margin-top:3px;letter-spacing:.02em}
+.gp .k{font-size:11px;font-weight:600;color:var(--ink3);margin-top:3px;letter-spacing:.02em;
+  max-width:100%;padding:0 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gp.done{
   background:linear-gradient(150deg,var(--ok-g1),var(--ok-g2) 55%,var(--ok-g3));
   border-color:transparent;color:#fff;
@@ -351,7 +352,7 @@ tbody tr:last-child td{border-bottom:none}
 .chip.solid{border-color:var(--brand-b);background:var(--brand-l);color:var(--brand-d);font-weight:600}
 
 /* ============ KPI 卡 ============ */
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:11px;margin-bottom:18px}
 .kpi{
   padding:15px 16px;background:var(--card);border:1px solid var(--line);
   border-radius:16px;box-shadow:var(--sh-sm);
@@ -363,6 +364,7 @@ tbody tr:last-child td{border-bottom:none}
 .kpi.g .vl{color:var(--ok)}
 .kpi.b .vl{color:var(--brand)}
 .kpi.a .vl{color:var(--amber)}
+.kpi.v .vl{color:#8B5CF6}
 
 footer{margin-top:34px;text-align:center}
 footer .link{font-size:12.5px;opacity:.75}
@@ -571,7 +573,20 @@ const CONFIG = {
   /* --- 2. 背诵内容（total = 总组数，改这里就行） ------------------ */
   contents: {
     words: { label: '3500词乱序版', total: 40, hint: '每组约 87 词' },
-    sent:  { label: '写作100句',    total: 20, hint: '每组 5 句' }
+    sent:  { label: '写作100句',    total: 20, hint: '每组 5 句' },
+    /* 应用文 16 篇：一篇一组。unit 决定文案里用「篇」还是「组」；
+       briefs = 卡片上的短名，titles = 长按 / 鼠标悬停时的全称。篇目顺序按
+       《人教版高中英语应用文写作范文精选（16种体裁·标准版）》，换材料只改这两个数组即可。 */
+    essay: {
+      label: '应用文16篇', total: 16, unit: '篇', hint: '一篇一组，背完点一下',
+      briefs: ['推荐信','建议信','咨询信','邀请信','告知信','回复信','邮件','发言稿',
+               '演讲稿','短文','征文','报道','通知','启事','倡议书','帖子'],
+      titles: ['推荐信 · 中国主题公园','建议信 · 学校生活','咨询信 · 出国旅行','邀请信 · 参观“中国书画”展',
+               '告知信 · “中华文化英文知识库”上线','回复信 · 人工智能的观点','电子邮件 · 安全进校园',
+               '发言稿 · 语言学习','演讲稿 · 志愿者活动','短文投稿 · 人物介绍','征文投稿 · 地点介绍',
+               '活动报道 · “让文物活起来”主题活动','通知 · 唐诗吟诵大赛','征稿启事 · 中国科学家精神',
+               '倡议书 · 重拾对纸质阅读的热情','帖子 · 宇宙探索']
+    }
   },
 
   /* --- 3. 云端数据：复用英语学习网站的 Supabase 项目 ---------------
@@ -617,6 +632,7 @@ const ICO = {
   cls: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>',
   word: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-1.5Z"/><path d="M8 7h7M8 11h5"/></svg>',
   sent: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  essay: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>',
   lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
 };
 
@@ -944,12 +960,14 @@ function celebrate(x, y){
 /* 打卡成功浮层 */
 let flashTimer = null;
 function flashCard(grp, doneN, total, cheer){
+  const c = CONFIG.contents[S.content] || {};
+  const U = c.unit || '组';
   const f = $('flash');
   f.innerHTML = '<div class="fc">'
     + '<div class="ck">\u2713</div>'
-    + '<div class="t1">第 <em>' + grp + '</em> 组 已打卡</div>'
+    + '<div class="t1">第 <em>' + grp + '</em> ' + U + ' 已打卡</div>'
     + '<div class="t2">' + esc(cheer) + '</div>'
-    + '<div class="t3">' + CONFIG.contents[S.content].label + ' · 已完成 ' + doneN + ' / ' + total + ' 组</div>'
+    + '<div class="t3">' + esc(c.label || '') + ' · 已完成 ' + doneN + ' / ' + total + ' ' + U + '</div>'
     + '</div>';
   f.classList.add('on');
   clearTimeout(flashTimer);
@@ -1083,9 +1101,9 @@ function viewContent(){
   $('view').innerHTML = Object.keys(CONFIG.contents).map(k => {
     const c = CONFIG.contents[k];
     return '<button class="big" data-c="' + k + '">'
-      + '<span class="ic">' + (k === 'words' ? ICO.word : ICO.sent) + '</span>'
+      + '<span class="ic">' + ({ words: ICO.word, sent: ICO.sent, essay: ICO.essay }[k] || ICO.sent) + '</span>'
       + '<span class="tx"><b>' + esc(c.label) + '</b>'
-      + '<span class="sub">共 ' + c.total + ' 组 · ' + esc(c.hint) + '</span></span>'
+      + '<span class="sub">共 ' + c.total + ' ' + (c.unit || '组') + ' · ' + esc(c.hint) + '</span></span>'
       + '<span class="arr">&rsaquo;</span></button>';
   }).join('');
   $('view').querySelectorAll('[data-c]').forEach(b => b.onclick = () => {
@@ -1096,7 +1114,8 @@ function viewContent(){
 /* ---------- 第 4 步：组卡片墙 + 打卡 ---------- */
 async function viewGroup(){
   const c = CONFIG.contents[S.content];
-  setHead(c.label, S.name + ' · 点今天背的那一组就算打卡');
+  const U = c.unit || '组';
+  setHead(c.label, S.name + ' · 点今天背的那一' + U + '就算打卡');
   $('view').innerHTML = '<p class="hint">加载中…</p>';
 
   try { S.mine = await apiMine(S.cls, S.uid); }
@@ -1112,20 +1131,24 @@ async function viewGroup(){
     + '<span class="hint" style="margin:0">当前打卡人：<b>' + esc(S.name) + '</b></span>'
     + '<button class="chip" id="switchUser" style="flex:none">换个同学</button></div>'
     + '<div class="statline">'
-    + '<span><b>' + mineSet.size + '</b> / ' + c.total + ' 组</span>'
+    + '<span><b>' + mineSet.size + '</b> / ' + c.total + ' ' + U + '</span>'
     + '<span>连续打卡 <b>' + streak + '</b> 天</span>'
     + (S.todaySet.has(S.uid)
-        ? '<span class="ok">今天已打卡' + (todayN ? ' <b>' + todayN + '</b> 组' : '') + '</span>'
+        ? '<span class="ok">今天已打卡' + (todayN ? ' <b>' + todayN + '</b> ' + U : '') + '</span>'
         : '')
     + '</div>'
     + '<div class="bar"><i style="width:' + (mineSet.size / c.total * 100) + '%"></i></div>'
     + '<div class="groups">' + Array.from({length: c.total}, (_, i) => i + 1).map(n => {
         const done = mineSet.has(n);
         const today = S.mine.some(r => r.content === S.content && r.grp === n && r.d === ds());
+        /* 有 briefs 的内容（如应用文16篇）把卡片小字换成体裁名，长按/悬停可看全称 */
+        const brief = c.briefs && c.briefs[n-1] ? c.briefs[n-1] : (done ? '已背' : '未背');
+        const tip = c.titles && c.titles[n-1] ? ' title="第' + n + '篇 ' + esc(c.titles[n-1]) + '"' : '';
         return '<button class="gp ' + (done ? 'done' : '') + ' ' + (today ? 'today' : '')
-          + '" data-g="' + n + '">' + n + '<span class="k">' + (done ? '已背' : '未背') + '</span></button>';
+          + '" data-g="' + n + '"' + tip + '>' + n + '<span class="k">' + esc(brief) + '</span></button>';
       }).join('') + '</div>'
-    + '<p class="hint">点一下就打卡，再点一次取消。绿色是你已经背过的组，黄圈是今天刚打的。</p>';
+    + '<p class="hint">点一下就打卡，再点一次取消。绿色是你已经背过的' + U
+    + '，黄圈是今天刚打的' + (c.briefs ? '；卡片下的小字是体裁名，长按可看篇目全称' : '') + '。</p>';
 
   $('switchUser').onclick = () => {
     S.name = null; S.uid = null; S.content = null; S.mine = [];
@@ -1142,7 +1165,7 @@ async function viewGroup(){
       if (had){
         await apiDel(rec);
         S.mine = S.mine.filter(r => !(r.content === S.content && r.grp === n));
-        toast('已取消第 ' + n + ' 组');
+        toast('已取消第 ' + n + ' ' + U);
       } else {
         await apiAdd(rec);
         S.mine.push(rec);
@@ -1208,7 +1231,8 @@ function paintAdmin(){
       const days = new Set(mine.map(r => r.d));
       const w = mine.filter(r => r.content === 'words').length;
       const e = mine.filter(r => r.content === 'sent').length;
-      rows.push({ cls: cls, no: s.no, name: s.name, w: w, e: e,
+      const a = mine.filter(r => r.content === 'essay').length;
+      rows.push({ cls: cls, no: s.no, name: s.name, w: w, e: e, a: a,
         today: days.has(t), streak: calcStreak(days) });
     }
   }
@@ -1217,13 +1241,14 @@ function paintAdmin(){
   const f = S.filter;
   let show = rows.slice();
   if (f === 'miss') show = show.filter(r => !r.today);
-  if (f === 'zero') show = show.filter(r => r.w === 0 && r.e === 0);
+  if (f === 'zero') show = show.filter(r => r.w === 0 && r.e === 0 && r.a === 0);
   if (f === 'streak') show = show.sort((a,b) => b.streak - a.streak);
 
   const todayN = rows.filter(r => r.today).length;
   const rate = rows.length ? Math.round(todayN / rows.length * 100) : 0;
   const wTot = rows.reduce((a,r)=>a+r.w,0);
   const eTot = rows.reduce((a,r)=>a+r.e,0);
+  const aTot = rows.reduce((a,r)=>a+r.a,0);
   const allIn = rows.filter(r => r.today && r.streak >= 3).length;
 
   $('view').innerHTML =
@@ -1237,25 +1262,30 @@ function paintAdmin(){
     + '<div class="kpi a"><div class="lb">写作100句 累计</div>'
       + '<div class="vl">' + eTot + '<small>组次</small></div>'
       + '<div class="ft">连续 3 天以上 ' + allIn + ' 人</div></div>'
+    + '<div class="kpi v"><div class="lb">应用文16篇 累计</div>'
+      + '<div class="vl">' + aTot + '<small>篇次</small></div>'
+      + '<div class="ft">共 ' + CONFIG.contents.essay.total + ' 篇 / 人</div></div>'
     + '</div>'
     + '<div class="statline"><span>今日打卡 <b>' + todayN + '</b> / ' + rows.length + '</span>'
     + '<span>3500词 共 <b>' + wTot + '</b> 组次</span>'
-    + '<span>写作100句 共 <b>' + eTot + '</b> 组次</span></div>'
+    + '<span>写作100句 共 <b>' + eTot + '</b> 组次</span>'
+    + '<span>应用文 共 <b>' + aTot + '</b> 篇次</span></div>'
     + '<div class="row">'
     + chip('all','全部') + chip('miss','今日未打卡') + chip('zero','一次都没打过')
     + chip('streak','按连续天数排')
     + '</div>'
     + '<div class="tblwrap"><table><thead><tr>'
-    + '<th>班</th><th>学号</th><th>姓名</th><th>3500词</th><th>写作句</th><th>今日</th><th>连续</th>'
+    + '<th>班</th><th>学号</th><th>姓名</th><th>3500词</th><th>写作句</th><th>应用文</th><th>今日</th><th>连续</th>'
     + '</tr></thead><tbody>'
     + (show.map(r =>
         '<tr><td class="n">' + esc(r.cls) + '</td><td class="n">' + esc(r.no || '') + '</td>'
         + '<td>' + esc(r.name) + '</td>'
         + '<td class="' + (r.w ? '' : 'no') + '">' + r.w + ' / ' + CONFIG.contents.words.total + '</td>'
         + '<td class="' + (r.e ? '' : 'no') + '">' + r.e + ' / ' + CONFIG.contents.sent.total + '</td>'
+        + '<td class="' + (r.a ? '' : 'no') + '">' + r.a + ' / ' + CONFIG.contents.essay.total + '</td>'
         + '<td class="' + (r.today ? 'done' : 'no') + '">' + (r.today ? '已打' : '—') + '</td>'
         + '<td class="' + (r.streak >= 3 ? 'done' : 'no') + '">' + (r.streak || '—') + '</td></tr>'
-      ).join('') || '<tr><td colspan="7" class="n">没有符合条件的记录</td></tr>')
+      ).join('') || '<tr><td colspan="8" class="n">没有符合条件的记录</td></tr>')
     + '</tbody></table></div>'
     + '<div class="row" style="margin-top:18px">'
     + '<button class="chip solid" id="csv">导出 Excel（CSV）</button>'
@@ -1275,11 +1305,12 @@ function chip(k, label){
 
 function exportCSV(){
   const rows = S._rows || [];
-  const head = ['班级','学号','姓名','3500词已背组数','3500词总组数','写作100句已背组数','写作100句总组数','今日已打卡','连续打卡天数'];
+  const head = ['班级','学号','姓名','3500词已背组数','3500词总组数','写作100句已背组数','写作100句总组数','应用文已背篇数','应用文总篇数','今日已打卡','连续打卡天数'];
   const lines = [head.join(',')];
   rows.forEach(r => lines.push([
     CONFIG.classes[r.cls].label, r.no || '', r.name,
     r.w, CONFIG.contents.words.total, r.e, CONFIG.contents.sent.total,
+    r.a, CONFIG.contents.essay.total,
     r.today ? '是' : '否', r.streak
   ].join(',')));
   const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
